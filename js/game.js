@@ -31,9 +31,9 @@ function musicTick(){if(!music||!AC)return;const base=G.scene=='boss'?220:262;wh
  tone(f,len*.9,'triangle',.035,0,music.t-AC.currentTime);if(music.i%2==0)tone(base/2*Math.pow(2,[0,5,7,0][(music.i/4|0)%4]/12),.4,'sine',.05,0,music.t-AC.currentTime);music.t+=len;music.i++}}
 // ---- голос: очередь, реплики не обрываются
 const VQ=[];let vcur=null,vEnd=0;const vplayed={};
-function say(k,force){if(!VOICE[k]){G.log.push('novoice '+k);return}if(VQ.includes(k)||(vcur&&vcur.k==k))return;VQ.push(k)}
+function say(k,force){if(!VOICE[k]){G.log.push('novoice '+k);if(!(SUB&&SUB.k==k&&G.t<SUB.end))SUB={k,end:Math.max(G.t,SUB&&SUB.end||0)+Math.max(2.5,(TXTS[k]||'').length*.07)};return}if(VQ.includes(k)||(vcur&&vcur.k==k))return;VQ.push(k)}
 function voiceTick(){if(vcur&&!vcur.a.ended&&!vcur.a.paused)return;if(vcur&&vcur.a.ended)vcur=null;if(vcur&&performance.now()>vcur.until)vcur=null;if(vcur)return;const k=VQ.shift();if(!k)return;
- const a=new Audio('assets/voice/'+VOICE[k][0]);a.play().catch(()=>{});vcur={k,a,until:performance.now()+VOICE[k][1]*1000+1500};SUB={k,t:G.t,d:VOICE[k][1]}}
+ const a=new Audio('assets/voice/'+VOICE[k][0]);a.play().catch(()=>{});vcur={k,a,until:performance.now()+VOICE[k][1]*1000+1500};SUB={k,end:G.t+VOICE[k][1]+.3}}
 let SUB=null;const TXT={};
 function speaking(){return !!vcur||VQ.length>0}
 // ---- ввод
@@ -328,7 +328,7 @@ function drawHUD(){btnLayout();// сердечки, осколки, звёзды
  if(BANNER&&BANNER.t>0){BANNER.t-=1/60;X.save();X.globalAlpha=Math.min(1,BANNER.t*2);txt(BANNER.txt,W/2,H*.2,70,'#fff3a0');X.restore()}
  if(HAND&&HAND.k=='screen'){const b=BTN[HAND.bx];hand(b.x+10,b.y-20,HAND.t,(HAND.t%1)>.6?(HAND.t%1-.6)/.4:0)}}
 function nextForm(){const o=['girl',...L.forms];return o[(o.indexOf(P.form)+1)%o.length]}
-function drawSub(){if(!vcur||!SUB)return;const s=TXTS[SUB.k];if(!s)return;X.save();X.font='34px Lobster,cursive';const lines=wrap(s,W*.62);const h=lines.length*42+20;X.fillStyle='rgba(30,18,60,.72)';X.beginPath();X.roundRect(W/2-W*.33,H*.28-h/2,W*.66,h,20);X.fill();lines.forEach((l,i)=>txt(l,W/2,H*.28-h/2+30+i*42,34,'#fff'));X.restore()}
+function drawSub(){if(!SUB||G.t>SUB.end)return;const s=TXTS[SUB.k];if(!s)return;X.save();X.font='34px Lobster,cursive';const lines=wrap(s,W*.62);const h=lines.length*42+20;X.fillStyle='rgba(30,18,60,.72)';X.beginPath();X.roundRect(W/2-W*.33,H*.28-h/2,W*.66,h,20);X.fill();lines.forEach((l,i)=>txt(l,W/2,H*.28-h/2+30+i*42,34,'#fff'));X.restore()}
 function wrap(s,mw){const w=s.split(' ');const out=[];let cur='';for(const x of w){const t=cur?cur+' '+x:x;if(X.measureText(t).width>mw&&cur){out.push(cur);cur=x}else cur=t}out.push(cur);return out}
 const TXTS={};
 // ---- бот-проверка (?bot=1): проходит уровни сам
@@ -344,7 +344,7 @@ function botThink(dt){if(!G.bot||G.scene=='map'||G.scene=='title')return;BOT.l=0
  let want=p.form;for(let k=0;k<4;k++){const tx=fx+k;let has7=0,has8=0,has4=0;for(let y=0;y<11;y++){const v=tileAt(tx,y);if(v==7)has7=1;if(v==8)has8=1;if(v==4)has4=1}if(has7||has4){want='wheel';break}if(has8){want='bubble';break}}
  if(G.boulder)want='wheel';if(p.form=='bubble'&&want=='bubble'){}
  if(want!=p.form&&L.forms.includes(want)&&!G.botF){BOT.f=1;G.botF=.15}else BOT.f=0;G.botF=Math.max(0,(G.botF||0)-dt);if(G.botF>0&&G.botF<.08)BOT.f=0;
- if(p.form=='bubble'){let wall=0,gate=0;for(let k=0;k<4;k++)for(let y=0;y<Math.floor(p.y/T)-2;y++){const v=tileAt(fx+k,y);if(v==1)wall=1;if(v==8)gate=1}BOT.j=wall?1:0;if(!wall&&!gate&&p.ground&&!G.botF){BOT.f=1;G.botF=.15}return}
+ if(p.form=='bubble'){let wall=0,gate=0;for(let k=0;k<3;k++)for(let y=0;y<=Math.floor((p.y-1)/T);y++){const v=tileAt(fx+k,y);if(v==1)wall=1;if(v==8)gate=1}BOT.j=wall?1:0;if(!wall&&!gate&&p.ground&&!G.botF){BOT.f=1;G.botF=.15}return}
  // прыжок
  let wall=0;for(let y=fy-2;y<=fy;y++){const v=tileAt(fx,y);if(solidFor(v,p)&&v!=5&&v!=6)wall=1}
  let gap=1;for(let k=0;k<2;k++)for(let y=fy+1;y<12;y++)if(tileAt(fx+k,y))gap=0;
