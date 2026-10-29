@@ -28,4 +28,4 @@ for i,q in enumerate(big):
   mm=np.isin(lab,[t+1 for t in own[q]]);mm=ndimage.binary_dilation(mm,iterations=2)
   ys,xs=np.where(mm&(a>0.1));y0,y1,x0,x1=ys.min(),ys.max()+1,xs.min(),xs.max()+1
   out=rgba[y0:y1,x0:x1].copy();out[...,3]=(out[...,3]*mm[y0:y1,x0:x1]).astype(np.uint8)
-  Image.fromarray(out).save(f'{pre}_{i}.png');print(i,x1-x0,y1-y0,y0,y1)
+  Image.fromarray(out).save(f'{pre}_{i}.png');print(i,x1-x0,y1-y0,y0,y1,'x0',x0)
