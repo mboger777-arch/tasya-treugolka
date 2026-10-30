@@ -129,7 +129,7 @@ let onBump=null;
 function spawnShard(x,y){ENTS.push({type:'coin',x,y,vy:-600,fly:1,kind:L.id[0]=='1'?'coin_circ':'coin_tri'})}
 function stompWave(p){for(const e of ENTS)if(e.type=='enemy'&&Math.abs(e.x-p.x)<300&&Math.abs(e.y-p.y)<80)killEnemy(e)}
 function fallCatch(p){p.x=p.safe.x;p.y=p.safe.y-10;p.vx=0;p.vy=0;p.ground=false;FM.x=p.x;FM.y=p.y-200;FM.catch=1;say('r_oops');part(p.x,p.y-80,20,'#fff7c0',300,.8,0);if(G.auto)G.auto.rewind=1}
-function hurt(p,from){if(p.inv>0)return;G.log.push('hurt '+G.level+' '+Math.round(p.x)+','+Math.round(p.y)+' '+p.form);HUD.hearts--;p.inv=1.6;p.hurt=.4;p.vx=(p.x<from?-1:1)*500;p.vy=-600;SFX.hurt();shake(8);if(HUD.hearts<=0){HUD.hearts=3;fallCatch(p)}}
+function hurt(p,from){if(p.inv>0)return;HUD.hearts--;p.inv=1.6;p.hurt=.4;p.vx=(p.x<from?-1:1)*500;p.vy=-600;SFX.hurt();shake(8);if(HUD.hearts<=0){HUD.hearts=3;fallCatch(p)}}
 function killEnemy(e){e.dead=1;SFX.stomp();part(e.x,e.y-40,14,'#c08a50',350,.7);HUD.shards++}
 function transform(p){const fs=L.forms||[];const order=['girl',...fs];let i=order.indexOf(p.form);const nx=order[(i+1)%order.length];if(nx==p.form)return;
  const [w0,h0]=dims(p);p.form=nx;const [w1,h1]=dims(p);
@@ -441,7 +441,7 @@ function frame(now){let dt=Math.min(.1,(now-last)/1000);last=now;G.t+=dt;fpsT+=d
  else if(G.scene=='cut'){WX.updCut(dt)}
  else if(G.scene=='map'){IDLE+=dt;for(const t of taps.splice(0))mapTap(t);if(G.bot){const n=MAPN.find(n=>!SAVE.done[n.id]&&LV[n.id]&&(!Q.get('level')||ORDER.indexOf(n.id)>=ORDER.indexOf(Q.get('level')))&&(!Q.get('upto')||ORDER.indexOf(n.id)<=ORDER.indexOf(Q.get('upto'))));if(n)loadLevel(n.id);else G.botDone=1}}
  else{if(G.won){G.winT+=dt;taps.length=0;acc+=dt;while(acc>=STEP){acc-=STEP;for(const q of PART){q.life-=STEP;q.vy+=q.g*STEP;q.x+=q.vx*STEP;q.y+=q.vy*STEP}}PART=PART.filter(q=>q.life>0);
-   if((G.winT>2&&!speaking()&&(inp().j||taps.length||G.bot))||G.winT>12&&G.bot||(G.bot&&G.winT>2)){STATS.levels[G.level]={t:+G.lt.toFixed(1),bad:STATS.badFeet};G.scene='map';if(WX.afterWin)WX.afterWin(G.level)}
+   const bw=HUD.boss?4.5:2;if((G.winT>2&&!speaking()&&(inp().j||taps.length))||G.winT>12&&G.bot||(G.bot&&G.winT>bw)){STATS.levels[G.level]={t:+G.lt.toFixed(1),bad:STATS.badFeet};G.scene='map';if(WX.afterWin)WX.afterWin(G.level)}
    if(!G.bot&&G.winT>2&&!speaking()){C.onpointerup=()=>{C.onpointerup=null;if(G.won&&G.scene!='map'&&G.scene!='cut'){G.scene='map';if(WX.afterWin)WX.afterWin(G.level)}}}}
   else{acc+=dt;let n=0;while(acc>=STEP&&n<20){acc-=STEP;n++;botThink(STEP);update(STEP);checkFeet()}}}
  render();requestAnimationFrame(frame)}
