@@ -63,7 +63,7 @@ EX.pyr={setup(o){o.boss=1;o.st='intro';o.t=0;o.stomps=0;o.lit=0;o.h=290;o.hy=0;o
    const gr=X.createLinearGradient(0,-th*.6,0,th*.4);gr.addColorStop(0,'#f1cf7c');gr.addColorStop(1,'#b8842f');X.fillStyle=gr;X.strokeStyle='#6d4a17';X.lineWidth=4;X.beginPath();X.moveTo(0,-th*.62);X.lineTo(hw,th*.38);X.lineTo(-hw,th*.38);X.closePath();X.fill();X.stroke();X.restore()}
   if(o.st!='calm'){const pts=EX.pyr.pts(o);pts.forEach((q,i)=>{const lit=o.lit>i;X.save();X.shadowColor='#fff3a0';X.shadowBlur=lit?30:o.st=='tired'?18:0;X.fillStyle=lit?'#ffe36b':o.st=='tired'?'rgba(150,110,220,'+(.6+.3*Math.sin(G.t*6+i))+')':'rgba(120,100,140,.35)';X.beginPath();X.arc(q[0],q[1],lit?26:o.st=='tired'?24:16,0,7);X.fill();X.lineWidth=4;X.strokeStyle='#fff';X.stroke();X.restore()})}
   if(o.st=='tired'){for(let i=0;i<3;i++){const a=(G.t*1.4+i/3)%1;X.save();X.globalAlpha=1-a;X.fillStyle='#9fdcff';X.beginPath();X.ellipse(o.x-w*.25+i*w*.25,600-o.h*.7+a*60,6,10,0,0,7);X.fill();X.restore()}}
-  txt(o.lit+' из 3',o.x-w*.5-70,600-o.h+40,44,'#fff3a0')}};
+  txt(o.lit+' из 3',o.x-w*.5-60,600-o.h*.62,46,'#fff3a0')}};
 WX.add(()=>{
 LV['2-1']=()=>{const b=new LB(175,'2-1');b.meta={name:'2-1 Ветреный перевал',intro:['w2','l21'],forms:[]};
  b.g(0,27).e('stone',20,10,{shape:'tri',give:'kite'}).g(33,53).g(59,74).g(74,98,4).g(98,119).g(125,150).g(150,151,9).g(151,175);
