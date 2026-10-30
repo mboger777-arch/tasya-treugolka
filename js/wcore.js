@@ -93,6 +93,8 @@ WX.camX=function(cx){const o=WX.boss;if(!o||G.scene!='boss')return cx;return cla
 WX.moveFly=function(p,dt){const F=G.fly,I=G.inputLock?{}:inp();p.form='kite';F.cx+=F.s*dt;p.x=F.cx+WV*.3;
  if(I.j)p.vy-=1800*dt;else p.vy+=1250*dt;p.vy=clamp(p.vy,-380,330);p.y+=p.vy*dt;if(p.y<F.lo){p.y=F.lo;p.vy=Math.max(0,p.vy)}if(p.y>F.hi){p.y=F.hi;p.vy=Math.min(0,p.vy)}
  p.ground=false;p.face=1;p.air=1;if(I.j)IDLE=0;if(p.x>L.w*T-WV*.75&&!G.won)win()};
+// камера полёта: крупно, по вертикали между героем и следующим просветом
+WX.flyCamY=function(){const p=P;let s=null;for(const o of ENTS)if(o.type=='spire'&&o.x+60>p.x&&(!s||o.x<s.x))s=o;const py=p.y-85,g=s?s.gc:py;const k=s?clamp(1-(s.x-p.x)/700,0,.6):0;const c=py*(1-k)+g*k;return clamp(c-HV*.5,-90,600-HV*L.gf)};
 // ---- бот
 WX.botPre=function(dt){const p=P;
  if(G.fly){let s=null;for(const o of ENTS)if(o.type=='spire'&&o.x+110>p.x&&(!s||o.x<s.x))s=o;const tgt=s?s.gc:400;const err=tgt-(p.y-85);const want=clamp(err*3.2,-360,330);BOT.r=0;BOT.j=want<p.vy;return true}

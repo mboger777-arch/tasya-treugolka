@@ -31,10 +31,11 @@ function musicTick(){if(!music||!AC)return;const base=G.scene=='boss'?220:262;wh
  tone(f,len*.9,'triangle',.035,0,music.t-AC.currentTime);if(music.i%2==0)tone(base/2*Math.pow(2,[0,5,7,0][(music.i/4|0)%4]/12),.4,'sine',.05,0,music.t-AC.currentTime);music.t+=len;music.i++}}
 // ---- голос: очередь, реплики не обрываются
 const VQ=[];let vcur=null,vEnd=0;const vplayed={};
-function say(k,force){if(!VOICE[k]){G.log.push('novoice '+k);if(!(SUB&&SUB.k==k&&G.t<SUB.end))SUB={k,end:Math.max(G.t,SUB&&SUB.end||0)+Math.max(2.5,(TXTS[k]||'').length*.07)};return}if(VQ.includes(k)||(vcur&&vcur.k==k))return;VQ.push(k)}
+let HSAID={};function say(k,force){if(G.inHint){if(speaking()||G.t-(HSAID[k]??-99)<14)return;HSAID[k]=G.t}if(!VOICE[k]){G.log.push('novoice '+k);if(!(SUB&&SUB.k==k&&G.t<SUB.end))SUB={k,end:Math.max(G.t,SUB&&SUB.end||0)+Math.max(2.5,(TXTS[k]||'').length*.07)};return}if(VQ.includes(k)||(vcur&&vcur.k==k))return;VQ.push(k)}
 function voiceTick(){if(vcur&&!vcur.a.ended&&!vcur.a.paused)return;if(vcur&&vcur.a.ended)vcur=null;if(vcur&&performance.now()>vcur.until)vcur=null;if(vcur)return;const k=VQ.shift();if(!k)return;
  const a=new Audio('assets/voice/'+VOICE[k][0]);a.play().catch(()=>{});vcur={k,a,until:performance.now()+VOICE[k][1]*1000+1500};SUB={k,end:G.t+VOICE[k][1]+.3}}
 let SUB=null;const TXT={};
+function hush(){VQ.length=0;if(vcur){try{vcur.a.pause()}catch(e){}vcur=null}SUB=null}
 function speaking(){return !!vcur||VQ.length>0}
 // ---- ввод
 const KEY={},TOUCH={};let taps=[];const BTN={};
@@ -185,7 +186,7 @@ LV['1-4']=()=>{const b=new LB(220,'1-4');b.meta={name:'1-4 Бегство от �
 LV['1-B']=()=>{const n=Math.max(16,Math.ceil(W/1.38/T)+1);const b=new LB(n,'1-B');b.zoom=1.38;b.meta={name:'Босс: Кувырок',intro:['b1a','b1b'],forms:['wheel'],boss:'kuv'};b.g(0,n).col(0,0,9,1).col(n-1,0,9,1).col(3,8,9,1).col(n-4,8,9,1);b.start={x:1,y:9};b.e('kuv',n-8,10);return b};
 const ORDER=['1-1','1-2','1-3','1-4','1-B'];
 // ---- загрузка уровня
-function loadLevel(id){const b=LV[id]();seed=+(Q.get('seed')||((Date.now()/1000|0)%100000));const [l,ents]=mkLevel(b);L=l;L.forms=b.meta.forms.slice();L.meta=b.meta;
+function loadLevel(id){VQ.length=0;if(vcur){try{vcur.a.pause()}catch(e){}vcur=null}SUB=null;G.lseq=(G.lseq||0)+1;G.f2=0;G.said14=0;HSAID={};const b=LV[id]();seed=+(Q.get('seed')||((Date.now()/1000|0)%100000));const [l,ents]=mkLevel(b);L=l;L.forms=b.meta.forms.slice();L.meta=b.meta;
  ENTS=[];PART=[];TASK=null;HAND=null;IDLE=0;HUD={shards:0,stars:0,hearts:3,got:0};
  for(const e of ents){const o=Object.assign({},e);if(o.type=='enemy'){o.vx=-90;o.ph=rnd()*6}if(o.type=='odd')setupOdd(o);if(o.type=='stone')setupStone(o);if(o.type=='kuv')setupKuv(o);if(EX[o.type]&&EX[o.type].setup)EX[o.type].setup(o);ENTS.push(o)}
  P=newPlayer(b.start.x*T,b.start.y*T+T);P.y=10*T;if(b.meta.startForm&&b.meta.startForm!='girl'){P.form=b.meta.startForm}if(Q.get('form'))P.form=Q.get('form');
@@ -210,7 +211,7 @@ function tapWorld(p){const wx=p.x/Z+CAM.x,wy=p.y/Z+CAM.y;IDLE=0;
  throwBoom(wx,wy)}
 const BOOM=[];function throwBoom(tx,ty,cb){if(BOOM.length>1)return;SFX.boom();BOOM.push({x:P.x,y:P.y-100,tx,ty,t:0,cb,back:0})}
 function stoneDone(o){if(o.done)return;o.done=1;SFX.win();shake(8);part(o.x,o.cy,40,FORMS[o.give].col,500,1.2,0,12);say(o.n==0?(o.shape=='oval'?'c_oval':'t_stone0'):({tri:'c_tri',sq:'c_sq',rect:'c_rect',pent:'c_pent',hex:'c_hex'})[o.shape]||'c_tri');if(!L.forms.includes(o.give))L.forms.push(o.give);if(!SAVE.forms.includes(o.give))SAVE.forms.push(o.give);save();
- setTimeout(()=>{if(P.form!=o.give){P.form='girl';const i=L.forms.indexOf(o.give);P.form=i>0?L.forms[i-1]:'girl';transform(P)}const tk={wheel:'t_wheel',kite:'t_kite',cube:'t_cube',shield:'t_shield',hex:'t_hexf'}[o.give];if(tk)say(tk)},700)}
+ {const q=G.lseq;setTimeout(()=>{if(G.lseq!=q)return;if(P.form!=o.give){P.form='girl';const i=L.forms.indexOf(o.give);P.form=i>0?L.forms[i-1]:'girl';transform(P)}const tk={wheel:'t_wheel',kite:'t_kite',cube:'t_cube',shield:'t_shield',hex:'t_hexf'}[o.give];if(tk)say(tk)},700)}}
 // ---- обновление игры
 function update(dt){G.lt+=dt;const p=P;const I=inp();
  if(I.f&&!p.lastF&&!G.won)transform(p);p.lastF=I.f;
@@ -250,11 +251,13 @@ function update(dt){G.lt+=dt;const p=P;const I=inp();
  let zt=L.zoom,top=null;for(const o of ENTS){if(o.x-p.x>WV*1.05||p.x-o.x>500)continue;if(o.type=='stone'&&!o.done)top=Math.min(top??1e9,o.cy-175);if(o.type=='odd'&&!o.done)top=Math.min(top??1e9,o.y-385);if(EX[o.type]&&EX[o.type].top){const t=EX[o.type].top(o);if(t!=null)top=Math.min(top??1e9,t)}}
  if(top!=null)zt=Math.min(zt,H*L.gf/Math.max(200,600-top+30));Z=lerp(Z,zt,1-Math.pow(.2,dt));WV=W/Z;HV=H/Z;
  G.look=lerp(G.look||0,p.face*WV*.12+p.vx*.22,1-Math.pow(.15,dt));let cx=clamp(G.boulder?p.x-WV*.5:p.x-WV*.4+G.look,0,L.w*T-WV);if(WX.camX)cx=WX.camX(cx);CAM.x=G.fly?G.fly.cx:lerp(CAM.x,cx,1-Math.pow(.004,dt));
- const cyMax=600-HV*L.gf;let cy=G.scene=='boss'?cyMax:Math.min(cyMax,p.y-HV*.46);if(top!=null&&G.scene!='boss')cy=Math.min(cy,top-30);if(G.fly)cy=G.fly.cy;CAM.y=lerp(CAM.y,cy,1-Math.pow(cy<CAM.y?.004:.03,dt));CAM.y=Math.min(CAM.y,600-HV*L.gf+1);CAM.shake*=Math.pow(.003,dt);
+ const cyMax=600-HV*L.gf;let cy=G.scene=='boss'?cyMax:Math.min(cyMax,p.y-HV*.46);if(top!=null&&G.scene!='boss')cy=Math.min(cy,top-30);if(G.fly)cy=WX.flyCamY?WX.flyCamY():G.fly.cy;CAM.y=lerp(CAM.y,cy,1-Math.pow(cy<CAM.y?.004:.03,dt));CAM.y=Math.min(CAM.y,600-HV*L.gf+1);CAM.shake*=Math.pow(.003,dt);
  if(HAND){HAND.t+=dt;if(HAND.t>4)HAND=null}
  if(IDLE>8&&!HAND)hint();
 }
-function hint(){IDLE=0;// подсказка ладошкой к ближайшему заданию
+function hint(){G.inHint=1;try{hint0()}finally{G.inHint=0}}
+function hint0(){IDLE=0;// подсказка ладошкой к ближайшему заданию
+ if(G.fly){HAND={x:0,y:0,t:0,k:'screen',bx:'jump'};say('t_fly');return}
  for(const o of ENTS){const x=EX[o.type];if(x&&x.hint&&!o.dead&&x.hint(o))return}
  for(const o of ENTS){if(o.type=='stone'&&!o.done&&Math.abs(o.x-P.x)<700){const pts=stonePts(o);const q=pts.find((q,i)=>!(o.litMask&(1<<i)))||[o.x,o.cy];HAND={x:q[0],y:q[1],t:0,k:'tap'};say(o.n?'t_stone':'t_stone0');return}
   if(o.type=='odd'&&!o.done&&Math.abs(o.x-P.x)<800){const it=o.items.find(i=>i.odd);HAND={x:it.x,y:it.y,t:0,k:'tap'};say('t_odd');return}
