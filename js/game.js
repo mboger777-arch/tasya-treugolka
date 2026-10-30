@@ -291,23 +291,24 @@ function drawBG(){const bg=IMG.bg_w1;if(bg.width){const h=H*1.05,w=bg.width*h/bg
  X.fillStyle='rgba(90,160,70,.6)';X.beginPath();X.moveTo(0,H);for(let x=0;x<=W+20;x+=20){const wx=x+CAM.x*.6;X.lineTo(x,H*.8-(CAM.y-600+HV*L.gf)*.5+Math.sin(wx*.006+1)*30)}X.lineTo(W,H);X.fill()}
 // земля — бесшовный узор в мировых координатах (без швов между тайлами, без растяжения)
 let DPc=null,DPi=null;function dirtPat(td){if(!td||!td.width)return '#6b4a2a';if(DPi!==td||!DPc){DPi=td;DPc=X.createPattern(td,'repeat');const s=4*T/td.width;DPc.setTransform(new DOMMatrix([s,0,0,s,0,0]))}return DPc}
-function drawTiles(){const x0=Math.max(0,Math.floor(CAM.x/T)-1),x1=Math.min(L.w,Math.ceil((CAM.x+WV)/T)+1);const tt=IMG.tile_top,td=IMG.tile_dirt,DP=dirtPat(td);
+function drawTiles(){const x0=Math.max(0,Math.floor(CAM.x/T)-1),x1=Math.min(L.w,Math.ceil((CAM.x+WV)/T)+1);const tt=IMG.tile_top,td=IMG.tile_dirt,TP=self.TERR&&TERR.ready(),DP=TP&&TERR.pat()||dirtPat(td);
  // пропасти: тёмное ущелье с водой; под землёй ещё два ряда земли
  for(let tx=x0;tx<x1;tx++){const x=tx*T;if(tileAt(tx,11)==1){X.fillStyle=DP;X.fillRect(x,12*T,T+.5,2*T)}
   if(tileAt(tx,10)==0&&tileAt(tx,11)==0){const g=X.createLinearGradient(0,10*T-20,0,12*T);g.addColorStop(0,'#2e1d40');g.addColorStop(.5,'#170e26');g.addColorStop(1,'#07040d');X.fillStyle=g;X.fillRect(x-.5,10*T-14,T+1,4*T);
    const L0=tileAt(tx-1,10)==1,R0=tileAt(tx+1,10)==1;
    for(const [ed,dir] of [[L0,1],[R0,-1]]){if(!ed)continue;const ex=dir>0?x:x+T;X.save();X.beginPath();X.moveTo(ex,10*T-10);for(let k=0;k<=8;k++){const yy=10*T-10+k*24;X.lineTo(ex+dir*(14+((tx*13+k*7)%5)*5),yy)}X.lineTo(ex,12*T+40);X.closePath();X.clip();X.fillStyle=DP;X.fillRect(ex-60,10*T-10,120,240);X.fillStyle='rgba(20,10,30,.55)';X.fillRect(ex-60,10*T-10,120,260);X.restore();
-    X.fillStyle=(WX.grass||'#5fae2e');for(let k=0;k<5;k++){X.beginPath();const bx=ex+dir*(k*5);X.moveTo(bx-4,10*T-12);X.lineTo(bx+dir*(6+k%2*4),10*T+14+k%3*8);X.lineTo(bx+4,10*T-12);X.fill()}}
+    if(!TP){X.fillStyle=(WX.grass||'#5fae2e');for(let k=0;k<5;k++){X.beginPath();const bx=ex+dir*(k*5);X.moveTo(bx-4,10*T-12);X.lineTo(bx+dir*(6+k%2*4),10*T+14+k%3*8);X.lineTo(bx+4,10*T-12);X.fill()}}}
    const wg=X.createLinearGradient(0,11*T+24,0,13*T);wg.addColorStop(0,'#2f8fb8');wg.addColorStop(1,'#0f3050');X.fillStyle=wg;X.fillRect(x-.5,11*T+26,T+1,3*T);X.strokeStyle='rgba(190,235,255,.8)';X.lineWidth=4;X.beginPath();for(let k=0;k<=T;k+=6){const yy=11*T+26+Math.sin((x+k)*.08+G.t*3)*4;k?X.lineTo(x+k,yy):X.moveTo(x,yy)}X.stroke();
    if(((tx*7)%3)==0){X.fillStyle='rgba(255,255,255,'+(.4+.4*Math.sin(G.t*4+tx))+')';X.beginPath();X.arc(x+T/2,11*T+40,3,0,7);X.fill()}}}
+ const TN=TP&&TERR.draw(x0,x1);
  for(let ty=0;ty<12;ty++)for(let tx=x0;tx<x1;tx++){const v=tileAt(tx,ty);if(!v)continue;const x=tx*T,y=ty*T;
-  if(v==1){const top=tileAt(tx,ty-1)==0||tileAt(tx,ty-1)==2||tileAt(tx,ty-1)>=5&&tileAt(tx,ty-1)!=9&&tileAt(tx,ty-1)!=7&&tileAt(tx,ty-1)!=8;const k=tt.width/240,u=(tx%2)*120*k;
+  if(v==1){if(TN)continue;const top=tileAt(tx,ty-1)==0||tileAt(tx,ty-1)==2||tileAt(tx,ty-1)>=5&&tileAt(tx,ty-1)!=9&&tileAt(tx,ty-1)!=7&&tileAt(tx,ty-1)!=8;const k=tt.width/240,u=(tx%2)*120*k;
     X.fillStyle=DP;X.fillRect(x,y,T+.5,T+.5);if(top)X.drawImage(tt,u,0,120*k,130*k,x,y-12,T+.5,T*130/120)}
   else if(v==2)img('plank',x+T/2,y+46,46,0,1,.5,1);
   else if(v==3||v==9){X.save();X.globalAlpha=v==9?.75:1;img('block',x+T/2,y+T,T);X.restore();if(v==3){X.fillStyle='#ffe36b';X.globalAlpha=.6+.4*Math.sin(G.t*5);X.beginPath();X.arc(x+T/2,y+T/2,9,0,7);X.fill();X.globalAlpha=1}}
   else if(v==4){const sg=X.createLinearGradient(x,y,x+T,y+T);sg.addColorStop(0,'#c7b08a');sg.addColorStop(1,'#8a6f52');X.fillStyle=sg;X.beginPath();X.roundRect(x+1,y+1,T-2,T-2,8);X.fill();X.fillStyle='rgba(255,255,255,.25)';X.fillRect(x+5,y+4,T-10,5);X.strokeStyle='#5b4330';X.lineWidth=3;X.beginPath();X.roundRect(x+1,y+1,T-2,T-2,8);X.stroke();X.strokeStyle='#4a3424';X.lineWidth=4;X.beginPath();X.moveTo(x+10,y+8);X.lineTo(x+30,y+30);X.lineTo(x+22,y+52);X.moveTo(x+30,y+30);X.lineTo(x+52,y+38);X.stroke()}
   else if(v==5||v==6){X.save();X.beginPath();if(v==5){X.moveTo(x,y+T);X.lineTo(x+T,y);X.lineTo(x+T,y+T)}else{X.moveTo(x,y);X.lineTo(x+T,y+T);X.lineTo(x,y+T)}X.closePath();X.clip();X.fillStyle=DP;X.fillRect(x,y,T,T);X.restore();
-   X.strokeStyle=(WX.grass||'#5fae2e');X.lineWidth=12;X.lineCap='round';X.beginPath();if(v==5){X.moveTo(x,y+T);X.lineTo(x+T,y)}else{X.moveTo(x,y);X.lineTo(x+T,y+T)}X.stroke()}
+   if(!(TN&&TERR.slope(v,x,y))){X.strokeStyle=(WX.grass||'#5fae2e');X.lineWidth=12;X.lineCap='round';X.beginPath();if(v==5){X.moveTo(x,y+T);X.lineTo(x+T,y)}else{X.moveTo(x,y);X.lineTo(x+T,y+T)}X.stroke()}}
   else if(v==7||v==8){if(ty==0||tileAt(tx,ty-1)!=v){let n=0;while(tileAt(tx,ty+n)==v)n++;const cy=y+n*T/2;X.save();X.globalAlpha=.85;X.lineWidth=10;X.strokeStyle=v==7?'#ff8a1f':'#c58cff';X.fillStyle=v==7?'rgba(255,170,60,.25)':'rgba(200,150,255,.3)';X.beginPath();
     if(v==7)X.arc(x+T/2,cy,n*T/2-6,0,7);else X.ellipse(x+T/2,cy,n*T*.33,n*T/2-6,0,0,7);X.fill();X.stroke();X.globalAlpha=1;
     paintShape(v==7?'circle':'oval',x+T/2,y-34,28,v==7?'#ff8a1f':'#c58cff',0,false,20);X.restore()}}

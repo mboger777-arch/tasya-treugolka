@@ -20,7 +20,7 @@ function recolor(im,[col,k,light]){const c=document.createElement('canvas');c.wi
  x.drawImage(im,0,0);const c2=document.createElement('canvas');c2.width=im.width;c2.height=im.height;const y=c2.getContext('2d');y.drawImage(im,0,0);y.globalCompositeOperation='color';y.fillStyle=col;y.fillRect(0,0,c.width,c.height);
  if(light){y.globalCompositeOperation='screen';y.globalAlpha=light;y.fillStyle='#ffffff';y.fillRect(0,0,c.width,c.height);y.globalAlpha=1}
  y.globalCompositeOperation='destination-in';y.drawImage(im,0,0);x.globalAlpha=k;x.drawImage(c2,0,0);return c}
-WX.theme=function(n){if(!BASE.top){BASE.top=IMG.tile_top;BASE.dirt=IMG.tile_dirt}const th=TH[n]||TH[1];WX.grass=th.grass;
+WX.theme=function(n){if(self.TERR)TERR.load(n);if(!BASE.top){BASE.top=IMG.tile_top;BASE.dirt=IMG.tile_dirt}const th=TH[n]||TH[1];WX.grass=th.grass;
  if(n==1||!th.top){IMG.tile_top=BASE.top;IMG.tile_dirt=BASE.dirt;return}
  try{IMG.tile_top=TC['t'+n]||(TC['t'+n]=recolor(BASE.top,th.top));IMG.tile_dirt=TC['d'+n]||(TC['d'+n]=recolor(BASE.dirt,th.dirt))}catch(e){IMG.tile_top=BASE.top;IMG.tile_dirt=BASE.dirt}};
 WX.water=p=>{const w=L&&L.meta.water;if(!w)return false;return w===true||p.x<w*T};

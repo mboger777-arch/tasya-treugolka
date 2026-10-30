@@ -26,10 +26,13 @@ function weed(x,y,s,t,c){X.strokeStyle=c;X.lineWidth=4*s;X.lineCap='round';X.beg
 function fluff(x,y,s){X.fillStyle='rgba(255,255,255,.95)';for(const [dx,dy,r] of [[-12,-2,9],[0,-6,12],[12,-2,9]]){X.beginPath();X.arc(x+dx*s,y+dy*s,r*s,0,7);X.fill()}X.fillStyle='rgba(215,205,255,.5)';X.beginPath();X.ellipse(x,y+2*s,20*s,4*s,0,0,7);X.fill()}
 const GC={};function lg(key,x0,y0,x1,y1,stops){let g=GC[key];if(!g){g=X.createLinearGradient(x0,y0,x1,y1);for(const [o,c] of stops)g.addColorStop(o,c);GC[key]=g}return g}
 function isTop(tx,ty){if(tileAt(tx,ty)!=1)return false;const a=tileAt(tx,ty-1);return a==0||a==2}
-function tiles(){const n=WX.wn(),pal=PAL[n]||PAL[1],t=G.t,lo=G.lowFx||0;const x0=Math.max(0,Math.floor(CAM.x/T)-1),x1=Math.min(L.w,Math.ceil((CAM.x+WV)/T)+1);
+function tiles(){const n=WX.wn(),pal=PAL[n]||PAL[1],t=G.t,lo=G.lowFx||0,TR=self.TERR&&TERR.ready();const x0=Math.max(0,Math.floor(CAM.x/T)-1),x1=Math.min(L.w,Math.ceil((CAM.x+WV)/T)+1);
  for(let ty=1;ty<12;ty++)for(let tx=x0;tx<x1;tx++){if(tileAt(tx,ty)!=1)continue;const x=tx*T,y=ty*T,top=isTop(tx,ty);
   // края: торцы платформ темнее, снизу висящих — мягкая тень
   const le=tileAt(tx-1,ty)==0,re=tileAt(tx+1,ty)==0,below=ty<11&&tileAt(tx,ty+1)==0;
+  if(TR){if(!top||lo>=2)continue;const h=hs(tx,ty);if(h%3)continue;const sw=Math.sin(t*1.8+tx*.7)*2.5,hh=hs(tx*3,ty+11),px=x+8+(hh%44),r=(hh>>>8)%10,s=.8+((hh>>>4)%5)*.1;
+   if(n==1){if(r<5)flower(px,y-1,pal.fl[(hh>>>12)%4],s,sw*.6)}else if(n==4){if(r<4)weed(px,y-2,s,t,'#2e9e6e')}else if(n==5){if(r<3){X.fillStyle='rgba(255,236,140,'+(.6+.4*Math.sin(t*3+px))+')';star4(px,y-14,6*s)}}else if(n==6){if(h%7==0)crystal(x+T/2,y-2,['#c47bff','#ff7ad9','#7fd8ff'][h%3],.9,t)}
+   if((n==3||n==6)&&h%23==5)lantern(x+T/2,y-2,1,t);continue}
   if(le||re){for(const [e,d] of [[le,1],[re,-1]]){if(!e)continue;const ex=d>0?x:x+T;X.save();X.translate(ex,y);X.fillStyle=lg('e'+d,0,0,d*16,0,[[0,'rgba(40,20,30,.45)'],[1,'rgba(40,20,30,0)']]);X.fillRect(d>0?0:-16,top?8:0,16,T-(top?8:0));X.restore()}}
   if(below){X.save();X.translate(x,y+T-14);X.fillStyle=lg('b',0,0,0,14,[[0,'rgba(30,15,30,0)'],[1,'rgba(30,15,30,.4)']]);X.fillRect(0,0,T+.5,14);X.restore()}
   if(!top)continue;
