@@ -68,9 +68,9 @@ function voiceTick(){
  if(vcur)return;
  while(VQ.length){const q=VQ[0];if(G.t-q.t0>q.age||(q.lv!=G.level&&G.scene!='map'&&G.scene!='cut')){VQ.shift();vlog({k:q.k,lv:q.lv,te:q.te,drop:'stale',t:G.t});continue}break}
  const q=VQ.shift();if(!q)return;for(const r of VQ)if(r.b==q.b)r.t0=G.t+VOICE[q.k][1];
- const a=new Audio('assets/voice/'+VOICE[q.k][0]);const c=vcur={...q,a,dur:VOICE[q.k][1],until:performance.now()+VOICE[q.k][1]*1000+400,ts:G.t,tsr:performance.now()};
- a.addEventListener('playing',()=>{c.tp=G.t;c.tpr=performance.now()},{once:true});a.play().catch(()=>{c.blocked=1});SUB={k:q.k,end:G.t+VOICE[q.k][1]+.3}}
-function vend(){const c=vcur;if(!c)return;vlog({k:c.k,lv:c.lv,p:c.p,b:c.b,bi:c.bi,wait:c.wait,te:c.te,ts:c.ts,tp:c.tp,tr:c.tr,tsr:c.tsr,tpr:c.tpr,endr:performance.now(),end:G.t,cut:c.fade?1:0});if(SUB&&SUB.k==c.k)SUB=null;vcur=null}
+ const a=new Audio('assets/voice/'+VOICE[q.k][0]);const c=vcur={...q,a,dur:VOICE[q.k][1],until:performance.now()+2500+VOICE[q.k][1]*1000,ts:G.t,tsr:performance.now()};
+ a.addEventListener('playing',()=>{c.tp=G.t;c.tpr=performance.now();c.until=c.tpr+c.dur*1000+400},{once:true});a.play().catch(()=>{c.blocked=1});SUB={k:q.k,end:G.t+VOICE[q.k][1]+.3}}
+function vend(){const c=vcur;if(!c)return;if(!c.a.ended)try{c.a.pause()}catch(e){}vlog({k:c.k,lv:c.lv,p:c.p,b:c.b,bi:c.bi,wait:c.wait,te:c.te,ts:c.ts,tp:c.tp,tr:c.tr,tsr:c.tsr,tpr:c.tpr,endr:performance.now(),end:G.t,cut:c.fade?1:0});if(SUB&&SUB.k==c.k)SUB=null;vcur=null}
 let SUB=null;const TXT={};
 function hush(){for(const q of VQ)vlog({k:q.k,lv:q.lv,te:q.te,drop:'hush',t:G.t});VQ.length=0;if(vcur){try{vcur.a.pause()}catch(e){}vend()}SUB=null}
 function vEndLevel(){// конец уровня: задания и похвала больше не нужны, история (финал босса) дозвучивает
@@ -320,6 +320,13 @@ function drawBG(){const bg=IMG.bg_w1;if(bg.width){const h=H*1.05,w=bg.width*h/bg
  X.fillStyle='rgba(90,160,70,.6)';X.beginPath();X.moveTo(0,H);for(let x=0;x<=W+20;x+=20){const wx=x+CAM.x*.6;X.lineTo(x,H*.8-(CAM.y-600+HV*L.gf)*.5+Math.sin(wx*.006+1)*30)}X.lineTo(W,H);X.fill()}
 // земля — бесшовный узор в мировых координатах (без швов между тайлами, без растяжения)
 let DPc=null,DPi=null;function dirtPat(td){if(!td||!td.width)return '#6b4a2a';if(DPi!==td||!DPc){DPi=td;DPc=X.createPattern(td,'repeat');const s=4*T/td.width;DPc.setTransform(new DOMMatrix([s,0,0,s,0,0]))}return DPc}
+// v16: пропасть видно заранее — светящаяся кромка и табличка «!» перед обрывом
+function PITSIGN(x0,x1){for(let tx=x0;tx<x1;tx++){if(!(tileAt(tx,10)==0&&tileAt(tx,11)==0&&tileAt(tx-1,10)==1))continue;let w=0;while(w<14&&tileAt(tx+w,10)==0&&tileAt(tx+w,11)==0)w++;if(w<2)continue;
+ const x=tx*T,y=10*T,pu=.6+.4*Math.sin(G.t*4+tx);X.save();
+ for(let k=0;k<5;k++){const yy=y-10-((G.t*40+k*22+tx*9)%110);X.globalAlpha=.25+.5*(1-(y-yy)/120);X.fillStyle='#ffb3e6';X.beginPath();X.arc(x+((k*53+tx*31)%Math.max(1,w*T-20))+10,yy+40,3+k%2*2,0,7);X.fill()}X.globalAlpha=1;
+ const sx=x-30,sy=y-6;X.fillStyle='#7a4b26';X.fillRect(sx-4,sy-120,8,120);X.translate(sx,sy-140);X.scale(1.25,1.25);X.rotate(Math.sin(G.t*2+tx)*.05);
+ X.fillStyle='#ffd34d';X.strokeStyle='#8a3b12';X.lineWidth=5;X.lineJoin='round';X.beginPath();X.moveTo(0,-30);X.lineTo(30,22);X.lineTo(-30,22);X.closePath();X.fill();X.stroke();
+ X.fillStyle='#8a3b12';X.fillRect(-3.5,-14,7,22);X.beginPath();X.arc(0,15,4,0,7);X.fill();X.restore()}}
 function drawTiles(){const x0=Math.max(0,Math.floor(CAM.x/T)-1),x1=Math.min(L.w,Math.ceil((CAM.x+WV)/T)+1);const tt=IMG.tile_top,td=IMG.tile_dirt,TP=self.TERR&&TERR.ready(),DP=TP&&TERR.pat()||dirtPat(td);
  // пропасти: тёмное ущелье с водой; под землёй ещё два ряда земли
  for(let tx=x0;tx<x1;tx++){const x=tx*T;if(tileAt(tx,11)==1){X.fillStyle=DP;X.fillRect(x,12*T,T+.5,2*T)}
@@ -328,7 +335,8 @@ function drawTiles(){const x0=Math.max(0,Math.floor(CAM.x/T)-1),x1=Math.min(L.w,
    for(const [ed,dir] of [[L0,1],[R0,-1]]){if(!ed)continue;const ex=dir>0?x:x+T;X.save();X.beginPath();X.moveTo(ex,10*T-10);for(let k=0;k<=8;k++){const yy=10*T-10+k*24;X.lineTo(ex+dir*(14+((tx*13+k*7)%5)*5),yy)}X.lineTo(ex,12*T+40);X.closePath();X.clip();X.fillStyle=DP;X.fillRect(ex-60,10*T-10,120,240);X.fillStyle='rgba(20,10,30,.55)';X.fillRect(ex-60,10*T-10,120,260);X.restore();
     if(!TP){X.fillStyle=(WX.grass||'#5fae2e');for(let k=0;k<5;k++){X.beginPath();const bx=ex+dir*(k*5);X.moveTo(bx-4,10*T-12);X.lineTo(bx+dir*(6+k%2*4),10*T+14+k%3*8);X.lineTo(bx+4,10*T-12);X.fill()}}}
    const wg=X.createLinearGradient(0,11*T+24,0,13*T);wg.addColorStop(0,'#2f8fb8');wg.addColorStop(1,'#0f3050');X.fillStyle=wg;X.fillRect(x-.5,11*T+26,T+1,3*T);X.strokeStyle='rgba(190,235,255,.8)';X.lineWidth=4;X.beginPath();for(let k=0;k<=T;k+=6){const yy=11*T+26+Math.sin((x+k)*.08+G.t*3)*4;k?X.lineTo(x+k,yy):X.moveTo(x,yy)}X.stroke();
-   if(((tx*7)%3)==0){X.fillStyle='rgba(255,255,255,'+(.4+.4*Math.sin(G.t*4+tx))+')';X.beginPath();X.arc(x+T/2,11*T+40,3,0,7);X.fill()}}}
+   if(((tx*7)%3)==0){X.fillStyle='rgba(255,255,255,'+(.4+.4*Math.sin(G.t*4+tx))+')';X.beginPath();X.arc(x+T/2,11*T+40,3,0,7);X.fill()}}
+ PITSIGN(x0,x1)}
  const TN=TP&&TERR.draw(x0,x1);
  for(let ty=0;ty<12;ty++)for(let tx=x0;tx<x1;tx++){const v=tileAt(tx,ty);if(!v)continue;const x=tx*T,y=ty*T;
   if(v==1){if(TN)continue;const top=tileAt(tx,ty-1)==0||tileAt(tx,ty-1)==2||tileAt(tx,ty-1)>=5&&tileAt(tx,ty-1)!=9&&tileAt(tx,ty-1)!=7&&tileAt(tx,ty-1)!=8;const k=tt.width/240,u=(tx%2)*120*k;
@@ -524,7 +532,7 @@ function render(){X.setTransform(SC,0,0,SC,0,0);X.clearRect(0,0,W,H);
  if(G.scene=='title'){drawTitle();if(loaded<TOTAL)txt('Загрузка… '+Math.round(loaded/TOTAL*100)+'%',W/2,H*.75,40)}
  else if(G.scene=='map')drawMap();else if(G.scene=='cut')WX.drawCut();
  else{drawBG();const sx=(rnd()-.5)*CAM.shake,sy=(rnd()-.5)*CAM.shake;X.save();X.scale(Z,Z);X.translate(-CAM.x+sx,-CAM.y+sy);
-  for(const d of L.deco)img(d.img,d.x+T/2,d.y,(IMG[d.img].height||200)*d.s*.45);drawTiles();FX.tiles();FX.shadows();drawEnts();FX.glints();
+  for(const d of L.deco)img(d.img,d.x+T/2,d.y,(IMG[d.img].height||200)*d.s*.45);drawTiles();FX.tiles();FX.shadows();drawEnts();PITSIGN(Math.max(0,Math.floor(CAM.x/T)-1),Math.min(L.w,Math.ceil((CAM.x+WV)/T)+2));FX.glints();
   if(G.boulder&&G.boulder.kind==2)WX.drawCollapse(G.boulder);else if(G.boulder){const B=G.boulder;X.save();X.translate(B.x,10*T-170);X.rotate(B.x/170);paintShape('circle',0,0,170,'#8d7b66',0,false);X.strokeStyle='#5b4a3a';X.lineWidth=8;X.beginPath();X.moveTo(-90,-40);X.lineTo(30,10);X.lineTo(60,90);X.stroke();X.restore();for(let i=0;i<2;i++)PART.push({x:B.x+60,y:10*T-10,vx:-100+rnd()*-200,vy:-200*rnd(),life:.5,l0:.5,col:'#b8a27a',g:600,sz:10})}
   drawFM();drawP();drawBoom();for(const q of PART){const f=Math.max(0,Math.min(1,q.life/q.l0));X.globalAlpha=q.pf?f*.8:f;X.fillStyle=q.col;if(q.st){st4(q.x,q.y,q.sz*(.4+f))}else if(q.bb){X.strokeStyle=q.col;X.lineWidth=2;X.beginPath();X.arc(q.x+Math.sin(q.life*9)*3,q.y,q.sz,0,7);X.stroke();X.fillStyle='rgba(255,255,255,.8)';X.beginPath();X.arc(q.x-q.sz*.35,q.y-q.sz*.35,q.sz*.28,0,7);X.fill()}else{X.beginPath();X.arc(q.x,q.y,q.pf?q.sz*(1.9-f):q.sz,0,7);X.fill()}}X.globalAlpha=1;
   if(HAND&&HAND.k!='screen')hand(HAND.x+10,HAND.y+20,HAND.t,(HAND.t%1)>.6?(HAND.t%1-.6)/.4:0);
