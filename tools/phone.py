@@ -8,9 +8,15 @@ LVS=os.environ.get('LVS','1-1,2-2,3-3,4-2,5-3,6-1').split(',')
 WAIT=float(os.environ.get('WAIT','7'))
 PROBE="""(()=>{const r=C.getBoundingClientRect();const a1=r.width/r.height,a2=C.width/C.height;const A=window.__AN||{n:0,bad:0,worst:0,ex:[]};
 return {css:[r.width,r.height],bmp:[C.width,C.height],inner:[innerWidth,innerHeight],dpr:devicePixelRatio,gdpr:typeof DPR!='undefined'?DPR:0,aniso:+(a1/a2).toFixed(4),draw:A,fps:G.fps,scene:G.scene,lvl:G.level,err:G.errors.slice(0,3)}})()"""
-HOOK="""(()=>{const A=window.__AN={n:0,bad:0,worst:0,ex:[]};const P=CanvasRenderingContext2D.prototype,o=P.drawImage;
-P.drawImage=function(im,...a){try{if(this.canvas.id=='c'){let sw,sh,dw,dh;if(a.length==4){sw=im.width;sh=im.height;dw=a[2];dh=a[3]}else if(a.length==8){sw=a[2];sh=a[3];dw=a[6];dh=a[7]}
- if(dw&&dh&&sw&&sh){const m=this.getTransform();const sx=Math.hypot(m.a,m.b),sy=Math.hypot(m.c,m.d);const r=(Math.abs(dw*sx)/sw)/(Math.abs(dh*sy)/sh);A.n++;const d=Math.abs(Math.log(r));if(d>0.03){A.bad++;if(d>A.worst){A.worst=+d.toFixed(3)};const k=(im.src||('cv'+im.width+'x'+im.height)).split('/').pop().split('?')[0]+(a.length==8?'@'+a[0]+','+a[1]+','+a[2]+'x'+a[3]:'');A.m=A.m||{};if(!A.m[k])A.m[k]=+r.toFixed(2)}}}}catch(e){}return o.call(this,im,...a)}})()"""
+HOOK="""(()=>{const A=window.__AN={n:0,bad:0,worst:0,ex:[],cat:{hero:0,sprite:0,tile:0},m:{}};const P_=CanvasRenderingContext2D.prototype,o=P_.drawImage;
+P_.drawImage=function(im,...a){try{if(this.canvas.id=='c'){let sw,sh,dw,dh;if(a.length==4){sw=im.width;sh=im.height;dw=a[2];dh=a[3]}else if(a.length==8){sw=a[2];sh=a[3];dw=a[6];dh=a[7]}
+ if(dw&&dh&&sw&&sh){const m=this.getTransform();const sx=Math.hypot(m.a,m.b),sy=Math.hypot(m.c,m.d);const r=(Math.abs(dw*sx)/sw)/(Math.abs(dh*sy)/sh);A.n++;const d=Math.abs(Math.log(r));
+  const nm=(im.nm||im.src||('cv'+im.width+'x'+im.height)).split('/').pop().split('?')[0];
+  // намеренная анимация: вращение монетки, приземление (P.land>0) — не считаем
+  const intended=/^coin_/.test(nm)||(G.hl>0&&/^(t_|f_)/.test(nm));
+  const cat=/^t_/.test(nm)?'hero':/^(tile_|cv)/.test(nm)?'tile':'sprite';
+  if(!intended){if(d>A.cat[cat])A.cat[cat]=+d.toFixed(4)}
+  if(d>0.03){A.bad++;if(!intended&&d>A.worst)A.worst=+d.toFixed(3);const k=nm+(a.length==8?'@src':'');if(!(k in A.m))A.m[k]=[+r.toFixed(2),intended?'anim':'BAD']}}}}catch(e){}return o.call(this,im,...a)}})()"""
 async def main():
     res=[]
     async with async_playwright() as pw:

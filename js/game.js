@@ -162,7 +162,7 @@ function paintShape(shape,cx,cy,r,col,rot=0,face=true,glow=0){X.save();if(glow){
 function shade(hex,k){let n=parseInt(hex.slice(1),16),r=n>>16,g=n>>8&255,b=n&255;const f=k<0?0:255,a=Math.abs(k);r=Math.round(r+(f-r)*a);g=Math.round(g+(f-g)*a);b=Math.round(b+(f-b)*a);return `rgb(${r},${g},${b})`}
 function txt(s,x,y,sz,col='#fff',al='center',stroke='#3a1d55',font='Lobster'){X.font=`${sz}px ${font},cursive`;X.textAlign=al;X.textBaseline='middle';X.lineJoin='round';X.lineWidth=sz*.18;X.strokeStyle=stroke;X.strokeText(s,x,y);X.fillStyle=col;X.fillText(s,x,y)}
 // мип-уровень: если спрайт рисуется меньше половины своего размера — берём заранее уменьшенную копию (быстрее и без «зерна»)
-function mip(i,h){if(Q.get('mip')=='0')return i;const px=h*Math.hypot(X.getTransform().c,X.getTransform().d);let m=i;while(px<m.height*.5&&m.height>48){if(!m.mip){const c=document.createElement('canvas');c.width=Math.max(1,Math.round(m.width/2));c.height=Math.max(1,Math.round(m.height/2));const x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(m,0,0,c.width,c.height);m.mip=c}m=m.mip}return m}
+function mip(i,h){if(Q.get('mip')=='0')return i;const px=h*Math.hypot(X.getTransform().c,X.getTransform().d);let m=i;while(px<m.height*.5&&m.height>48){if(!m.mip){const c=document.createElement('canvas');c.nm=m.nm||m.src;c.width=Math.max(1,Math.round(m.width/2));c.height=Math.max(1,Math.round(m.height/2));const x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(m,0,0,c.width,c.height);m.mip=c}m=m.mip}return m}
 function img(n,x,y,h,flip=0,al=1,ax=.5,ay=1){const i=IMG[n];if(!i||!i.width)return;const w=i.width*h/i.height;X.save();X.globalAlpha*=al;X.translate(x,y);if(flip)X.scale(-1,1);X.drawImage(mip(i,h),-w*ax,-h*ay,w,h);X.restore()}
 function hand(x,y,t,press){// светящаяся ладошка-подсказка
  X.save();X.translate(x,y);const s=1+(press?.0:Math.sin(t*6)*.05);X.scale(s,s);X.shadowColor='#fff6b0';X.shadowBlur=30;X.fillStyle='rgba(255,240,200,.95)';X.strokeStyle='#8a5a2b';X.lineWidth=4;
@@ -322,7 +322,7 @@ function drawP(){const p=P,F=FORMS[p.form];X.save();if(p.inv>0&&Math.floor(G.t*1
   const ih=IMG[n];const sh=n.startsWith('t_run')?h*.93:n=='t_jump'?h*.82:n=='t_fall'||n=='t_hurt'?h*.98:h*(ih.height/680||1);
   const idle=n=='t_idle'||n=='t_blink'||n=='t_look'||n=='t_wave';const br=idle?Math.sin(G.t*2.6):0;
   const bob=n.startsWith('t_run')?[0,4,0,-5][Math.floor(p.run)%4]:0;
-  X.translate(p.x,p.y+land*5);X.scale(1+land*.04,1-land*.04);
+  G.hl=land;X.translate(p.x,p.y+land*5);X.scale(1+land*.04,1-land*.04);
   X.fillStyle='rgba(0,0,0,.22)';X.beginPath();X.ellipse(0,-land*5,40,9,0,0,7);X.fill();
   const fl=p.face<0&&!(n=='t_look'||n=='t_wave')?1:0;
   // дыхание: равномерный микро-масштаб от ступней (пропорции не меняются)
@@ -336,7 +336,7 @@ function drawP(){const p=P,F=FORMS[p.form];X.save();if(p.inv>0&&Math.floor(G.t*1
    if(Math.abs(p.vx)>250)for(let i=0;i<2;i++)PART.push({x:p.x-p.face*r*.8,y:p.y-r*.4-rnd()*r,vx:-p.face*200,vy:-100,life:.35,l0:.35,col:pick(['#ff6a00','#ffb300','#ffe36b']),g:-200,sz:9})}
   if(p.form=='bubble'){X.save();X.globalAlpha*=.28;X.fillStyle='#d9b8ff';X.beginPath();X.ellipse(p.x,p.y-F.h*.55+bob,F.w*.5,F.h*.55,0,0,7);X.fill();X.restore()}
   if(fi&&IMG[fi[0]]&&IMG[fi[0]].width){let nm=fi[0];if(p.form=='bubble'&&(p.still||0)>1.5&&((p.still|0)%4<1.2))nm='f_bubble2';
-   const sq=p.form=='cube'&&land?land*.06:0;X.save();X.translate(p.x,p.y+bob);X.rotate(tilt);X.scale(1+sq,1-sq);img(nm,0,0,F.h*fi[1],p.face<0?1:0,1,fi[2],1);X.restore()}
+   const sq=p.form=='cube'&&land?land*.06:0;G.hl=sq;X.save();X.translate(p.x,p.y+bob);X.rotate(tilt);X.scale(1+sq,1-sq);img(nm,0,0,F.h*fi[1],p.face<0?1:0,1,fi[2],1);X.restore()}
   else paintShape(F.shape,p.x,p.y-r+bob,r,F.col,0,true,25);
   p.still=p.ground&&Math.abs(p.vx)<30?(p.still||0)+1/60:0}
  X.restore()}

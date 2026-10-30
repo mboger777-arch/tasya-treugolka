@@ -5,7 +5,7 @@ URL=sys.argv[1] if len(sys.argv)>1 else 'http://localhost:8765/index.html'
 SIZES=[tuple(map(int,s.split('x'))) for s in os.environ.get('SZ','844x390,667x375,932x430').split(',')]
 async def run(pw,w,h,shots):
     b=await pw.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
-    pg=await b.new_page(viewport={'width':w,'height':h},device_scale_factor=2)
+    pg=await b.new_page(viewport={'width':w,'height':h},device_scale_factor=float(os.environ.get('DPR','3')),is_mobile=os.environ.get('MOB','1')=='1',has_touch=os.environ.get('MOB','1')=='1')
     errs=[];pg.on('pageerror',lambda e:errs.append(str(e)));pg.on('console',lambda m:m.type=='error' and errs.append(m.text))
     await pg.goto(URL+'?bot=1&seed=7&v=t'+os.environ.get('LV',''));await pg.evaluate('localStorage.clear()')
     await pg.goto(URL+'?bot=1&seed=7&v=t'+os.environ.get('LV',''))
