@@ -31,7 +31,7 @@ function musicTick(){if(!music||!AC)return;const base=G.scene=='boss'?220:262;wh
  tone(f,len*.9,'triangle',.035,0,music.t-AC.currentTime);if(music.i%2==0)tone(base/2*Math.pow(2,[0,5,7,0][(music.i/4|0)%4]/12),.4,'sine',.05,0,music.t-AC.currentTime);music.t+=len;music.i++}}
 // ---- голос: очередь, реплики не обрываются
 const VQ=[];let vcur=null,vEnd=0;const vplayed={};
-let HSAID={};function say(k,force){if(G.inHint){if(speaking()||G.t-(HSAID[k]??-99)<14)return;HSAID[k]=G.t}if(!VOICE[k]){G.log.push('novoice '+k);if(!(SUB&&SUB.k==k&&G.t<SUB.end))SUB={k,end:Math.max(G.t,SUB&&SUB.end||0)+Math.max(2.5,(TXTS[k]||'').length*.07)};return}if(VQ.includes(k)||(vcur&&vcur.k==k))return;VQ.push(k)}
+let HSAID={};function say(k,force){if(typeof L!='undefined'&&L&&L.meta&&L.meta.noFM&&(VOICE['T'+k]||TXTS['T'+k]))k='T'+k;if(G.inHint){if(speaking()||G.t-(HSAID[k]??-99)<14)return;HSAID[k]=G.t}if(!VOICE[k]){G.log.push('novoice '+k);if(!(SUB&&SUB.k==k&&G.t<SUB.end))SUB={k,end:Math.max(G.t,SUB&&SUB.end||0)+Math.max(2.5,(TXTS[k]||'').length*.07)};return}if(VQ.includes(k)||(vcur&&vcur.k==k))return;VQ.push(k)}
 function voiceTick(){if(vcur&&!vcur.a.ended&&!vcur.a.paused)return;if(vcur&&vcur.a.ended)vcur=null;if(vcur&&performance.now()>vcur.until)vcur=null;if(vcur)return;const k=VQ.shift();if(!k)return;
  const a=new Audio('assets/voice/'+VOICE[k][0]);a.play().catch(()=>{});vcur={k,a,until:performance.now()+VOICE[k][1]*1000+1500};SUB={k,end:G.t+VOICE[k][1]+.3}}
 let SUB=null;const TXT={};
@@ -211,7 +211,7 @@ function tapWorld(p){const wx=p.x/Z+CAM.x,wy=p.y/Z+CAM.y;IDLE=0;
  throwBoom(wx,wy)}
 const BOOM=[];function throwBoom(tx,ty,cb){if(BOOM.length>1)return;SFX.boom();BOOM.push({x:P.x,y:P.y-100,tx,ty,t:0,cb,back:0})}
 function stoneDone(o){if(o.done)return;o.done=1;SFX.win();shake(8);part(o.x,o.cy,40,FORMS[o.give].col,500,1.2,0,12);say(o.n==0?(o.shape=='oval'?'c_oval':'t_stone0'):({tri:'c_tri',sq:'c_sq',rect:'c_rect',pent:'c_pent',hex:'c_hex'})[o.shape]||'c_tri');if(!L.forms.includes(o.give))L.forms.push(o.give);if(!SAVE.forms.includes(o.give))SAVE.forms.push(o.give);save();
- {const q=G.lseq;setTimeout(()=>{if(G.lseq!=q)return;if(P.form!=o.give){P.form='girl';const i=L.forms.indexOf(o.give);P.form=i>0?L.forms[i-1]:'girl';transform(P)}const tk={wheel:'t_wheel',kite:'t_kite',cube:'t_cube',shield:'t_shield',hex:'t_hexf'}[o.give];if(tk)say(tk)},700)}}
+ {const q=G.lseq;setTimeout(()=>{if(G.lseq!=q)return;if(P.form!=o.give){P.form='girl';const i=L.forms.indexOf(o.give);P.form=i>0?L.forms[i-1]:'girl';transform(P)}const tk=(L.meta.tk&&L.meta.tk[o.give])||{wheel:'t_wheel',kite:'t_kite',cube:'t_cube',shield:'t_shield',hex:'t_hexf'}[o.give];if(tk)say(tk)},700)}}
 // ---- обновление игры
 function update(dt){G.lt+=dt;const p=P;const I=inp();
  if(I.f&&!p.lastF&&!G.won)transform(p);p.lastF=I.f;
@@ -339,7 +339,7 @@ function drawEnts(){for(const e of ENTS){if(e.x<CAM.x-400||e.x>CAM.x+WV+400)cont
    const pts=stonePts(e);pts.forEach((q,i)=>{const lit=e.litMask&(1<<i);X.save();X.shadowColor='#fff3a0';X.shadowBlur=lit?30:0;X.fillStyle=lit?'#ffe36b':'rgba(150,110,220,'+(.55+.3*Math.sin(G.t*5+i))+')';X.beginPath();X.arc(q[0],q[1],lit?24:18,0,7);X.fill();X.lineWidth=3;X.strokeStyle='#fff';X.stroke();X.restore()});
    if(!pts.length){X.fillStyle='rgba(160,120,230,'+(.25+.2*Math.sin(G.t*4))+')';pathShape(e.shape,e.x,e.cy,e.r);X.fill()}}
   txt(e.done?(e.n?e.n+' '+plural(e.n,'угол','угла','углов'):'0 углов'):e.lit+' из '+e.n,e.x,e.cy+e.r+42,40,'#fff3a0');X.restore()}
- else if(e.type=='odd'){if(e.done)e.pf=(e.pf||0)+1/60;if((e.pf||0)<1){X.save();X.globalAlpha=1-(e.pf||0);panel(e.items[0].x-85,e.y-370,(e.items.length-1)*120+170,220,36);X.restore()}
+ else if(e.type=='odd'){if(e.done)e.pf=(e.pf||0)+1/60;if((e.pf||0)<1){X.save();X.globalAlpha=1-(e.pf||0);panel(e.items[0].x-85,e.y-370,(e.items.length-1)*120+170,220,36);X.restore();{const l=(e.items[0].x-85-CAM.x)*Z,r=l+((e.items.length-1)*120+170)*Z,t=(e.y-370-CAM.y)*Z;if(r>W-520&&l<W&&t<90)G.hideName=G.t}}
   if(!e.done){const wx=e.wx*T;X.save();const g=X.createLinearGradient(wx,0,wx+T,0);g.addColorStop(0,'rgba(170,120,255,0)');g.addColorStop(.5,'rgba(200,160,255,'+(.75+.15*Math.sin(G.t*3))+')');g.addColorStop(1,'rgba(170,120,255,0)');X.fillStyle=g;X.fillRect(wx-10,2*T,T+20,8*T);X.fillStyle='#fff';for(let i=0;i<7;i++){const yy=2*T+((G.t*90+i*70)%(8*T));X.globalAlpha=.8;X.beginPath();X.arc(wx+T/2+Math.sin(G.t*4+i)*14,yy,4,0,7);X.fill()}X.restore()}
   for(const it of e.items){if(it.y>H+200)continue;const wob=Math.sin(G.t*30)*it.wob*12;paintShape(it.shape,it.x+wob,it.y+Math.sin(G.t*2+it.x)*6,it.r,it.col,0,true,10)}}
  else if(e.type=='kuv')drawKuv(e);
