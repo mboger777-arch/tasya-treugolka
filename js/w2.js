@@ -80,10 +80,10 @@ LV['2-2']=()=>{const b=new LB(165,'2-2');b.meta={name:'2-2 Три стороны
  b.e('star',24,4).e('star',52,8).e('star',119,6).e('goal',159,10);
  [8,34,66,100,126,152].forEach((x,i)=>b.d(i%2?'bush':'sign',x,10,.9));return b};
 LV['2-3']=()=>{const b=new LB(175,'2-3');b.meta={name:'2-3 Треугольные ворота',intro:['l23'],forms:['kite']};
- b.g(0,60).e('odd',38,10,{n:4,kind:'tri'}).g(66,100).col(84,0,5,1).col(84,6,9,10).e('tip',76,10,{k:'t_tgate',when:76}).g(108,175).col(130,0,5,1).col(130,6,9,10).col(152,0,5,1).col(152,6,9,10);
- b.pl(70,7,3).pl(118,6,3).pl(140,7,3);
+ b.g(0,60).e('odd',38,10,{n:4,kind:'tri'}).g(66,101).col(84,0,5,1).col(84,6,9,10).e('tip',76,10,{k:'t_tgate',when:76}).g(107,175).col(130,0,5,1).col(130,6,9,10).col(152,0,5,1).col(152,6,9,10);
+ b.pl(70,7,3).pl(118,6,3).pl(140,7,3).e('wind',103,10,{w:3,k:0});
  b.coins(8,8,5,'coin_tri',1).coins(60,7,6,'coin_tri',2).coins(100,7,8,'coin_tri',2).coins(155,8,6,'coin_tri',1);
- b.e('enemy',20,10).e('enemy',52,10).e('enemy',94,10).e('enemy',122,10).e('enemy',145,10).e('enemy',163,10);
+ b.e('enemy',20,10).e('enemy',52,10).e('enemy',91,10).e('enemy',122,10).e('enemy',145,10).e('enemy',163,10);
  b.e('star',71,6).e('star',104,5).e('star',141,6).e('goal',170,10);
  [6,28,70,112,138,165].forEach((x,i)=>b.d(i%2?'bush':'sign',x,10,.9));return b};
 LV['2-4']=()=>{const N=19,w=16+N*8+22;const b=new LB(w,'2-4');b.zoom=1.15;b.gf=.9;b.meta={name:'2-4 Полёт сквозь горы',intro:['l24','t_fly'],forms:[],fly:300,noFM:1};

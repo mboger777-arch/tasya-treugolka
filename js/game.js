@@ -58,7 +58,7 @@ function save(){try{localStorage.setItem('t59save',JSON.stringify(SAVE))}catch(e
 const FORMS={
  girl:{name:'Тася',w:54,h:150,acc:2600,dec:3200,max:430,jump:1080,g:2900,col:'#ff5a4e',snd:()=>tone(660,.2,'triangle',.1,990)},
  wheel:{name:'Огненное Колесо',corners:0,shape:'circle',w:120,h:124,acc:1500,dec:900,max:720,jump:900,g:2900,col:'#ff8a1f',say:'«Вжжух!»',snd:()=>{noise(.4,.2,2500);tone(200,.4,'sawtooth',.06,900)}},
- kite:{name:'Небесный Змей',corners:3,shape:'tri',w:90,h:130,acc:2200,dec:2400,max:460,jump:950,g:2900,glide:170,col:'#5ec8ff',say:'«Фьюить!»',snd:()=>tone(1200,.35,'sine',.12,2400)},
+ kite:{name:'Небесный Змей',corners:3,shape:'tri',w:90,h:130,acc:2200,dec:2400,max:460,jump:950,g:2900,glide:140,col:'#5ec8ff',say:'«Фьюить!»',snd:()=>tone(1200,.35,'sine',.12,2400)},
  cube:{name:'Изумрудный Кубик',corners:4,shape:'sq',w:96,h:220,acc:1800,dec:3600,max:330,jump:820,g:3600,col:'#35c46a',say:'«БУМ!»',snd:()=>{tone(90,.4,'square',.15,40);noise(.3,.3,400)}},
  board:{name:'Ледяная Доска',corners:4,shape:'rect',w:150,h:160,acc:1400,dec:300,max:800,jump:850,g:2900,col:'#a6e7ff',say:'«Шшшух!»',snd:()=>noise(.5,.15,4000)},
  shield:{name:'Звёздный Щит',corners:5,shape:'pent',w:80,h:160,acc:2200,dec:3000,max:400,jump:950,g:2900,col:'#ffcc33',say:'«Дзынь!»',snd:()=>{tone(1568,.5,'triangle',.12);tone(2093,.5,'triangle',.08)}},
