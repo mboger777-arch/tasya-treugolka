@@ -105,7 +105,7 @@ EX.cloud={setup(o){o.w=o.w||2.4;o.sq=0;o.yy=o.y},
   X.fillStyle='#f1eaff';X.beginPath();X.ellipse(0,10,o.w*T/2-12,20,0,0,7);X.fill();X.strokeStyle='#c58cff';X.lineWidth=4;X.beginPath();X.ellipse(0,0,o.w*T/2,34,0,0,7);X.stroke();
   X.fillStyle='#8a6acf';X.beginPath();X.arc(-14,-2,4,0,7);X.arc(14,-2,4,0,7);X.fill();X.strokeStyle='#8a6acf';X.lineWidth=3;X.beginPath();X.arc(0,4,8,.3,Math.PI-.3);X.stroke();X.restore()}};
 // ---- восходящий ветер
-EX.wind={setup(o){o.a=o.x0*T;o.b=o.x1*T;o.nc=1},
+EX.updraft={setup(o){o.a=o.x0*T;o.b=o.x1*T;o.nc=1},
  upd(o,dt){const p=P;if(p.x>o.a&&p.x<o.b&&p.y>(o.top||120)){if(p.form=='bubble')p.vy-=1500*dt;else if(!p.ground)p.vy-=500*dt;if(!o.said){o.said=1;say('t_up5')}}},
  draw(o){X.save();X.strokeStyle='rgba(255,255,255,.75)';X.lineWidth=5;X.lineCap='round';for(let i=0;i<9;i++){const x=o.a+20+((i*53)%(o.b-o.a-40)),y=600-((G.t*240+i*83)%(600-(o.top||120)));X.globalAlpha=.6;X.beginPath();X.moveTo(x,y);X.quadraticCurveTo(x+12,y-20,x,y-44);X.stroke()}
   X.globalAlpha=.18;X.fillStyle='#ffffff';X.fillRect(o.a,o.top||120,o.b-o.a,600-(o.top||120));X.restore()}};
@@ -194,7 +194,7 @@ LV['5-3']=()=>{const b=new LB(150,'5-3');b.meta={name:'5-3 Облачный хр
  b.col(24,0,9,8);
  b.e('cloud',35,8,{w:2.4,hup:240}).e('cloud',39.5,7,{w:2.4,hup:240});
  b.e('cloud',54,9,{w:2.4,hup:420});
- b.e('wind',0,0,{x0:82,x1:87,top:60}).bl(87,2,6,1);
+ b.e('updraft',0,0,{x0:82,x1:87,top:60}).bl(87,2,6,1);
  b.col(96,0,9,8);
  b.e('cloud',111,8,{w:2.4,hup:260}).e('cloud',115.5,6.6,{w:2.4,hup:240}).e('cloud',119.5,8,{w:2.4,hup:240});
  b.e('skybot',0,0);
