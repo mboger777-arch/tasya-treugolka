@@ -1,6 +1,6 @@
 // Мир 3: Квадратный город
 (function(){
-const bossN=()=>Math.max(14,Math.ceil(W/1.38/T)+1);
+const bossN=()=>Math.max(14,Math.ceil(W/1.6/T)+1);
 const near=(o,d=650)=>o.x-P.x<d&&P.x-o.x<240;
 // кнопка и дверь
 EX.btn={setup(o){for(let y=6;y<=9;y++)setT(o.door,y,16);o.on=0;o.dt=0},
@@ -50,18 +50,18 @@ EX.racegoal={upd(o){const p=P;if(!G.won&&p.x>o.x-30){const r=ENTS.find(e=>e.type
 // сложи фигуру из кусочков
 EX.asm={setup(o){o.done=0;o.k=o.kind;o.cx=o.x;o.cy=230;o.st=o.kind=='tri'?[1,3]:[0,0];o.fade=0},
  ok(o){return o.k=='tri'?o.st[0]==0&&o.st[1]==2:o.st[0]==1&&o.st[1]==1},
- upd(o,dt){if(near(o,700)&&!o.said){o.said=1;say(o.k=='tri'?'t_asm1':'t_asm2')}
+ upd(o,dt){if(!o.done){const hw=(o.k=='tri'?200:270)+16;o.cx=WV>2*hw?clamp(o.x,CAM.x+hw,CAM.x+WV-hw):CAM.x+WV/2}if(near(o,700)&&!o.said){o.said=1;say(o.k=='tri'?'t_asm1':'t_asm2')}
   if(!o.done&&EX.asm.ok(o)){o.done=1;o.t=0;SFX.win();say('r_asm');part(o.cx,o.cy,30,'#7ff0a2',400,1,0,10)}
   if(o.done&&o.t<9){o.t+=dt;if(o.t>.9&&!o.built){o.built=1;for(const [x,y] of o.cells)setT(x,y,18);SFX.crash();shake(8);for(const [x,y] of o.cells)part(x*T+30,y*T+30,5,'#7ff0a2',260,.6,400,8)}}},
  top(o){return o.built?null:130},
- pcs(o){const s=56;if(o.k=='tri')return [[o.cx-s/2-6,o.cy],[o.cx+s/2+6,o.cy]];return [[o.cx-s-12,o.cy],[o.cx+s+12,o.cy]]},
- tap(o,wx,wy){if(o.done)return false;const ps=EX.asm.pcs(o);for(let i=0;i<2;i++){const q=ps[i];if(Math.hypot(wx-q[0],wy-q[1])<75){if(o.k=='tri'){o.st[i]=(o.st[i]+1)%4}else{o.st[i]=1}SFX.light(2+i);return true}}return false},
+ pcs(o){const s=56,a=EX.asm.ok(o);if(o.k=='tri')return [0,1].map(i=>{const ok=i==0?o.st[0]==0:o.st[1]==2;return [o.cx+(i==0?-1:1)*(ok||a?0:95),o.cy]});return [0,1].map(i=>{const d=i==0?-1:1;return [o.cx+d*(o.st[i]?s:s+70),o.cy+(o.st[i]?0:(i?-20:20))]})},
+ tap(o,wx,wy){if(o.done)return false;const ps=EX.asm.pcs(o);let i=Math.hypot(wx-ps[0][0],wy-ps[0][1])<=Math.hypot(wx-ps[1][0],wy-ps[1][1])?0:1;const q=ps[i];if(Math.hypot(wx-q[0],wy-q[1])<120){if(o.k=='tri'){o.st[i]=(o.st[i]+1)%4}else{o.st[i]=1}SFX.light(2+i);return true}return false},
  draw(o){if(o.built&&o.t>1.6)return;X.save();if(o.built)X.globalAlpha=1-(o.t-.9)/0.7;const s=56;
   if(o.done){const k=clamp(o.t/.9,0,1),tx=o.cells[0][0]*T+T,ty=o.cells[0][1]*T;X.translate(lerp(0,tx-o.cx,k*k),lerp(0,ty-o.cy,k*k))}
-  panel(o.cx-150,o.cy-95,300,190,30);
+  panel(o.cx-(o.k=='tri'?200:270),o.cy-95,o.k=='tri'?400:540,190,30);
   if(o.k=='tri'){// контур квадрата-цели
    X.setLineDash([10,8]);X.strokeStyle='rgba(122,86,184,.6)';X.lineWidth=4;X.strokeRect(o.cx-s,o.cy-s,s*2,s*2);X.setLineDash([]);
-   const pcs=[[o.cx-s,o.cy-s],[o.cx-s,o.cy-s]];for(let i=0;i<2;i++){const r=o.st[i];const ok=i==0?r==0:r==2;X.save();const ccx=o.cx+(i==0?-1:1)*(ok||EX.asm.ok(o)?0:30),ccy=o.cy;X.translate(ccx,ccy);X.rotate(r*Math.PI/2);
+   const pcs=[[o.cx-s,o.cy-s],[o.cx-s,o.cy-s]];for(let i=0;i<2;i++){const r=o.st[i];const ok=i==0?r==0:r==2;X.save();const ccx=o.cx+(i==0?-1:1)*(ok||EX.asm.ok(o)?0:95),ccy=o.cy;X.translate(ccx,ccy);X.rotate(r*Math.PI/2);
     X.fillStyle=i==0?'#35c46a':'#7ff0a2';X.strokeStyle='#145c30';X.lineWidth=4;X.beginPath();X.moveTo(-s,-s);X.lineTo(-s,s);X.lineTo(s,s);X.closePath();X.fill();X.stroke();X.restore()}}
   else{X.setLineDash([10,8]);X.strokeStyle='rgba(122,86,184,.6)';X.lineWidth=4;X.strokeRect(o.cx-s*2,o.cy-s,s*4,s*2);X.setLineDash([]);
    for(let i=0;i<2;i++){const d=(i==0?-1:1);const x=o.cx+d*(o.st[i]?s:s+70),y=o.cy+(o.st[i]?0:(i?-20:20));X.fillStyle=i==0?'#35c46a':'#7ff0a2';X.strokeStyle='#145c30';X.lineWidth=4;X.beginPath();X.roundRect(x-s,y-s,s*2,s*2,4);X.fill();X.stroke()}}
@@ -69,7 +69,7 @@ EX.asm={setup(o){o.done=0;o.k=o.kind;o.cx=o.x;o.cy=230;o.st=o.kind=='tri'?[1,3]:
  hint(o){if(o.done||!near(o,700))return;const ps=EX.asm.pcs(o);const i=o.k=='tri'?(o.st[0]!=0?0:1):(o.st[0]?1:0);HAND={x:ps[i][0],y:ps[i][1],t:0,k:'tap'};say(o.k=='tri'?'t_asm1':'t_asm2');return true},
  bot(o,dt){if(o.built||!near(o,700))return;const p=P;WX.go(o.x-4*T,20);BOT.j=0;G.bt2=(G.bt2||0)+dt;if(!o.done&&G.bt2>.6){G.bt2=0;const ps=EX.asm.pcs(o);const i=o.k=='tri'?(o.st[0]!=0?0:1):(o.st[0]?1:0);WX.bt(ps[i][0],ps[i][1])}return true}};
 // босс: Квадратыч
-EX.rob={setup(o){o.boss=1;o.h=290;o.st='intro';o.t=0;o.lit=0;o.bolts=[];o.cd=2;o.x0=o.x;o.dir=-1;o.stun=0;o.used=0},
+EX.rob={setup(o){o.boss=1;o.h=250;o.st='intro';o.t=0;o.lit=0;o.bolts=[];o.cd=2;o.x0=o.x;o.dir=-1;o.stun=0;o.used=0},
  corners(o){const cx=o.x-150,cy=600-150,r=62;return [[cx-r,cy-r],[cx+r,cy-r],[cx+r,cy+r],[cx-r,cy+r]]},
  upd(o,dt){const p=P;o.t+=dt;const bx=o.bx;
   if(p.x>o.x-90){p.x=o.x-90;p.vx=Math.min(0,p.vx)}
@@ -77,12 +77,12 @@ EX.rob={setup(o){o.boss=1;o.h=290;o.st='intro';o.t=0;o.lit=0;o.bolts=[];o.cd=2;o
   if(o.st=='calm'){if(o.t>1.5&&!speaking()&&!G.won)win();return}
   if(o.stun>0){o.stun-=dt;if(o.stun<=0&&o.lit<4)o.used=0}
   else{o.x+=o.dir*90*dt;if(o.x<o.x0-2.5*T)o.dir=1;if(o.x>o.x0)o.dir=-1;o.cd-=dt;if(o.cd<=0){o.cd=2.2;o.bolts.push({x:o.x-60,y:600-95,vx:-430});SFX.light(1)}
-   if(p.form=='cube'&&p.land>0&&Math.abs(p.x-bx)<70&&Math.abs(p.y-600)<4){o.stun=6.5;o.used=0;shake(12);SFX.crash();part(o.x,600-o.h*.6,30,'#ffe36b',400,.8,0,8);say('b3h')}}
+   if(p.form=='cube'&&p.land>0&&Math.abs(p.x-bx)<70&&Math.abs(p.y-600)<4){o.stun=6.5;o.used=0;shake(12);SFX.crash();part(o.x,600-o.h*.6,30,'#ffe36b',400,.8,0,8);hush();say('b3h')}}
   for(const b of o.bolts){b.x+=b.vx*dt;if(b.x<0)b.dead=1;const [w,h]=dims(p);if(Math.abs(b.x-p.x)<w/2+18&&b.y>p.y-h&&b.y<p.y+5){if(p.form=='cube'){b.dead=1;part(b.x,b.y,10,'#bfe0ff',300,.5,0)}else{hurt(p,b.x);b.dead=1}}}o.bolts=o.bolts.filter(b=>!b.dead);
   if(!o.said2&&o.t>9&&o.lit==0&&o.stun<=0){o.said2=1;say('b3t')}},
  tap(o,wx,wy){if(o.st!='fight')return false;const cs=EX.rob.corners(o);for(let i=0;i<4;i++){const q=cs[i];if(Math.hypot(wx-q[0],wy-q[1])<70){if(o.stun<=0){say('b3t');SFX.no();return true}if(i<o.lit)return true;
-   throwBoom(q[0],q[1],()=>{if(i!=o.lit||o.stun<=0)return;o.lit++;SFX.light(o.lit);say('n'+o.lit);part(q[0],q[1],16,'#7ff0a2',300,.6,0);if(o.lit==4){o.st='calm';o.t=0;o.bolts=[];SFX.win();say('c_sq');say('b3c')}});return true}}return false},
- hint(o){if(o.stun>0){const q=EX.rob.corners(o)[o.lit];HAND={x:q[0],y:q[1],t:0,k:'tap'};say('b3h')}else if(P.form!='cube'){HAND={x:0,y:0,t:0,k:'screen',bx:'form'};say('b3t')}else{HAND={x:o.bx,y:560,t:0,k:'tap'};say('b3t')}return true},
+   throwBoom(q[0],q[1],()=>{if(i!=o.lit||o.stun<=0)return;o.lit++;SFX.light(o.lit);say('n'+o.lit);part(q[0],q[1],16,'#7ff0a2',300,.6,0);if(o.lit==4){o.st='calm';o.t=0;o.bolts=[];SFX.win();hush();say('c_sq');say('b3c')}});return true}}return false},
+ hint(o){if(o.st!='fight')return true;if(o.stun>0){const q=EX.rob.corners(o)[o.lit];HAND={x:q[0],y:q[1],t:0,k:'tap'};say('b3h')}else if(P.form!='cube'){HAND={x:0,y:0,t:0,k:'screen',bx:'form'};say('b3t')}else{HAND={x:o.bx,y:560,t:0,k:'tap'};say('b3t')}return true},
  bot(o,dt){const p=P;if(o.st!='fight'){BOT.r=0;return true}BOT.f=p.form!='cube'&&!G.botF?1:0;G.botF=BOT.f?.3:Math.max(0,(G.botF||0)-dt);
   if(o.stun<=0){if(WX.go(o.bx,10)&&p.ground)G.bj=.3}else{WX.go(o.bx-60,30);G.bt=(G.bt||0)+dt;if(G.bt>.7&&!BOOM.length&&o.stun<5.5){G.bt=0;const q=EX.rob.corners(o)[o.lit];if(q)WX.bt(q[0],q[1])}}WX.botJump(dt);return true},
  draw(o){X.save();X.fillStyle='#3d4660';X.beginPath();X.roundRect(o.bx-56,586,112,16,6);X.fill();const pr=o.stun>0?14:0;const g=X.createLinearGradient(0,566,0,588);g.addColorStop(0,'#ffcc33');g.addColorStop(1,'#c98a00');X.fillStyle=g;X.beginPath();X.roundRect(o.bx-44,566+pr,88,22,8);X.fill();X.strokeStyle='#2a2f44';X.lineWidth=3;X.stroke();paintShape('sq',o.bx,546+pr,14,'#35c46a',0,false,o.stun>0?0:16);X.restore();
@@ -91,7 +91,7 @@ EX.rob={setup(o){o.boss=1;o.h=290;o.st='intro';o.t=0;o.lit=0;o.bolts=[];o.cd=2;o
   if(o.stun>0)for(let i=0;i<3;i++){const a=G.t*4+i*2.1;paintShape('sq',o.x+Math.cos(a)*50,600-o.h-10+Math.sin(a)*12,10,'#ffe36b',a,false,10)}
   if(o.st=='fight'||o.st=='calm'&&o.t<1.5){const cs=EX.rob.corners(o);X.save();X.globalAlpha=o.stun>0||o.st=='calm'?.95:.35;X.strokeStyle='#7fd3ff';X.lineWidth=6;X.shadowColor='#7fd3ff';X.shadowBlur=14;X.beginPath();cs.forEach((q,i)=>{const d=i<o.lit?0:(1-i%2*2)*10*Math.sin(G.t*3);i?X.lineTo(q[0]+d,q[1]):X.moveTo(q[0]+d,q[1])});X.closePath();X.stroke();
    cs.forEach((q,i)=>{const lit=i<o.lit;X.fillStyle=lit?'#7ff0a2':'rgba(150,110,220,.85)';X.beginPath();X.arc(q[0],q[1],lit?20:16+(o.stun>0&&i==o.lit?5*Math.sin(G.t*8):0),0,7);X.fill();X.strokeStyle='#fff';X.lineWidth=3;X.stroke()});X.restore()}
-  txt(o.lit+' из 4',o.x-o.h*.25-200,600-o.h+40,44,'#fff3a0')}};
+  txt(o.lit+' из 4',o.x-o.h*.25-230,600-o.h*.62,Math.max(52,58/Z),'#fff3a0')}};
 WX.add(()=>{
 const pw=WX.wantF;WX.wantF=function(want,fx,fy){if(pw){const r=pw(want,fx,fy);if(r&&r!=want)return r}if(WX.wn()!=3)return want;const p=P;
  if(L.forms.includes('board')&&L.meta.race)return 'board';
@@ -129,6 +129,6 @@ LV['3-4']=()=>{const b=new LB(160,'3-4');b.meta={name:'3-4 Сложи фигур
  b.e('enemy',52,10).e('enemy',96,10).e('enemy',118,10).e('enemy',134,10).e('enemy',150,10);
  b.e('star',41,4).e('star',111,6).e('star',127,4).e('goal',155,10);
  [6,20,48,90,104,146].forEach((x,i)=>b.d(i%2?'bush':'sign',x,10,.9));return b};
-LV['3-B']=()=>{const n=bossN();const b=new LB(n,'3-B');b.zoom=1.38;b.meta={name:'Босс: Квадратыч',intro:['b3a','b3t'],forms:['cube'],boss:'rob'};b.g(0,n).col(0,0,9,1).col(n-1,0,9,1);b.start={x:1,y:9};b.e('rob',n-3,10,{bx:Math.round(n*.36)*T+30});return b};
+LV['3-B']=()=>{const n=bossN();const b=new LB(n,'3-B');b.zoom=1.6;b.gf=.78;b.meta={name:'Босс: Квадратыч',intro:['b3a','b3t'],forms:['cube'],boss:'rob'};b.g(0,n).col(0,0,9,1).col(n-1,0,9,1);b.start={x:1,y:9};b.e('rob',n-3,10,{bx:Math.round(n*.36)*T+30});return b};
 });
 })();
