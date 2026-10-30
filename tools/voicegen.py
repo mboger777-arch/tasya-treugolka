@@ -56,13 +56,14 @@ if jobs:
             torch.manual_seed(int(os.environ.get('SEED','2000'))+i*7+take)
             wv,sr=M.generate_voice_clone(text=t,language='Russian',voice_clone_prompt=P[w],non_streaming_mode=True,temperature=0.6 if take==0 else 0.5,max_new_tokens=max(80,int(len(t)*1.8)+40))
             raw=f'/tmp/t59v_{take}.wav';sf.write(raw,wv[0],sr);fin=f'/tmp/t59v_{take}.mp3'
-            subprocess.run(['ffmpeg','-y','-loglevel','error','-i',raw,'-af',CHAIN,'-ac','1','-ar','24000','-b:a','64k',fin],check=True)
+            if subprocess.run(['ffmpeg','-y','-loglevel','error','-i',raw,'-af',CHAIN,'-ac','1','-ar','24000','-b:a','64k',fin]).returncode or not os.path.getsize(fin) if os.path.exists(fin) else True: continue
             hyp=' '.join(s.text for s in A.transcribe(L(fin),language='ru',beam_size=3)[0])
             e=min(wer(norm(t),norm(hyp)),numwer(o['t'],t,hyp))
             if best is None or e<best[0]: best=(e,fin,hyp)
             if e<=float(os.environ.get('THR','0.08')): break
+        if best is None: print(i,o['k'],'FAIL',flush=True);continue
         os.replace(best[1],f"{OUT}/{o['file']}")
         log.write(json.dumps({'k':o['k'],'wer':round(best[0],3),'say':t,'hyp':best[2]},ensure_ascii=False)+'\n');log.flush()
         print(i,o['k'],round(best[0],3),best[2],flush=True)
-        if i%8==7: man()
+        if i%4==3: man()
 man();print('VOICEDONE',flush=True)
