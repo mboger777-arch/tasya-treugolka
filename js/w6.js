@@ -185,7 +185,7 @@ EX.graf={
 // ---- финал: салют и титры
 WX.drawFin=function(c){fworks(c.t,W,H,7,1.4);
  if(c.t>3){X.save();X.globalAlpha=Math.min(1,(c.t-3)/1.5);txt('Конец',W/2,H*.2,120,'#fff3a0','center','#5b2a8a');X.restore()}
- if(c.t>5){const L2=['Тася Треуголка и Радужный Маяк','','Герои','Тася Треуголка','Формик','Кувырок','Пирамида','Квадратыч','Краб Отшельник','Сова Зеркалица','Принц Калейдо','','Спасибо за игру!'];
+ if(c.t>5){const L2=['Тася Треуголка и Радужный Маяк','','Герои','Тася Треуголка','Формик','Кувырок','Пирамида','Квадратыч','Краб Отшельник','Сова Зеркалица','Принц Радужик','','Спасибо за игру!'];
   const y0=H*.36,y1=H*.97,lh=58,sc=(c.t-5)*55;X.save();X.globalAlpha=Math.min(1,(c.t-5)/1)*.28;X.fillStyle='#2a0f45';X.beginPath();X.roundRect(W*.33,y0-10,W*.34,y1-y0+10,24);X.fill();X.restore();
   X.save();X.beginPath();X.rect(0,y0,W,y1-y0);X.clip();L2.forEach((s,i)=>{let y=y1+20+i*lh-sc;const last=i==L2.length-1;if(last)y=Math.max(y,(y0+y1)/2);if(y<y0-40||y>y1+40)return;txt(s,W/2,y,i==0||last?46:i==2?36:38,i==0||last?'#fff3a0':'#ffffff')});X.restore()}};
 WX.add(()=>{
