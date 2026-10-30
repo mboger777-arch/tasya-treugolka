@@ -136,13 +136,13 @@ function moveP(p,dt){const F=FORMS[p.form],[w,h]=dims(p);const I=G.inputLock?{}:
  if(p.x<hx)p.x=hx,p.vx=Math.max(0,p.vx);if(p.x>L.w*T-hx)p.x=L.w*T-hx;
 }
 function breakWall(tx,ty){for(let y=0;y<12;y++)if(tileAt(tx,y)==4){setT(tx,y,0);part(tx*T+30,y*T+30,10,'#9a8b78',500,.9,1400,12)}SFX.crash();shake(14);say('r_good2')}
-function bump(tx,ty){const v=tileAt(tx,ty);SFX.bump();if(v==3){setT(tx,ty,9);const e=ENTS.find(e=>e.type=='coin'&&false);spawnShard(tx*T+30,ty*T-20);part(tx*T+30,ty*T,12,'#ffe36b',300,.6);L.bumps=(L.bumps||0)+1;onBump&&onBump(tx,ty)}}
+const BMP={};function bump(tx,ty){const v=tileAt(tx,ty);SFX.bump();if(v==3||v==9){BMP[tx+','+ty]=G.t;if(!G.lowFx)sparkle(tx*T+30,ty*T-6,6)}if(v==3){setT(tx,ty,9);const e=ENTS.find(e=>e.type=='coin'&&false);spawnShard(tx*T+30,ty*T-20);part(tx*T+30,ty*T,12,'#ffe36b',300,.6);L.bumps=(L.bumps||0)+1;onBump&&onBump(tx,ty)}}
 let onBump=null;
 function spawnShard(x,y){ENTS.push({type:'coin',x,y,vy:-600,fly:1,kind:L.id[0]=='1'?'coin_circ':'coin_tri'})}
 function stompWave(p){for(const e of ENTS)if(e.type=='enemy'&&Math.abs(e.x-p.x)<300&&Math.abs(e.y-p.y)<80)killEnemy(e)}
 function fallCatch(p){p.x=p.safe.x;p.y=p.safe.y-10;p.vx=0;p.vy=0;p.ground=false;FM.x=p.x;FM.y=p.y-200;FM.catch=1;say('r_oops');part(p.x,p.y-80,20,'#fff7c0',300,.8,0);if(G.auto)G.auto.rewind=1}
 function hurt(p,from){if(p.inv>0)return;HUD.hearts--;p.inv=1.6;p.hurt=.4;p.vx=(p.x<from?-1:1)*500;p.vy=-600;SFX.hurt();shake(8);if(HUD.hearts<=0){HUD.hearts=3;fallCatch(p)}}
-function killEnemy(e){e.dead=1;SFX.stomp();part(e.x,e.y-40,14,'#c08a50',350,.7);HUD.shards++}
+function killEnemy(e){e.dead=1;SFX.stomp();part(e.x,e.y-40,14,'#c08a50',350,.7);if(!G.lowFx){sparkle(e.x,e.y-50,10);dust(e.x,e.y,6,1)}HUD.shards++}
 function transform(p){const fs=L.forms||[];const order=['girl',...fs];let i=order.indexOf(p.form);const nx=order[(i+1)%order.length];if(nx==p.form)return;
  const [w0,h0]=dims(p);p.form=nx;const [w1,h1]=dims(p);
  // не застрять: проверить место
@@ -231,7 +231,7 @@ function stoneDone(o){if(o.done)return;o.done=1;SFX.win();shake(8);part(o.x,o.cy
 function update(dt){G.lt+=dt;const p=P;const I=inp();
  if(I.f&&!p.lastF&&!G.won&&!L.meta.noFM)transform(p);p.lastF=I.f;
  if(G.fly)WX.moveFly(p,dt);else moveP(p,dt);p.inv-=dt;p.hurt-=dt;p.land-=dt;
- if(Math.abs(p.vx)>20&&p.ground)p.run+=Math.abs(p.vx)*dt/85;
+ if(Math.abs(p.vx)>20&&p.ground)p.run+=Math.abs(p.vx)*dt/72;
  IDLE+=dt;if(I.l||I.r||I.j)IDLE=0;
  for(const t of taps.splice(0))tapWorld(t);
  // Формик летит за Тасей
@@ -305,7 +305,7 @@ function drawTiles(){const x0=Math.max(0,Math.floor(CAM.x/T)-1),x1=Math.min(L.w,
   if(v==1){if(TN)continue;const top=tileAt(tx,ty-1)==0||tileAt(tx,ty-1)==2||tileAt(tx,ty-1)>=5&&tileAt(tx,ty-1)!=9&&tileAt(tx,ty-1)!=7&&tileAt(tx,ty-1)!=8;const k=tt.width/240,u=(tx%2)*120*k;
     X.fillStyle=DP;X.fillRect(x,y,T+.5,T+.5);if(top)X.drawImage(tt,u,0,120*k,130*k,x,y-12,T+.5,T*130/120)}
   else if(v==2)img('plank',x+T/2,y+46,46,0,1,.5,1);
-  else if(v==3||v==9){X.save();X.globalAlpha=v==9?.75:1;img('block',x+T/2,y+T,T);X.restore();if(v==3){X.fillStyle='#ffe36b';X.globalAlpha=.6+.4*Math.sin(G.t*5);X.beginPath();X.arc(x+T/2,y+T/2,9,0,7);X.fill();X.globalAlpha=1}}
+  else if(v==3||v==9){const bt=BMP[tx+','+ty],ba=bt!=null&&G.t-bt<.25?(G.t-bt)/.25:1,by=ba<1?-Math.sin(ba*Math.PI)*16:0;X.save();X.globalAlpha=v==9?.75:1;img('block',x+T/2,y+T+by,T);X.restore();if(v==3){const pu=.5+.5*Math.sin(G.t*5+tx);X.fillStyle='rgba(255,240,150,'+(.25*pu)+')';X.beginPath();X.arc(x+T/2,y+T/2+by,18,0,7);X.fill();X.fillStyle='#ffe36b';X.globalAlpha=.6+.4*pu;X.beginPath();X.arc(x+T/2,y+T/2+by,9,0,7);X.fill();X.globalAlpha=1}}
   else if(v==4){const sg=X.createLinearGradient(x,y,x+T,y+T);sg.addColorStop(0,'#c7b08a');sg.addColorStop(1,'#8a6f52');X.fillStyle=sg;X.beginPath();X.roundRect(x+1,y+1,T-2,T-2,8);X.fill();X.fillStyle='rgba(255,255,255,.25)';X.fillRect(x+5,y+4,T-10,5);X.strokeStyle='#5b4330';X.lineWidth=3;X.beginPath();X.roundRect(x+1,y+1,T-2,T-2,8);X.stroke();X.strokeStyle='#4a3424';X.lineWidth=4;X.beginPath();X.moveTo(x+10,y+8);X.lineTo(x+30,y+30);X.lineTo(x+22,y+52);X.moveTo(x+30,y+30);X.lineTo(x+52,y+38);X.stroke()}
   else if(v==5||v==6){X.save();X.beginPath();if(v==5){X.moveTo(x,y+T);X.lineTo(x+T,y);X.lineTo(x+T,y+T)}else{X.moveTo(x,y);X.lineTo(x+T,y+T);X.lineTo(x,y+T)}X.closePath();X.clip();X.fillStyle=DP;X.fillRect(x,y,T,T);X.restore();
    if(!(TN&&TERR.slope(v,x,y))){X.strokeStyle=(WX.grass||'#5fae2e');X.lineWidth=12;X.lineCap='round';X.beginPath();if(v==5){X.moveTo(x,y+T);X.lineTo(x+T,y)}else{X.moveTo(x,y);X.lineTo(x+T,y+T)}X.stroke()}}
@@ -367,7 +367,10 @@ function drawFM(){if(L.meta.noFM)return;if(P.form!='girl'&&!FM.catch)return;cons
  X.translate(FM.x,FM.y+75);X.rotate(FM.tl);img(f,0,0,FM.catch?165:145,P.face<0?1:0,1,.5,1);X.restore();
  if(!G.lowFx&&Math.random()<.25)PART.push({x:FM.x-dx*2+(Math.random()-.5)*40,y:FM.y+40+(Math.random()-.5)*30,vx:-dx*8,vy:-20,life:.6,l0:.6,col:['#fff6c8','#ffd1f4','#c9f2ff'][Math.random()*3|0],g:-30,sz:3+Math.random()*3})}
 function drawEnts(){for(const e of ENTS){if(!e.nc&&(e.x<CAM.x-400||e.x>CAM.x+WV+400))continue;
- if(e.type=='enemy'){X.save();if(e.dead)X.globalAlpha=.4;{const ei=WX.eimg&&WX.eimg(e);if(ei)img(ei[0],e.x,e.y+2+(e.fl?Math.sin(e.ph*3)*5:Math.abs(Math.sin(e.ph*8))*-4),ei[1],(e.vx>0?1:0)^ei[2]);else img('e_wheel',e.x,e.y+2+Math.abs(Math.sin(e.ph*8))*-4,92,e.vx>0?1:0)};X.restore()}
+ if(e.type=='enemy'){X.save();if(e.dead)X.globalAlpha=.4;{const ei=WX.eimg&&WX.eimg(e),fx=!G.lowFx&&!e.dead,hop=e.fl?Math.sin(e.ph*3)*5:Math.abs(Math.sin(e.ph*8))*-4;
+  if(fx){const gy=groundBelow(e.x,e.y-4),sf=Math.max(.4,1-Math.max(0,gy-e.y)/380)*(1+hop*.02);X.fillStyle='rgba(20,10,30,'+(.22*sf)+')';X.beginPath();X.ellipse(e.x,gy+2,(ei?ei[1]:92)*.36*sf,9*sf,0,0,7);X.fill()}
+  const br=fx?1+Math.sin(e.ph*2.2+e.x*.01)*.025:1,wb=fx&&!e.fl?Math.sin(e.ph*8)*.06:fx?Math.sin(e.ph*3)*.04:0;X.translate(e.x,e.y+2+hop);X.rotate(wb);
+  if(ei)img(ei[0],0,0,ei[1]*br,(e.vx>0?1:0)^ei[2]);else img('e_wheel',0,0,92*br,e.vx>0?1:0)};X.restore()}
  else if(e.type=='coin'){const s=Math.abs(Math.cos(G.t*3+e.x*.01));X.save();X.translate(e.x,e.y);if(!G.lowFx){if(!HALO.c){const c=HALO.c=document.createElement('canvas');c.nm='fx_halo';c.width=c.height=96;const h=c.getContext('2d'),hg=h.createRadialGradient(48,48,8,48,48,48);hg.addColorStop(0,'rgba(255,236,140,.45)');hg.addColorStop(1,'rgba(255,236,140,0)');h.fillStyle=hg;h.fillRect(0,0,96,96)}X.globalAlpha=.7+.3*s;X.drawImage(HALO.c,-46,-46,92,92);X.globalAlpha=1}X.scale(.4+.6*s,1);img(e.kind,0,0,50,0,1,.5,.5);X.restore()}
  else if(e.type=='star'){X.save();X.translate(e.x,e.y+Math.sin(G.t*3)*6);X.rotate(Math.sin(G.t*2)*.15);img('star',0,0,72,0,1,.5,.5);X.restore()}
  else if(e.type=='goal'){// маячок-финиш
@@ -453,8 +456,10 @@ function drawMap(){const m=IMG.map;if(m.width){const s=Math.max(W/m.width,H/m.he
  if(IDLE>6){hand(cur.x*W+20,cur.y*H+30,G.t,(G.t%1)>.6?(G.t%1-.6)/.4:0)}}
 function mapTap(p){IDLE=0;for(const n of MAPN){if(Math.hypot(p.x-n.x*W,p.y-n.y*H)<80&&unlocked(n.id)){SFX.coin();loadLevel(n.id);return}}}
 function drawTitle(){const m=IMG.map;if(m.width){const s=Math.max(W/m.width,H/m.height);X.drawImage(m,(W-m.width*s)/2,(H-m.height*s)/2,m.width*s,m.height*s)}X.fillStyle='rgba(30,15,60,.45)';X.fillRect(0,0,W,H);
+ {const g=X.createRadialGradient(W/2,H*.26,20,W/2,H*.26,W*.36);g.addColorStop(0,'rgba(255,230,160,.28)');g.addColorStop(1,'rgba(255,230,160,0)');X.fillStyle=g;X.fillRect(0,0,W,H);
+  for(let i=0;i<22;i++){const sx=((i*271.3+G.t*(12+i%5*6))%(W+40))-20,sy=H-((i*137.7+G.t*(30+i%7*8))%(H+40)),a=.35+.35*Math.sin(G.t*3+i);X.fillStyle='rgba(255,246,200,'+a+')';X.beginPath();X.arc(sx,sy,2+i%3*1.5,0,7);X.fill()}}
  txt('Тася Треуголка',W/2,H*.2,96,'#ff6a5a','center','#fff');txt('и Радужный Маяк',W/2,H*.34,70,'#fff3a0');
- img('t_idle',W*.3,H*.92+Math.sin(G.t*2.6)*2,300);img('fm'+(Math.floor(G.t*2)%4),W*.42,H*.62+Math.sin(G.t*3)*10,150);img('oskolok_0',W*.78,H*.95,330);
+ img('t_idle',W*.3,H*.92,300*(1+Math.sin(G.t*2.6)*.012));img('fm'+(Math.floor(G.t*2)%4),W*.42,H*.62+Math.sin(G.t*3)*10,150);img('oskolok_0',W*.78,H*.95,330);
  const pr=1+Math.sin(G.t*4)*.05;X.save();X.translate(W/2,H*.58);X.scale(pr,pr);X.fillStyle='#ff8a1f';X.beginPath();X.roundRect(-160,-48,320,96,48);X.fill();X.strokeStyle='#fff';X.lineWidth=6;X.stroke();txt('Играть!',0,2,60,'#fff');X.restore()}
 function drawWin(){const a=Math.min(1,G.winT*2.5);X.save();X.globalAlpha=a;X.fillStyle='rgba(20,10,40,.6)';X.fillRect(0,0,W,H);
  const pw=Math.min(W*.62,820),ph=H*.74,px=W/2-pw/2,py=H*.1+(1-a)*40;panel(px,py,pw,ph,44);

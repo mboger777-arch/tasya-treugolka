@@ -75,7 +75,11 @@ function back(){const n=WX.wn(),dy=(CAM.y-600+HV*L.gf);X.save();
 // ===== v14: свет и глубина (экранные координаты): лучи, тонировка мира, виньетка, размытые силуэты переднего плана
 const LT={1:{ray:'255,236,170',ra:.11,sx:.78,grade:'rgba(255,214,150,.16)'},2:{ray:'225,240,255',ra:.10,sx:.7,grade:'rgba(170,200,255,.14)'},3:{ray:'255,225,180',ra:.10,sx:.8,grade:'rgba(255,190,170,.13)'},
  4:{ray:'200,250,255',ra:.13,sx:.4,grade:'rgba(80,190,230,.14)'},5:{ray:'255,246,210',ra:.12,sx:.55,grade:'rgba(255,230,190,.14)'},6:{ray:'255,200,240',ra:.09,sx:.6,grade:'rgba(170,110,230,.16)'}};
-const FG={},RL={},VG={};
+const FG={},RL={},VG={},GB={};
+// v14: цветокор мира «запекается» в фон один раз: soft-light тон + воздушная дымка у горизонта + тёплый/холодный верх
+function gbg(n,im){if(GB[n])return GB[n];if(Q.get('grade')=='0')return 0;const c=LT[n]||LT[1],o=document.createElement('canvas');o.nm='bg_w'+n;o.width=im.width;o.height=im.height;const g=o.getContext('2d');g.drawImage(im,0,0);
+ g.globalCompositeOperation='soft-light';g.fillStyle=c.grade.replace(/[\d.]+\)$/,m=>(parseFloat(m)*2.2)+')');g.fillRect(0,0,o.width,o.height);g.globalCompositeOperation='source-over';
+ const hz=g.createLinearGradient(0,0,0,o.height);hz.addColorStop(0,'rgba('+c.ray+',.10)');hz.addColorStop(.55,'rgba('+c.ray+',.0)');hz.addColorStop(.8,'rgba('+c.ray+',.14)');hz.addColorStop(1,'rgba('+c.ray+',.04)');g.fillStyle=hz;g.fillRect(0,0,o.width,o.height);return GB[n]=o}
 function fgArt(n,v){const key=n*10+v;if(FG[key])return FG[key];const w=420,h=300,c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');
  const col={1:'#1d3a1a',2:'#2a3550',3:'#4a2d3a',4:'#123a4a',5:'#8d86a8',6:'#2a1640'}[n]||'#1d3a1a';g.fillStyle=col;g.strokeStyle=col;let hs=key*9973+7;const r=()=>((hs=Math.imul(hs^hs>>>13,1274126177)>>>0)%10000)/10000;
  if(n==1||n==3){for(let i=0;i<26;i++){const x=40+r()*340,hh=90+r()*190,b=(r()-.5)*60;g.lineWidth=7+r()*8;g.lineCap='round';g.beginPath();g.moveTo(x,h);g.quadraticCurveTo(x+b*.3,h-hh*.6,x+b,h-hh);g.stroke()}
@@ -103,4 +107,4 @@ function light(){const n=WX.wn(),c=LT[n]||LT[1],lo=G.lowFx||0,t=G.t,M=+(Q.get('l
   g=X.createLinearGradient(0,0,0,H*.14);g.addColorStop(0,'rgba('+vc+',.22)');g.addColorStop(1,'rgba('+vc+',0)');X.fillStyle=g;X.fillRect(0,0,W,H*.14)}
  X.restore()}
 const off=()=>Q.get('fx')=='0';const W_=f=>(...a)=>off()?0:f(...a);
-return {light:W_(light),tiles:W_(tiles),shadows:W_(shadows),glints:W_(glints),front:W_(front),back:W_(back)}})();
+return {gbg:W_(gbg),light:W_(light),tiles:W_(tiles),shadows:W_(shadows),glints:W_(glints),front:W_(front),back:W_(back)}})();
