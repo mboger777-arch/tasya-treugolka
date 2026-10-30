@@ -4,7 +4,7 @@ const near=(x,d=650)=>x-P.x<d&&P.x-x<240;
 const big=()=>Math.max(52,58/Z);
 const COLS=['#ff8a8a','#ffcc33','#7ff0a2','#7fd3ff','#c58cff','#ffa726'];
 const wall=(gx,v)=>{for(let y=0;y<=9;y++)setT(gx,y,v)};
-function glass(x,y,w,h,lit,a=1){X.save();X.globalAlpha*=a;const g=X.createLinearGradient(x,y,x,y+h);g.addColorStop(0,lit?'rgba(255,243,170,.85)':'rgba(255,255,255,.75)');g.addColorStop(1,lit?'rgba(255,190,90,.55)':'rgba(200,180,255,.5)');X.fillStyle=g;X.shadowColor=lit?'#ffd35a':'#e8dcff';X.shadowBlur=lit?22:10;X.beginPath();X.roundRect(x+2,y+2,w-4,h-6,10);X.fill();X.shadowBlur=0;X.strokeStyle=lit?'#ffb300':'#fff';X.lineWidth=4;X.stroke();X.fillStyle='rgba(255,255,255,.7)';X.fillRect(x+12,y+9,w*.3,5);X.restore()}
+function glass(x,y,w,h,lit,a=1){X.save();X.globalAlpha*=a;const g=X.createLinearGradient(x,y,x,y+h);g.addColorStop(0,lit?'rgba(255,243,170,.9)':'rgba(236,226,255,.9)');g.addColorStop(1,lit?'rgba(255,170,60,.7)':'rgba(140,110,215,.78)');X.fillStyle=g;X.shadowColor=lit?'#ffd35a':'#e8dcff';X.shadowBlur=lit?22:10;X.beginPath();X.roundRect(x+2,y+2,w-4,h-6,10);X.fill();X.shadowBlur=0;X.strokeStyle=lit?'#e89400':'#7b5cc8';X.lineWidth=4;X.stroke();X.fillStyle='rgba(255,255,255,.7)';X.fillRect(x+12,y+9,w*.3,5);X.restore()}
 function puff(x,y,r,a=.85){X.save();X.globalAlpha*=a;X.fillStyle='#fff';for(const [dx,dy,k] of [[-1,0,.7],[0,-.35,1],[1,0,.75],[-.45,.2,.8],[.5,.25,.8]]){X.beginPath();X.arc(x+dx*r,y+dy*r,r*k,0,7);X.fill()}X.restore()}
 // ---- декор: колонны храма
 EX.temple={setup(o){o.nc=1},draw(o){for(const x0 of o.xs){const x=x0*T+30;if(x<CAM.x-120||x>CAM.x+WV+120)continue;const top=600-(o.h||250);X.save();
