@@ -155,7 +155,7 @@ EX.owl={top(o){return 600-o.h-30},setup(o){o.boss=1;o.h=270;o.s=o.h/400;o.st='in
    if(o.fy>4){X.fillStyle='rgba(60,40,110,.2)';X.beginPath();X.ellipse(o.x,600,o.h*.35,10,0,0,7);X.fill()}
    X.drawImage(im,bx,by,375*s,400*s);
    const k=o.st=='calm'?Math.min(1,o.t/.8):o.lit/5*.9;const ghost=o.st=='rest'||o.st=='fly'?.42:0;
-   if(k>0||ghost){X.save();X.translate(o.x,0);X.scale(-1,1);X.globalAlpha=Math.max(k,ghost);if(k<=0){X.filter='sepia(1) hue-rotate(220deg) saturate(2.2) brightness(1.25)'}X.drawImage(im,200,0,175,270,(200-OAX)*s,by,175*s,270*s);X.restore()}
+   if(k>0||ghost){X.save();X.translate(o.x,0);X.scale(-1,1);X.globalAlpha=Math.max(k,ghost);if(k<=0){X.filter='sepia(1) hue-rotate(220deg) saturate(2.2) brightness(1.25)'}X.drawImage(im,400,0,350,540,(200-OAX)*s,by,175*s,270*s);X.restore()}
    if(o.st=='rest'){for(let i=0;i<3;i++){const t=(G.t*.6+i/3)%1;txt('z',o.x+40+t*60,by+40-t*70,30+t*18,'#fff')}}}
   if(o.st=='rest'||o.st=='fly'){const R=RD.map(([x,y])=>EX.owl.wp(o,x,y)),ds=EX.owl.dots(o),de=EX.owl.decs(o);
    R.forEach((q,i)=>{X.save();X.shadowColor=COLS[i];X.shadowBlur=16;X.fillStyle=COLS[i];X.beginPath();X.arc(q[0],q[1],17,0,7);X.fill();X.strokeStyle='#fff';X.lineWidth=3;X.stroke();X.restore()});

@@ -5,14 +5,26 @@ const Q=new URLSearchParams(location.search);
 const H=720,T=60,STEP=1/120;let W=1280,SC=1,DPR=1,Z=1.5,WV=853,HV=480;
 const G={scene:'title',t:0,fps:60,errors:[],bot:Q.has('bot'),log:[]};window.G=G;
 window.addEventListener('error',e=>G.errors.push(String(e.message)));
-function resize(){DPR=Math.min(2,devicePixelRatio||1);const w=innerWidth,h=innerHeight;C.width=Math.round(w*DPR);C.height=Math.round(h*DPR);SC=C.height/H;W=C.width/SC;}
-addEventListener('resize',resize);resize();
+// Размер: CSS-размер холста и его битмап считаются из ОДНИХ чисел (а не 100vw/100vh), масштаб мира единый по обеим осям.
+const QL=[[2.5,0,'high'],[2,0,'high'],[2,1,'low'],[1.5,2,'low'],[1.25,2,'low']],QPIN=+(Q.get('dpr')||0);let QI=0;try{if(!Q.has('bot'))QI=Math.max(0,Math.min(QL.length-1,(+localStorage.getItem('tasyaQ')||0)-1))}catch(e){}let VW=0,VH=0,SL=0,SR=0,SB=0;
+const SAP=document.createElement('div');SAP.style.cssText='position:fixed;left:0;top:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)';document.body.appendChild(SAP);
+function vsize(){let w=innerWidth,h=innerHeight;const vv=window.visualViewport;if(vv&&vv.scale<1.05&&vv.width>0&&vv.height>0){w=Math.min(w,vv.width);h=Math.min(h,vv.height)}return [Math.max(1,Math.round(w)),Math.max(1,Math.round(h))]}
+function resize(force){const [w,h]=vsize();const d=QPIN||Math.min(QL[QI][0],devicePixelRatio||1);G.lowFx=QL[QI][1];if(force!==true&&w==VW&&h==VH&&d==DPR)return;VW=w;VH=h;DPR=d;
+ C.style.width=w+'px';C.style.height=h+'px';C.width=Math.round(w*DPR);C.height=Math.round(h*DPR);SC=C.height/H;W=C.width/SC;
+ X.imageSmoothingEnabled=true;X.imageSmoothingQuality=Q.get('sq')||QL[QI][2];
+ const cs=getComputedStyle(SAP),k=DPR/SC;SL=(parseFloat(cs.paddingLeft)||0)*k;SR=(parseFloat(cs.paddingRight)||0)*k;SB=Math.min(40,(parseFloat(cs.paddingBottom)||0)*k);G.view={w,h,dpr:DPR,bw:C.width,bh:C.height,W:+W.toFixed(1),sl:SL,sr:SR,sb:SB}}
+const reTry=()=>{resize();[60,200,450,900].forEach(t=>setTimeout(resize,t))};
+addEventListener('resize',reTry);addEventListener('orientationchange',reTry);addEventListener('pageshow',reTry);document.addEventListener('fullscreenchange',reTry);document.addEventListener('webkitfullscreenchange',reTry);
+if(window.visualViewport){visualViewport.addEventListener('resize',reTry)}
+resize(true);
+// Адаптивное качество: если в игре fps<45 ~2 с подряд — снижаем плотность пикселей и эффекты
+let lowT=0;function quality(dt){if(QPIN||G.bot&&!Q.get('adapt'))return;if(!(G.scene=='play'||G.scene=='boss'))return;if(G.fps<45){lowT+=dt;if(lowT>2){lowT=-1.5;if(QI<QL.length-1){QI++;resize(true);try{localStorage.setItem('tasyaQ',QI)}catch(e){}}}}else lowT=Math.max(0,lowT-dt*.5)}
 let seed=+(Q.get('seed')||Date.now()%100000);function rnd(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}
 const pick=a=>a[Math.floor(rnd()*a.length)],shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v,lerp=(a,b,t)=>a+(b-a)*t;
 // ---- картинки
 var EX=self.EX||{},WX=self.WX||{};const IMG={};const LIST='t_look t_wave f_wheel f_kite f_cube f_board f_shield f_hex f_bubble f_bubble2 t_idle t_blink t_jump t_fall t_hurt t_run0 t_run1 t_run2 t_run3 fm0 fm1 fm2 fm3 ground e_wheel stone plank sign bush block kuv heart coin_tri coin_circ star btn_jump btn_form btn_arrow tile_top tile_dirt oskolok_0 oskolok_3 oskolok_1 oskolok_2 lineup_1 lineup_2 crab_0 owl_0 e_w2 e_w3 e_w4 e_w5 e_w6'.split(' ');
-let loaded=0;for(const n of LIST){const i=new Image();i.onload=()=>loaded++;i.src='assets/img/'+n+'.png?v='+V;IMG[n]=i}
+let loaded=0;for(const n of LIST){const i=new Image();i.onload=()=>loaded++;i.onerror=()=>{if(!i.fb){i.fb=1;i.src='assets/img/'+n+'.png?v='+V}};i.src='assets/img/'+n+'.webp?v='+V;IMG[n]=i}
 for(const n of ['bg_w1','map','bg_w2','bg_w3','bg_w4','bg_w5','bg_w6','ending','kidnap']){const i=new Image();i.onload=()=>loaded++;i.src='assets/img/'+n+'.jpg?v='+V;IMG[n]=i}
 const TOTAL=LIST.length+9;
 // ---- звук
@@ -40,8 +52,8 @@ function speaking(){return !!vcur||VQ.length>0}
 // ---- ввод
 const KEY={},TOUCH={};let taps=[];const BTN={};
 addEventListener('keydown',e=>{KEY[e.code]=1;ac();if(['Space','ArrowUp','ArrowDown'].includes(e.code))e.preventDefault()});addEventListener('keyup',e=>KEY[e.code]=0);
-function btnLayout(){const s=Math.min(124,H*.172),m=16;BTN.left={x:m+s/2,y:H-m-s/2,r:s/2};BTN.right={x:m+s*1.6,y:H-m-s/2,r:s/2};
- BTN.jump={x:W-m-s/2-10,y:H-m-s/2,r:s*.58};BTN.form={x:W-m-s*1.75,y:H-m-s*.45,r:s*.46};}
+function btnLayout(){const s=Math.min(124,H*.172),m=16,ml=m+SL,mr=m+SR,mb=m+SB;BTN.left={x:ml+s/2,y:H-mb-s/2,r:s/2};BTN.right={x:ml+s*1.6,y:H-mb-s/2,r:s/2};
+ BTN.jump={x:W-mr-s/2-10,y:H-mb-s/2,r:s*.58};BTN.form={x:W-mr-s*1.75,y:H-mb-s*.45,r:s*.46};}
 const ptrs={};
 function evp(e){return {x:e.clientX*DPR/SC,y:e.clientY*DPR/SC}}
 function BTNW(){btnLayout();return Math.max(BTN.right.x+BTN.right.r,W-(BTN.form.x-BTN.form.r))}
@@ -149,7 +161,9 @@ function paintShape(shape,cx,cy,r,col,rot=0,face=true,glow=0){X.save();if(glow){
  X.restore()}
 function shade(hex,k){let n=parseInt(hex.slice(1),16),r=n>>16,g=n>>8&255,b=n&255;const f=k<0?0:255,a=Math.abs(k);r=Math.round(r+(f-r)*a);g=Math.round(g+(f-g)*a);b=Math.round(b+(f-b)*a);return `rgb(${r},${g},${b})`}
 function txt(s,x,y,sz,col='#fff',al='center',stroke='#3a1d55',font='Lobster'){X.font=`${sz}px ${font},cursive`;X.textAlign=al;X.textBaseline='middle';X.lineJoin='round';X.lineWidth=sz*.18;X.strokeStyle=stroke;X.strokeText(s,x,y);X.fillStyle=col;X.fillText(s,x,y)}
-function img(n,x,y,h,flip=0,al=1,ax=.5,ay=1){const i=IMG[n];if(!i||!i.width)return;const w=i.width*h/i.height;X.save();X.globalAlpha*=al;X.translate(x,y);if(flip)X.scale(-1,1);X.drawImage(i,-w*ax,-h*ay,w,h);X.restore()}
+// мип-уровень: если спрайт рисуется меньше половины своего размера — берём заранее уменьшенную копию (быстрее и без «зерна»)
+function mip(i,h){if(Q.get('mip')=='0')return i;const px=h*Math.hypot(X.getTransform().c,X.getTransform().d);let m=i;while(px<m.height*.5&&m.height>48){if(!m.mip){const c=document.createElement('canvas');c.width=Math.max(1,Math.round(m.width/2));c.height=Math.max(1,Math.round(m.height/2));const x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(m,0,0,c.width,c.height);m.mip=c}m=m.mip}return m}
+function img(n,x,y,h,flip=0,al=1,ax=.5,ay=1){const i=IMG[n];if(!i||!i.width)return;const w=i.width*h/i.height;X.save();X.globalAlpha*=al;X.translate(x,y);if(flip)X.scale(-1,1);X.drawImage(mip(i,h),-w*ax,-h*ay,w,h);X.restore()}
 function hand(x,y,t,press){// светящаяся ладошка-подсказка
  X.save();X.translate(x,y);const s=1+(press?.0:Math.sin(t*6)*.05);X.scale(s,s);X.shadowColor='#fff6b0';X.shadowBlur=30;X.fillStyle='rgba(255,240,200,.95)';X.strokeStyle='#8a5a2b';X.lineWidth=4;
  X.beginPath();X.ellipse(0,40,30,34,0,0,7);X.fill();X.stroke();for(let i=0;i<4;i++){X.beginPath();X.ellipse(-22+i*15,i==1?-8:0,7,i==1?42:34,0,0,7);X.fill();X.stroke()}X.beginPath();X.ellipse(-34,30,20,9,-.7,0,7);X.fill();X.stroke();X.restore();
@@ -275,22 +289,24 @@ function drawBG(){const bg=IMG.bg_w1;if(bg.width){const h=H*1.05,w=bg.width*h/bg
  // средний слой: холмы
  X.fillStyle='rgba(120,190,90,.55)';X.beginPath();X.moveTo(0,H);for(let x=0;x<=W+20;x+=20){const wx=x+CAM.x*.4;X.lineTo(x,H*.72-(CAM.y-600+HV*L.gf)*.3+Math.sin(wx*.004)*40+Math.sin(wx*.011)*18)}X.lineTo(W,H);X.fill();
  X.fillStyle='rgba(90,160,70,.6)';X.beginPath();X.moveTo(0,H);for(let x=0;x<=W+20;x+=20){const wx=x+CAM.x*.6;X.lineTo(x,H*.8-(CAM.y-600+HV*L.gf)*.5+Math.sin(wx*.006+1)*30)}X.lineTo(W,H);X.fill()}
-function drawTiles(){const x0=Math.max(0,Math.floor(CAM.x/T)-1),x1=Math.min(L.w,Math.ceil((CAM.x+WV)/T)+1);const tt=IMG.tile_top,td=IMG.tile_dirt;
+// земля — бесшовный узор в мировых координатах (без швов между тайлами, без растяжения)
+let DPc=null,DPi=null;function dirtPat(td){if(!td||!td.width)return '#6b4a2a';if(DPi!==td||!DPc){DPi=td;DPc=X.createPattern(td,'repeat');const s=4*T/td.width;DPc.setTransform(new DOMMatrix([s,0,0,s,0,0]))}return DPc}
+function drawTiles(){const x0=Math.max(0,Math.floor(CAM.x/T)-1),x1=Math.min(L.w,Math.ceil((CAM.x+WV)/T)+1);const tt=IMG.tile_top,td=IMG.tile_dirt,DP=dirtPat(td);
  // пропасти: тёмное ущелье с водой; под землёй ещё два ряда земли
- for(let tx=x0;tx<x1;tx++){const x=tx*T;if(tileAt(tx,11)==1){X.drawImage(td,(tx%4)*60,0,60,60,x,12*T,T+.5,T+.5);X.drawImage(td,(tx%4)*60,60,60,60,x,13*T,T+.5,T+.5)}
+ for(let tx=x0;tx<x1;tx++){const x=tx*T;if(tileAt(tx,11)==1){X.fillStyle=DP;X.fillRect(x,12*T,T+.5,2*T)}
   if(tileAt(tx,10)==0&&tileAt(tx,11)==0){const g=X.createLinearGradient(0,10*T-20,0,12*T);g.addColorStop(0,'#2e1d40');g.addColorStop(.5,'#170e26');g.addColorStop(1,'#07040d');X.fillStyle=g;X.fillRect(x-.5,10*T-14,T+1,4*T);
    const L0=tileAt(tx-1,10)==1,R0=tileAt(tx+1,10)==1;
-   for(const [ed,dir] of [[L0,1],[R0,-1]]){if(!ed)continue;const ex=dir>0?x:x+T;X.save();X.beginPath();X.moveTo(ex,10*T-10);for(let k=0;k<=8;k++){const yy=10*T-10+k*24;X.lineTo(ex+dir*(14+((tx*13+k*7)%5)*5),yy)}X.lineTo(ex,12*T+40);X.closePath();X.clip();X.drawImage(td,0,0,60,120,ex-60,10*T-10,120,240);X.fillStyle='rgba(20,10,30,.55)';X.fillRect(ex-60,10*T-10,120,260);X.restore();
+   for(const [ed,dir] of [[L0,1],[R0,-1]]){if(!ed)continue;const ex=dir>0?x:x+T;X.save();X.beginPath();X.moveTo(ex,10*T-10);for(let k=0;k<=8;k++){const yy=10*T-10+k*24;X.lineTo(ex+dir*(14+((tx*13+k*7)%5)*5),yy)}X.lineTo(ex,12*T+40);X.closePath();X.clip();X.fillStyle=DP;X.fillRect(ex-60,10*T-10,120,240);X.fillStyle='rgba(20,10,30,.55)';X.fillRect(ex-60,10*T-10,120,260);X.restore();
     X.fillStyle=(WX.grass||'#5fae2e');for(let k=0;k<5;k++){X.beginPath();const bx=ex+dir*(k*5);X.moveTo(bx-4,10*T-12);X.lineTo(bx+dir*(6+k%2*4),10*T+14+k%3*8);X.lineTo(bx+4,10*T-12);X.fill()}}
    const wg=X.createLinearGradient(0,11*T+24,0,13*T);wg.addColorStop(0,'#2f8fb8');wg.addColorStop(1,'#0f3050');X.fillStyle=wg;X.fillRect(x-.5,11*T+26,T+1,3*T);X.strokeStyle='rgba(190,235,255,.8)';X.lineWidth=4;X.beginPath();for(let k=0;k<=T;k+=6){const yy=11*T+26+Math.sin((x+k)*.08+G.t*3)*4;k?X.lineTo(x+k,yy):X.moveTo(x,yy)}X.stroke();
    if(((tx*7)%3)==0){X.fillStyle='rgba(255,255,255,'+(.4+.4*Math.sin(G.t*4+tx))+')';X.beginPath();X.arc(x+T/2,11*T+40,3,0,7);X.fill()}}}
  for(let ty=0;ty<12;ty++)for(let tx=x0;tx<x1;tx++){const v=tileAt(tx,ty);if(!v)continue;const x=tx*T,y=ty*T;
-  if(v==1){const top=tileAt(tx,ty-1)==0||tileAt(tx,ty-1)==2||tileAt(tx,ty-1)>=5&&tileAt(tx,ty-1)!=9&&tileAt(tx,ty-1)!=7&&tileAt(tx,ty-1)!=8;const u=(tx%4)*60;
-    if(top){X.drawImage(td,u,0,60,120,x,y,T,T*2>H?T:T);X.drawImage(tt,u,0,60,130,x,y-12,T,T*1.1)}else X.drawImage(td,u,(ty%2)*60,60,60,x,y,T+.5,T+.5)}
+  if(v==1){const top=tileAt(tx,ty-1)==0||tileAt(tx,ty-1)==2||tileAt(tx,ty-1)>=5&&tileAt(tx,ty-1)!=9&&tileAt(tx,ty-1)!=7&&tileAt(tx,ty-1)!=8;const k=tt.width/240,u=(tx%2)*120*k;
+    X.fillStyle=DP;X.fillRect(x,y,T+.5,T+.5);if(top)X.drawImage(tt,u,0,120*k,130*k,x,y-12,T+.5,T*130/120)}
   else if(v==2)img('plank',x+T/2,y+46,46,0,1,.5,1);
   else if(v==3||v==9){X.save();X.globalAlpha=v==9?.75:1;img('block',x+T/2,y+T,T);X.restore();if(v==3){X.fillStyle='#ffe36b';X.globalAlpha=.6+.4*Math.sin(G.t*5);X.beginPath();X.arc(x+T/2,y+T/2,9,0,7);X.fill();X.globalAlpha=1}}
   else if(v==4){const sg=X.createLinearGradient(x,y,x+T,y+T);sg.addColorStop(0,'#c7b08a');sg.addColorStop(1,'#8a6f52');X.fillStyle=sg;X.beginPath();X.roundRect(x+1,y+1,T-2,T-2,8);X.fill();X.fillStyle='rgba(255,255,255,.25)';X.fillRect(x+5,y+4,T-10,5);X.strokeStyle='#5b4330';X.lineWidth=3;X.beginPath();X.roundRect(x+1,y+1,T-2,T-2,8);X.stroke();X.strokeStyle='#4a3424';X.lineWidth=4;X.beginPath();X.moveTo(x+10,y+8);X.lineTo(x+30,y+30);X.lineTo(x+22,y+52);X.moveTo(x+30,y+30);X.lineTo(x+52,y+38);X.stroke()}
-  else if(v==5||v==6){X.save();X.beginPath();if(v==5){X.moveTo(x,y+T);X.lineTo(x+T,y);X.lineTo(x+T,y+T)}else{X.moveTo(x,y);X.lineTo(x+T,y+T);X.lineTo(x,y+T)}X.closePath();X.clip();X.drawImage(td,0,0,60,60,x,y,T,T);X.restore();
+  else if(v==5||v==6){X.save();X.beginPath();if(v==5){X.moveTo(x,y+T);X.lineTo(x+T,y);X.lineTo(x+T,y+T)}else{X.moveTo(x,y);X.lineTo(x+T,y+T);X.lineTo(x,y+T)}X.closePath();X.clip();X.fillStyle=DP;X.fillRect(x,y,T,T);X.restore();
    X.strokeStyle=(WX.grass||'#5fae2e');X.lineWidth=12;X.lineCap='round';X.beginPath();if(v==5){X.moveTo(x,y+T);X.lineTo(x+T,y)}else{X.moveTo(x,y);X.lineTo(x+T,y+T)}X.stroke()}
   else if(v==7||v==8){if(ty==0||tileAt(tx,ty-1)!=v){let n=0;while(tileAt(tx,ty+n)==v)n++;const cy=y+n*T/2;X.save();X.globalAlpha=.85;X.lineWidth=10;X.strokeStyle=v==7?'#ff8a1f':'#c58cff';X.fillStyle=v==7?'rgba(255,170,60,.25)':'rgba(200,150,255,.3)';X.beginPath();
     if(v==7)X.arc(x+T/2,cy,n*T/2-6,0,7);else X.ellipse(x+T/2,cy,n*T*.33,n*T/2-6,0,0,7);X.fill();X.stroke();X.globalAlpha=1;
@@ -303,16 +319,14 @@ function drawP(){const p=P,F=FORMS[p.form];X.save();if(p.inv>0&&Math.floor(G.t*1
  if(p.form=='girl'){let n='t_idle',h=170;const still=p.ground&&Math.abs(p.vx)<=30&&p.hurt<=0;p.still=still?(p.still||0)+1/60:0;
   if(p.hurt>0)n='t_hurt';else if(!p.ground)n=p.vy<0?'t_jump':'t_fall';else if(Math.abs(p.vx)>30)n='t_run'+(Math.floor(p.run)%4);
   else{const c=(p.still-1.2)%7;if(p.still>1.2&&c<4.5)n=c>1.2&&c<2.6?'t_wave':'t_look';else if((G.t%3.7)<.13)n='t_blink'}
-  const ih=IMG[n];const sh=n.startsWith('t_run')?h*.93:n=='t_jump'?h*.82:n=='t_fall'||n=='t_hurt'?h*.98:h*(ih.height/340||1);
+  const ih=IMG[n];const sh=n.startsWith('t_run')?h*.93:n=='t_jump'?h*.82:n=='t_fall'||n=='t_hurt'?h*.98:h*(ih.height/680||1);
   const idle=n=='t_idle'||n=='t_blink'||n=='t_look'||n=='t_wave';const br=idle?Math.sin(G.t*2.6):0;
   const bob=n.startsWith('t_run')?[0,4,0,-5][Math.floor(p.run)%4]:0;
   X.translate(p.x,p.y+land*5);X.scale(1+land*.04,1-land*.04);
   X.fillStyle='rgba(0,0,0,.22)';X.beginPath();X.ellipse(0,-land*5,40,9,0,0,7);X.fill();
   const fl=p.face<0&&!(n=='t_look'||n=='t_wave')?1:0;
-  // дыхание: грудь чуть поднимается (без растяжения ног) — лёгкий сдвиг верхней половины
-  if(idle&&ih&&ih.width){const w=ih.width*sh/ih.height,ax=AX[n]||.5;X.save();if(fl)X.scale(-1,1);
-   const cut=.55;X.drawImage(ih,0,ih.height*cut,ih.width,ih.height*(1-cut),-w*ax,-sh*(1-cut),w,sh*(1-cut));
-   X.drawImage(ih,0,0,ih.width,ih.height*cut+1,-w*ax,-sh-br*2.2,w,sh*cut+1+br*2.2);X.restore()}
+  // дыхание: равномерный микро-масштаб от ступней (пропорции не меняются)
+  if(idle&&ih&&ih.width){const k=1+br*.012;img(n,0,0,sh*k,fl,1,AX[n]||.5,1)}
   else img(n,0,bob+(n=='t_jump'?-14:0),sh,fl,1,AX[n]||.5,1)}
  else{const r=F.h/2;p.rot=(p.rot||0)+(p.form=='wheel'?p.vx/r/120:0);const fi=FIMG[p.form];
   X.fillStyle='rgba(0,0,0,.22)';X.beginPath();X.ellipse(p.x,p.y,F.w*.5,10,0,0,7);X.fill();
@@ -354,10 +368,10 @@ function drawKuv(o){X.save();const cy=o.y-o.r;X.translate(o.x,cy);X.rotate(o.rot
 function plural(n,a,b,c){n=Math.abs(n)%100;const n1=n%10;if(n>10&&n<20)return c;if(n1>1&&n1<5)return b;if(n1==1)return a;return c}
 function drawBoom(){for(const b of BOOM){X.save();X.translate(b.x,b.y);X.rotate(b.t*20);X.fillStyle='#ffc93c';X.strokeStyle='#8a5a12';X.lineWidth=4;X.beginPath();X.moveTo(-30,-18);X.lineTo(30,-18);X.lineTo(-30,30);X.closePath();X.fill();X.stroke();X.restore()}}
 function drawHUD(){btnLayout();// сердечки, осколки, звёзды
- for(let i=0;i<3;i++)img('heart',50+i*62,78,56,0,i<HUD.hearts?1:.25,.5,1);
+ X.save();X.translate(SL,0);for(let i=0;i<3;i++)img('heart',50+i*62,78,56,0,i<HUD.hearts?1:.25,.5,1);
  img('coin_circ',250,50,54,0,1,.5,.5);txt('× '+HUD.shards,285,52,46,'#fff','left');
- for(let i=0;i<3;i++)img('star',420+i*58,52,52,0,i<HUD.stars?1:.25,.5,.5);
- if(G.scene!='boss'&&!(G.t-(G.hideName??-9)<.15))txt(L.meta.name,W-30,46,38,'#fff3a0','right');
+ for(let i=0;i<3;i++)img('star',420+i*58,52,52,0,i<HUD.stars?1:.25,.5,.5);X.restore();
+ if(G.scene!='boss'&&!(G.t-(G.hideName??-9)<.15))txt(L.meta.name,W-30-SR,46,38,'#fff3a0','right');
  // кнопки
  const B=(k,n,fl)=>{const b=BTN[k];X.save();X.globalAlpha=TOUCH[k]?1:.82;const s=TOUCH[k]?.92:1;X.translate(b.x,b.y);X.scale(s,s);if(fl)X.scale(-1,1);img(n,0,0,b.r*2,0,1,.5,.5);X.restore()};
  if(!G.fly){B('left','btn_arrow',1);B('right','btn_arrow')}B('jump','btn_jump');if(L.forms.length&&!L.meta.noFM){B('form','btn_form');const nf=FORMS[nextForm()];if(nf){X.save();paintShape(nf.shape||'tri',BTN.form.x+BTN.form.r*.75,BTN.form.y-BTN.form.r*.75,22,nf.col,0,false);X.restore()}}
@@ -426,16 +440,16 @@ function render(){X.setTransform(SC,0,0,SC,0,0);X.clearRect(0,0,W,H);
  if(G.scene=='title'){drawTitle();if(loaded<TOTAL)txt('Загрузка… '+Math.round(loaded/TOTAL*100)+'%',W/2,H*.75,40)}
  else if(G.scene=='map')drawMap();else if(G.scene=='cut')WX.drawCut();
  else{drawBG();const sx=(rnd()-.5)*CAM.shake,sy=(rnd()-.5)*CAM.shake;X.save();X.scale(Z,Z);X.translate(-CAM.x+sx,-CAM.y+sy);
-  for(const d of L.deco)img(d.img,d.x+T/2,d.y,(IMG[d.img].height||100)*d.s*.9);drawTiles();drawEnts();
+  for(const d of L.deco)img(d.img,d.x+T/2,d.y,(IMG[d.img].height||200)*d.s*.45);drawTiles();FX.tiles();FX.shadows();drawEnts();FX.glints();
   if(G.boulder&&G.boulder.kind==2)WX.drawCollapse(G.boulder);else if(G.boulder){const B=G.boulder;X.save();X.translate(B.x,10*T-170);X.rotate(B.x/170);paintShape('circle',0,0,170,'#8d7b66',0,false);X.strokeStyle='#5b4a3a';X.lineWidth=8;X.beginPath();X.moveTo(-90,-40);X.lineTo(30,10);X.lineTo(60,90);X.stroke();X.restore();for(let i=0;i<2;i++)PART.push({x:B.x+60,y:10*T-10,vx:-100+rnd()*-200,vy:-200*rnd(),life:.5,l0:.5,col:'#b8a27a',g:600,sz:10})}
   drawFM();drawP();drawBoom();for(const q of PART){X.globalAlpha=Math.max(0,q.life/q.l0);X.fillStyle=q.col;X.beginPath();X.arc(q.x,q.y,q.sz,0,7);X.fill()}X.globalAlpha=1;
   if(HAND&&HAND.k!='screen')hand(HAND.x+10,HAND.y+20,HAND.t,(HAND.t%1)>.6?(HAND.t%1-.6)/.4:0);
-  X.restore();if(FLASH>0){X.fillStyle='rgba(255,255,255,'+FLASH*4+')';X.fillRect(0,0,W,H);FLASH-=1/60}
+  X.restore();FX.front(1/60);if(FLASH>0){X.fillStyle='rgba(255,255,255,'+FLASH*4+')';X.fillRect(0,0,W,H);FLASH-=1/60}
   drawHUD();if(G.won)drawWin()}
  drawSub();if(Q.has('fps'))txt(G.fps.toFixed(0)+' fps',W-80,H-20,24)}
 // ---- главный цикл, фиксированный шаг
 let last=performance.now(),acc=0,fpsT=0,fpsN=0;
-function frame(now){let dt=Math.min(.1,(now-last)/1000);last=now;G.t+=dt;fpsT+=dt;fpsN++;if(fpsT>=1){G.fps=fpsN/fpsT;if(G.scene=='play'||G.scene=='boss')STATS.minFps=Math.min(STATS.minFps,G.fps);fpsT=0;fpsN=0}
+function frame(now){let dt=Math.min(.1,(now-last)/1000);last=now;resize();quality(dt);G.t+=dt;fpsT+=dt;fpsN++;if(fpsT>=1){G.fps=fpsN/fpsT;if(G.scene=='play'||G.scene=='boss')STATS.minFps=Math.min(STATS.minFps,G.fps);fpsT=0;fpsN=0}
  voiceTick();musicTick();
  if(G.scene=='title'){if(taps.length&&loaded>=TOTAL){taps=[];G.scene='map';if(!SAVE.intro){SAVE.intro=1;save();['i1','i2','i3','i4','i5','i6','m1'].forEach(k=>say(k))}else say('m1')}if(G.bot&&loaded>=TOTAL){G.scene='map'}}
  else if(G.scene=='cut'){WX.updCut(dt)}

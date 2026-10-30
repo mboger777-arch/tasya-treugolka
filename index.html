@@ -5,7 +5,7 @@
 <style>
 @font-face{font-family:Lobster;src:url(fonts/Lobster-Regular.ttf?v=1)}
 html,body{margin:0;height:100%;background:#1b1430;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
-canvas{position:fixed;left:0;top:0;width:100vw;height:100vh;display:block}
+canvas{position:fixed;left:0;top:0;display:block}
 #rot{position:fixed;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;background:#2a1d4a;color:#ffe9a8;font:42px Lobster,cursive;text-align:center;z-index:9}
 #rot .ph{width:90px;height:150px;border:8px solid #ffe9a8;border-radius:18px;animation:r 2s infinite;margin-bottom:30px}
 @keyframes r{0%,30%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
@@ -13,5 +13,5 @@ canvas{position:fixed;left:0;top:0;width:100vw;height:100vh;display:block}
 </style></head><body>
 <canvas id="c"></canvas>
 <div id="rot"><div class="ph"></div>Поверни телефон<br>боком!</div>
-<script>const V='12';document.write(['voice','wcore','w2','w3','w4','w5','w6','game'].map(n=>'<script src="js/'+n+'.js?v='+V+'"><\/script>').join(''))</script>
+<script>const V='12';document.write(['voice','wcore','w2','w3','w4','w5','w6','fx','game'].map(n=>'<script src="js/'+n+'.js?v='+V+'"><\/script>').join(''))</script>
 </body></html>

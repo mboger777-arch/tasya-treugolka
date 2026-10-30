@@ -41,6 +41,7 @@ WX.init=function(){for(const f of INITS)f();
   if(bg.width){const h=H*1.05,w=bg.width*h/bg.height;const off=CAM.x*.12,k0=Math.floor(off/w);for(let k=k0;k<k0+3;k++){const x=k*w-off;X.save();X.translate(x+(k%2?w:0),-dy*.05-20);if(k%2)X.scale(-1,1);X.drawImage(bg,0,0,w,h);X.restore()}}
   const th=TH[n]||TH[1];
   if(n==4){X.fillStyle='rgba(20,110,190,.32)';X.fillRect(0,0,W,H);X.save();X.globalAlpha=.16;X.fillStyle='#e8fbff';for(let i=0;i<5;i++){const x=((i*311-CAM.x*.2)%(W+300)+W+300)%(W+300)-150;X.beginPath();X.moveTo(x,0);X.lineTo(x+70,0);X.lineTo(x+220,H);X.lineTo(x+120,H);X.fill()}X.restore()}
+  if(!(G.lowFx>=2))FX.back();
   X.fillStyle=th.h1;X.beginPath();X.moveTo(0,H);for(let x=0;x<=W+20;x+=20){const wx=x+CAM.x*.4;X.lineTo(x,H*.72-dy*.3+Math.sin(wx*.004)*40+Math.sin(wx*.011)*18)}X.lineTo(W,H);X.fill();
   X.fillStyle=th.h2;X.beginPath();X.moveTo(0,H);for(let x=0;x<=W+20;x+=20){const wx=x+CAM.x*.6;X.lineTo(x,H*.8-dy*.5+Math.sin(wx*.006+1)*30)}X.lineTo(W,H);X.fill();
   if(n==6&&WX.bg6)WX.bg6(dy);

@@ -81,7 +81,7 @@ EX.ally={top(o){return o.st=='ask'||o.st=='wait'&&P.x>o.sx*T-700?o.cy0-95:null},
   // союзник
   const kx=o.kx,ky=o.ky,h=d.h;
   if(o.who=='kuv'){const i=IMG.kuv;if(i&&i.width){const w=i.width*h/i.height;X.save();X.translate(kx,ky-h/2);X.rotate(o.kr);X.drawImage(i,-w/2,-h/2,w,h);X.restore()}}
-  else if(o.who=='sova'){const im=IMG.owl_0;if(im&&im.width){const s=h/400,by=ky-h+Math.sin(G.t*2)*4;X.drawImage(im,kx-152*s,by,375*s,400*s);X.save();X.translate(kx,0);X.scale(-1,1);X.drawImage(im,200,0,175,270,(200-152)*s,by,175*s,270*s);X.restore()}}
+  else if(o.who=='sova'){const im=IMG.owl_0;if(im&&im.width){const s=h/400,by=ky-h+Math.sin(G.t*2)*4;X.drawImage(im,kx-152*s,by,375*s,400*s);X.save();X.translate(kx,0);X.scale(-1,1);X.drawImage(im,400,0,350,540,(200-152)*s,by,175*s,270*s);X.restore()}}
   else{const bob=o.who=='pir'&&o.st=='act'?Math.sin(G.t*8)*6:0;img(d.img,kx,ky+bob,h,o.who=='krab'?0:0)}
   if(o.st=='ask'||o.st=='wait'&&P.x>o.sx*T-700){const bx=kx,by=ky-h-40+Math.sin(G.t*4)*5;X.save();X.fillStyle='#fff';X.strokeStyle='#7a4fb0';X.lineWidth=4;X.beginPath();X.arc(bx,by,26,0,7);X.fill();X.stroke();X.restore();txt(o.st=='ask'?'?':'!',bx,by+2,40,'#ff7a00')}
   // карточки
