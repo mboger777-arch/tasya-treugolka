@@ -23,7 +23,7 @@ let seed=+(Q.get('seed')||Date.now()%100000);function rnd(){seed|=0;seed=seed+0x
 const pick=a=>a[Math.floor(rnd()*a.length)],shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v,lerp=(a,b,t)=>a+(b-a)*t;
 // ---- картинки
-var EX=self.EX||{},WX=self.WX||{};const IMG={};const LIST='t_look t_wave f_wheel f_kite f_cube f_board f_shield f_hex f_bubble f_bubble2 t_idle t_blink t_jump t_fall t_hurt t_land t_r0 t_r1 t_r2 t_r3 t_r4 t_r5 t_jmp t_fal t_std t_run0 t_run1 t_run2 t_run3 fm0 fm1 fm2 fm3 ground e_wheel stone plank sign bush block kuv heart coin_tri coin_circ star btn_jump btn_form btn_arrow tile_top tile_dirt oskolok_0 oskolok_3 oskolok_1 oskolok_2 lineup_1 lineup_2 crab_0 owl_0 e_w2 e_w3 e_w4 e_w5 e_w6 e_wheel_0 e_wheel_1 e_w2_0 e_w2_1 e_w3_0 e_w3_1 e_w4_0 e_w4_1 e_w5_0 e_w5_1 e_w6_0 e_w6_1'.split(' ');
+var EX=self.EX||{},WX=self.WX||{};const IMG={};const LIST='t_wv t_lk t_hrt t_lnd t_look t_wave f_wheel f_kite f_cube f_board f_shield f_hex f_bubble f_bubble2 t_idle t_blink t_jump t_fall t_hurt t_land t_r0 t_r1 t_r2 t_r3 t_r4 t_r5 t_jmp t_fal t_std t_run0 t_run1 t_run2 t_run3 fm0 fm1 fm2 fm3 ground e_wheel stone plank sign bush block kuv heart coin_tri coin_circ star btn_jump btn_form btn_arrow tile_top tile_dirt oskolok_0 oskolok_3 oskolok_1 oskolok_2 lineup_1 lineup_2 crab_0 owl_0 e_w2 e_w3 e_w4 e_w5 e_w6 e_wheel_0 e_wheel_1 e_w2_0 e_w2_1 e_w3_0 e_w3_1 e_w4_0 e_w4_1 e_w5_0 e_w5_1 e_w6_0 e_w6_1'.split(' ');
 let loaded=0;for(const n of LIST){const i=new Image();i.onload=()=>loaded++;i.onerror=()=>{if(!i.fb){i.fb=1;i.src='assets/img/'+n+'.png?v='+V}};i.src='assets/img/'+n+'.webp?v='+V;IMG[n]=i}
 for(const n of ['bg_w1','map','bg_w2','bg_w3','bg_w4','bg_w5','bg_w6','ending','kidnap']){const i=new Image();i.onload=()=>loaded++;i.src='assets/img/'+n+'.jpg?v='+V;IMG[n]=i}
 const TOTAL=LIST.length+9;
@@ -350,9 +350,9 @@ function drawTiles(){const x0=Math.max(0,Math.floor(CAM.x/T)-1),x1=Math.min(L.w,
     if(v==7)X.arc(x+T/2,cy,n*T/2-6,0,7);else X.ellipse(x+T/2,cy,n*T*.33,n*T/2-6,0,0,7);X.fill();X.stroke();X.globalAlpha=1;
     paintShape(v==7?'circle':'oval',x+T/2,y-34,28,v==7?'#ff8a1f':'#c58cff',0,false,20);X.restore()}}
   else if(v>=10&&WX.drawTile)WX.drawTile(v,tx,ty)}}
-const AX={t_run0:.591,t_run1:.719,t_run2:.602,t_run3:.683,t_idle:.575,t_blink:.565,t_jump:.624,t_fall:.554,t_hurt:.575,t_look:.5,t_wave:.55,t_land:.58,t_r0:.567,t_r1:.644,t_r2:.591,t_r3:.569,t_r4:.646,t_r5:.678,t_jmp:.619,t_fal:.62,t_std:.647};
+const AX={t_run0:.591,t_run1:.719,t_run2:.602,t_run3:.683,t_idle:.575,t_blink:.565,t_jump:.624,t_fall:.554,t_hurt:.575,t_look:.5,t_wave:.55,t_land:.58,t_wv:.562,t_lk:.596,t_hrt:.685,t_lnd:.604,t_r0:.567,t_r1:.644,t_r2:.591,t_r3:.569,t_r4:.646,t_r5:.678,t_jmp:.619,t_fal:.62,t_std:.647};
 // v15: новые нарисованные кадры (6 бега, прыжок, падение, стойка) в одном масштабе: 680px = рост 170
-const NEWF={t_r0:1,t_r1:1,t_r2:1,t_r3:1,t_r4:1,t_r5:1,t_jmp:1,t_fal:1,t_std:1};const nok=n=>IMG[n]&&IMG[n].width;
+const V16F={t_wave:'t_wv',t_look:'t_lk',t_hurt:'t_hrt',t_land:'t_lnd'};const NEWF={t_r0:1,t_r1:1,t_r2:1,t_r3:1,t_r4:1,t_r5:1,t_jmp:1,t_fal:1,t_std:1};const nok=n=>IMG[n]&&IMG[n].width;
 // вторичная анимация плаща/капюшона: вертикальные полосы позади корпуса качаются волной (амплитуда растёт к краю плаща)
 function wave(n,y,h,fl,ax,A,f,k){const i=IMG[n];const w=i.width*h/i.height,src=mip(i,h),sW=src.width,sH=src.height,cut=Math.max(.1,ax-.1),cx=Math.round(cut*sW),q=w/sW;X.save();X.translate(0,y);if(fl)X.scale(-1,1);
  X.drawImage(src,cx,0,sW-cx,sH,-w*ax+cx*q,-h,(sW-cx)*q,h);const st=Math.max(3,Math.round(sW/70));
@@ -385,8 +385,9 @@ function drawP(){const p=P,F=FORMS[p.form];X.save();if(p.inv>0&&Math.floor(G.t*1
   if(p.hurt>0)n='t_hurt';else if(!p.ground)n=p.vy<0?(nok('t_jmp')?'t_jmp':'t_jump'):(nok('t_fal')?'t_fal':'t_fall');else if(Math.abs(p.vx)>30)n=nok('t_r0')?'t_r'+(Math.floor(p.run*1.5)%6):'t_run'+(Math.floor(p.run)%4);
   else{const c=(p.still-1.2)%7;if(p.still>1.2&&c<4.5)n=c>1.2&&c<2.6?'t_wave':'t_look';else if(nok('t_std'))n='t_std';else if((G.t%3.7)<.13)n='t_blink'}
   if(p.ground&&p.hurt<=0&&(p._ag||0)>.25)p.lt=.15;if(p.lt>0){p.lt-=1/60;if(p.ground&&p.hurt<=0&&IMG.t_land&&IMG.t_land.width)n='t_land'}
+  {const v=V16F[n];if(v&&nok(v))n=v}
   const ih=IMG[n];const sh=NEWF[n]?ih.height*.25:n=='t_land'?h*.84:n.startsWith('t_run')?h*.93:n=='t_jump'?h*.82:n=='t_fall'||n=='t_hurt'?h*.98:h*(ih.height/680||1);
-  const idle=n=='t_std'||n=='t_idle'||n=='t_blink'||n=='t_look'||n=='t_wave';const br=idle?Math.sin(G.t*2.6):0;
+  const idle=n=='t_std'||n=='t_idle'||n=='t_blink'||n=='t_look'||n=='t_wave'||n=='t_lk'||n=='t_wv';const br=idle?Math.sin(G.t*2.6):0;
   // v14: плавный подскок шага (подъём на «проходе» ноги), наклон по скорости, наклон в прыжке, пыль шагов/приземления
   const run=n.startsWith('t_r'),ph=p.run%1,fr=Math.floor(p.run)%4,sp=Math.min(1,Math.abs(p.vx)/420);
   const bob=run?-(fr%2?1:0)*5*Math.sin(Math.PI*ph)-1.5*Math.sin(Math.PI*2*ph)*(fr%2?0:1):0;
@@ -400,7 +401,7 @@ function drawP(){const p=P,F=FORMS[p.form];X.save();if(p.inv>0&&Math.floor(G.t*1
   const gy=groundBelow(p.x,p.y),hgt=Math.max(0,gy-p.y),sf=Math.max(.35,1-hgt/420);
   X.fillStyle='rgba(20,10,30,'+(.26*sf)+')';X.beginPath();X.ellipse(p.x,gy+2,44*sf,10*sf,0,0,7);X.fill();
   G.hl=land;X.translate(p.x,p.y+land*5);X.scale(1+land*.04,1-land*.04);X.rotate(p.lean);
-  const fl=p.face<0&&!(n=='t_look'||n=='t_wave')?1:0;
+  const fl=p.face<0&&!(n=='t_look'||n=='t_wave'||n=='t_wv')?1:0;
   // дыхание: равномерный микро-масштаб от ступней (пропорции не меняются)
   if(idle&&ih&&ih.width){const k=1+br*.012;rim(n,0,0,sh*k,fl,AX[n]||.5);if(NEWF[n]&&!G.lowFx)wave(n,0,sh*k,fl,AX[n],1.6,2.4,3);else img(n,0,0,sh*k,fl,1,AX[n]||.5,1)}
   else{const yy=bob+(n=='t_jump'?-14:n=='t_jmp'?-6:0);rim(n,0,yy,sh,fl,AX[n]||.5);if(NEWF[n]&&!G.lowFx)wave(n,yy,sh,fl,AX[n],run?2.5+4*sp:5,run?12:9,4);else img(n,0,yy,sh,fl,1,AX[n]||.5,1)}}
