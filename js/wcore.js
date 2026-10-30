@@ -24,7 +24,7 @@ WX.theme=function(n){if(self.TERR)TERR.load(n);if(!BASE.top){BASE.top=IMG.tile_t
  if(n==1||!th.top){IMG.tile_top=BASE.top;IMG.tile_dirt=BASE.dirt;return}
  try{IMG.tile_top=TC['t'+n]||(TC['t'+n]=recolor(BASE.top,th.top));IMG.tile_dirt=TC['d'+n]||(TC['d'+n]=recolor(BASE.dirt,th.dirt))}catch(e){IMG.tile_top=BASE.top;IMG.tile_dirt=BASE.dirt}};
 WX.water=p=>{const w=L&&L.meta.water;if(!w)return false;return w===true||p.x<w*T};
-WX.eimg=e=>{const n=wn();if(n<2)return null;const i=IMG['e_w'+n];if(!i||!i.width)return null;return ['e_w'+n,n==4?96:100,0]};
+WX.eimg=e=>{const n=wn(),b=n<2?'e_wheel':'e_w'+n,h=n<2?92:n==4?96:100,f=b+'_'+(Math.floor((e.ph||0)*(e.fl?3:8)/Math.PI)&1),j=IMG[f];if(j&&j.width)return [f,h,0];if(n<2)return null;const i=IMG[b];if(!i||!i.width)return null;return [b,h,0]};
 WX.onLoad=function(b){const n=wn();WX.theme(n);WX.path=b.meta.path?b.meta.path.map(q=>q.slice()):null;L.seen={};
  for(const e of ENTS)if(e.type=='enemy'&&(n==4||n==5||e.float)){e.gy=e.y;e.y0=e.y-34;e.fl=14}
  ENTS.push({type:'wx',x:-1e6,y:0});WX.boss=ENTS.find(e=>e.boss);
