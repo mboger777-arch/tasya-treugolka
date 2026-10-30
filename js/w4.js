@@ -34,19 +34,19 @@ EX.sstar={top(o){return o.done?null:o.cy-o.r-100},setup(o){o.gx=Math.floor(o.x/T
   X.rotate(-o.rot);X.fillStyle='#fff';X.beginPath();X.arc(-18,-6,13,0,7);X.arc(18,-6,13,0,7);X.fill();X.fillStyle='#2a1a3a';X.beginPath();X.arc(-16,-4,7,0,7);X.arc(20,-4,7,0,7);X.fill();
   X.strokeStyle='#7a2a20';X.lineWidth=4;X.beginPath();if(o.done)X.arc(0,12,12,.2,Math.PI-.2);else X.arc(0,26,10,Math.PI+.4,-.4);X.stroke();X.restore();
   const ps=EX.sstar.pts(o);ps.forEach((q,i)=>{const lit=o.mask&(1<<i);X.save();X.shadowColor=lit?'#fff3a0':'#ffffff';X.shadowBlur=lit?24:10;X.fillStyle=lit?'#fff3a0':'rgba(255,255,255,.55)';X.beginPath();X.arc(q[0],q[1],lit?22:16+5*Math.sin(G.t*6+i),0,7);X.fill();X.strokeStyle=lit?'#ffb300':'#fff';X.lineWidth=4;X.stroke();X.restore()});
-  if(!o.done)txt(o.lit+' из 5',cx,cy-r-48,big(),'#fff3a0')}};
+  if(!o.done){txt(o.lit+' из 5',cx,cy-r-48,big(),'#fff3a0');panelHide(cx-r,cy-r-90,2*r)}}};
 // ---- падающие осколки: щит отбивает
 EX.shards={setup(o){o.a=o.x0*T;o.b=o.x1*T;o.list=[];o.cd=1},
  upd(o,dt){const p=P;const inz=p.x>o.a-120&&p.x<o.b;if(!o.said&&p.x>o.a-500){o.said=1;say('t_shard')}
-  if(inz){o.cd-=dt;if(o.cd<=0){o.cd=.55+Math.random()*.25;const x=clamp(p.x+(Math.random()*500-160)+p.vx*.4,o.a,o.b);o.list.push({x,y:150,vy:120,vx:0,rot:Math.random()*6,k:Math.floor(Math.random()*3),warn:.5})}}
+  if(inz){o.cd-=dt;if(o.cd<=0){o.cd=.55+Math.random()*.25;const x=clamp(p.x+(Math.random()*500-160)+p.vx*.4,o.a,o.b);o.list.push({x,y:CAM.y+20,vy:120,vx:0,rot:Math.random()*6,k:Math.floor(Math.random()*3),warn:.5})}}
   const [w,h]=dims(p);
   for(const s of o.list){if(s.warn>0){s.warn-=dt;continue}s.vy=Math.min(s.vy+700*dt,420);s.y+=s.vy*dt;s.x+=s.vx*dt;s.rot+=dt*(s.bn?9:3);
    if(!s.bn&&Math.abs(s.x-p.x)<w/2+16&&s.y>p.y-h-10&&s.y<p.y){if(p.form=='shield'){s.bn=1;s.vy=-380;s.vx=(s.x<p.x?-1:1)*260;tone(1568+Math.random()*400,.25,'triangle',.08);part(s.x,s.y,10,'#fff3a0',260,.5,0,6)}else{s.dead=1;hurt(p,s.x);part(s.x,s.y,12,'#d29bff',260,.5,300,6)}}
    if(s.y>590){s.dead=1;part(s.x,590,8,'#d29bff',220,.5,300,5);SFX.bump&&0}}
   o.list=o.list.filter(s=>!s.dead)},
  hint(o){if(!(P.x>o.a-300&&P.x<o.b))return;if(P.form!='shield'){HAND={x:0,y:0,t:0,k:'screen',bx:'form'};say('t_shard');return true}},
- draw(o){if(o.b<CAM.x-100||o.a>CAM.x+WV+100)return;X.save();
-  for(let x=o.a-30;x<o.b+30;x+=46){if(x<CAM.x-60||x>CAM.x+WV+60)continue;const h=40+((x*13)%5)*12;X.fillStyle=(x/46)%2<1?'#7a3fb0':'#5a2a8a';X.beginPath();X.moveTo(x-24,226);X.lineTo(x,226+h);X.lineTo(x+24,226);X.fill();X.fillStyle='rgba(255,255,255,.25)';X.beginPath();X.moveTo(x-10,226);X.lineTo(x,226+h*.7);X.lineTo(x-2,226);X.fill()}
+ draw(o){if(o.b<CAM.x-100||o.a>CAM.x+WV+100)return;X.save();const cy0=CAM.y-4;
+  for(let x=o.a-30;x<o.b+30;x+=46){if(x<CAM.x-60||x>CAM.x+WV+60)continue;const h=40+((x*13)%5)*12;X.fillStyle=(x/46)%2<1?'#7a3fb0':'#5a2a8a';X.beginPath();X.moveTo(x-24,cy0);X.lineTo(x,cy0+h);X.lineTo(x+24,cy0);X.fill();X.fillStyle='rgba(255,255,255,.25)';X.beginPath();X.moveTo(x-10,cy0);X.lineTo(x,cy0+h*.7);X.lineTo(x-2,cy0);X.fill()}
   for(const s of o.list){if(s.warn>0){X.fillStyle='rgba(120,40,160,'+(.25+.25*Math.sin(G.t*20))+')';X.beginPath();X.ellipse(s.x,598,30,8,0,0,7);X.fill();continue}
    X.fillStyle='rgba(60,20,90,.25)';X.beginPath();X.ellipse(s.x,598,22*(1-(600-s.y)/600)+6,6,0,0,7);X.fill();
    X.save();X.translate(s.x,s.y);X.rotate(s.rot);X.shadowColor='#e0b0ff';X.shadowBlur=14;const c=['#c77dff','#ff7ad9','#7ad7ff'][s.k];X.fillStyle=c;X.strokeStyle='#3a1d55';X.lineWidth=3;X.beginPath();X.moveTo(0,-26);X.lineTo(16,14);X.lineTo(-14,18);X.closePath();X.fill();X.stroke();X.fillStyle='rgba(255,255,255,.6)';X.beginPath();X.moveTo(-2,-16);X.lineTo(4,6);X.lineTo(-6,8);X.fill();X.restore()}
@@ -68,7 +68,7 @@ EX.cage={top(o){return o.done?null:o.cy-o.r-100},setup(o){o.gx=Math.floor(o.x/T)
    X.save();X.beginPath();ngon(6,cx,cy,r,-Math.PI/2).forEach((q,i)=>i?X.lineTo(q[0],q[1]):X.moveTo(q[0],q[1]));X.closePath();X.clip();X.strokeStyle='#5a2a8a';X.lineWidth=9;for(let x=cx-r;x<=cx+r;x+=36){X.beginPath();X.moveTo(x,cy-r);X.lineTo(x,cy+r);X.stroke()}X.restore();
    const v=ngon(6,cx,cy,r,-Math.PI/2);for(let i=0;i<6;i++){const a=v[i],b=v[(i+1)%6],lit=o.mask&(1<<i);X.save();X.lineCap='round';X.lineWidth=16;X.strokeStyle=lit?'#ffd35a':'#7a3fb0';X.shadowColor=lit?'#ffd35a':'#c77dff';X.shadowBlur=lit?24:8;X.beginPath();X.moveTo(a[0],a[1]);X.lineTo(b[0],b[1]);X.stroke();X.restore()}
    EX.cage.pts(o).forEach((q,i)=>{if(o.mask&(1<<i))return;X.fillStyle='rgba(255,255,255,.6)';X.beginPath();X.arc(q[0],q[1],16+5*Math.sin(G.t*6+i),0,7);X.fill();X.strokeStyle='#fff';X.lineWidth=4;X.stroke()});
-   txt(o.lit+' из 6',cx,cy-r-46,big(),'#fff3a0')}
+   txt(o.lit+' из 6',cx,cy-r-46,big(),'#fff3a0');panelHide(cx-r,cy-r-90,2*r)}
   else if(o.t<1.2){X.globalAlpha=1-o.t/1.2;const v=ngon(6,cx,cy,r+o.t*200,-Math.PI/2+o.t);X.strokeStyle='#ffd35a';X.lineWidth=14;X.beginPath();v.forEach((q,i)=>i?X.lineTo(q[0],q[1]):X.moveTo(q[0],q[1]));X.closePath();X.stroke()}
   X.restore()}};
 // ---- медовая стенка: подсказка и бот
