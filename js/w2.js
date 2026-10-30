@@ -66,14 +66,14 @@ EX.pyr={setup(o){o.boss=1;o.st='intro';o.t=0;o.stomps=0;o.lit=0;o.h=290;o.hy=0;o
   txt(o.lit+' из 3',o.x-w*.5-70,600-o.h+40,44,'#fff3a0')}};
 WX.add(()=>{
 LV['2-1']=()=>{const b=new LB(175,'2-1');b.meta={name:'2-1 Ветреный перевал',intro:['w2','l21'],forms:[]};
- b.g(0,26).e('stone',20,10,{shape:'tri',give:'kite'}).g(34,52).g(60,74).g(74,98,4).g(98,118).g(126,150).g(150,151,9).g(151,175);
+ b.g(0,27).e('stone',20,10,{shape:'tri',give:'kite'}).g(33,53).g(59,74).g(74,98,4).g(98,119).g(125,150).g(150,151,9).g(151,175);
  b.e('wind',72,10,{w:2,k:'t_wind'}).pl(84,2,3).pl(108,7,3).pl(140,6,3);
  b.coins(27,7,6,'coin_tri',2).coins(53,7,6,'coin_tri',2).coins(118,7,7,'coin_tri',2).coins(86,1,2,'coin_tri',0);
- b.e('enemy',44,10).e('enemy',66,10).e('enemy',92,4).e('enemy',112,10).e('enemy',135,10).e('enemy',160,10);
+ b.e('enemy',42,10).e('enemy',66,10).e('enemy',92,4).e('enemy',112,10).e('enemy',135,10).e('enemy',160,10);
  b.e('star',30,5).e('star',85,1).e('star',141,5).e('goal',169,10);
  [5,40,64,104,130,158].forEach((x,i)=>b.d(i%2?'bush':'sign',x,x>=74&&x<98?4:10,.9));return b};
 LV['2-2']=()=>{const b=new LB(165,'2-2');b.meta={name:'2-2 Три стороны',intro:['l22'],forms:['kite']};
- b.g(0,42).g(62,96).g(104,165).e('sides',24,10,{bx:[20,24,28],c0:42,c1:62});
+ b.g(0,42).g(62,97).g(103,165).e('sides',24,10,{bx:[20,24,28],c0:42,c1:62});
  b.pl(70,7,3).pl(118,7,4).bl(132,6,2,3);
  b.coins(6,8,5,'coin_tri',1).coins(44,8,14,'coin_tri',0).coins(96,7,8,'coin_tri',2);
  b.e('enemy',36,10).e('enemy',78,10).e('enemy',90,10).e('enemy',112,10).e('enemy',128,10).e('enemy',145,10);

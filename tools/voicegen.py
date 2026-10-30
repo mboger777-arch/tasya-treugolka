@@ -20,6 +20,7 @@ lines=json.load(open(R+'/tools/lines.json'));jobs=[]
 for o in lines:
     h=hashlib.sha1(f"t59|{o['who']}|{spoken(o)}".encode()).hexdigest()[:8];o['file']=f"{o['k']}_{h}.mp3"
     if not os.path.exists(f"{OUT}/{o['file']}"): jobs.append(o)
+PRI=[k for k in os.environ.get('PRI','').split(',') if k];jobs.sort(key=lambda o:PRI.index(o['k']) if o['k'] in PRI else 999)
 print('jobs',len(jobs),flush=True)
 def man():
     m={}
@@ -56,7 +57,8 @@ if jobs:
             torch.manual_seed(int(os.environ.get('SEED','2000'))+i*7+take)
             wv,sr=M.generate_voice_clone(text=t,language='Russian',voice_clone_prompt=P[w],non_streaming_mode=True,temperature=0.6 if take==0 else 0.5,max_new_tokens=max(80,int(len(t)*1.8)+40))
             raw=f'/tmp/t59v_{take}.wav';sf.write(raw,wv[0],sr);fin=f'/tmp/t59v_{take}.mp3'
-            if subprocess.run(['ffmpeg','-y','-loglevel','error','-i',raw,'-af',CHAIN,'-ac','1','-ar','24000','-b:a','64k',fin]).returncode or not os.path.getsize(fin) if os.path.exists(fin) else True: continue
+            rc=subprocess.run(['ffmpeg','-y','-loglevel','error','-i',raw,'-af',CHAIN,'-ac','1','-ar','24000','-b:a','64k',fin]).returncode
+            if rc or not os.path.exists(fin) or not os.path.getsize(fin): continue
             hyp=' '.join(s.text for s in A.transcribe(L(fin),language='ru',beam_size=3)[0])
             e=min(wer(norm(t),norm(hyp)),numwer(o['t'],t,hyp))
             if best is None or e<best[0]: best=(e,fin,hyp)
