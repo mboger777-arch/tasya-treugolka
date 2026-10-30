@@ -328,7 +328,7 @@ function drawP(){const p=P,F=FORMS[p.form];X.save();if(p.inv>0&&Math.floor(G.t*1
  X.restore()}
 function drawFM(){if(L.meta.noFM)return;if(P.form!='girl'&&!FM.catch)return;const f='fm'+(Math.floor(G.t*2)%4);img(f,FM.x,FM.y+75,FM.catch?165:145,P.face<0?1:0,1,.5,1);
  X.save();X.globalAlpha=.35+.15*Math.sin(G.t*5);X.fillStyle='#fff6c8';X.beginPath();X.arc(FM.x,FM.y+25,46,0,7);X.fill();X.restore()}
-function drawEnts(){for(const e of ENTS){if(e.x<CAM.x-400||e.x>CAM.x+WV+400)continue;
+function drawEnts(){for(const e of ENTS){if(!e.nc&&(e.x<CAM.x-400||e.x>CAM.x+WV+400))continue;
  if(e.type=='enemy'){X.save();if(e.dead)X.globalAlpha=.4;{const ei=WX.eimg&&WX.eimg(e);if(ei)img(ei[0],e.x,e.y+2+(e.fl?Math.sin(e.ph*3)*5:Math.abs(Math.sin(e.ph*8))*-4),ei[1],(e.vx>0?1:0)^ei[2]);else img('e_wheel',e.x,e.y+2+Math.abs(Math.sin(e.ph*8))*-4,92,e.vx>0?1:0)};X.restore()}
  else if(e.type=='coin'){const s=Math.abs(Math.cos(G.t*3+e.x*.01));X.save();X.translate(e.x,e.y);X.scale(.4+.6*s,1);img(e.kind,0,0,50,0,1,.5,.5);X.restore()}
  else if(e.type=='star'){X.save();X.translate(e.x,e.y+Math.sin(G.t*3)*6);X.rotate(Math.sin(G.t*2)*.15);img('star',0,0,72,0,1,.5,.5);X.restore()}
@@ -439,7 +439,7 @@ function frame(now){let dt=Math.min(.1,(now-last)/1000);last=now;G.t+=dt;fpsT+=d
  voiceTick();musicTick();
  if(G.scene=='title'){if(taps.length&&loaded>=TOTAL){taps=[];G.scene='map';if(!SAVE.intro){SAVE.intro=1;save();['i1','i2','i3','i4','i5','i6','m1'].forEach(k=>say(k))}else say('m1')}if(G.bot&&loaded>=TOTAL){G.scene='map'}}
  else if(G.scene=='cut'){WX.updCut(dt)}
- else if(G.scene=='map'){IDLE+=dt;for(const t of taps.splice(0))mapTap(t);if(G.bot){const n=MAPN.find(n=>!SAVE.done[n.id]&&(!Q.get('level')||ORDER.indexOf(n.id)>=ORDER.indexOf(Q.get('level')))&&(!Q.get('upto')||ORDER.indexOf(n.id)<=ORDER.indexOf(Q.get('upto'))));if(n)loadLevel(n.id);else G.botDone=1}}
+ else if(G.scene=='map'){IDLE+=dt;for(const t of taps.splice(0))mapTap(t);if(G.bot){const n=MAPN.find(n=>!SAVE.done[n.id]&&LV[n.id]&&(!Q.get('level')||ORDER.indexOf(n.id)>=ORDER.indexOf(Q.get('level')))&&(!Q.get('upto')||ORDER.indexOf(n.id)<=ORDER.indexOf(Q.get('upto'))));if(n)loadLevel(n.id);else G.botDone=1}}
  else{if(G.won){G.winT+=dt;taps.length=0;acc+=dt;while(acc>=STEP){acc-=STEP;for(const q of PART){q.life-=STEP;q.vy+=q.g*STEP;q.x+=q.vx*STEP;q.y+=q.vy*STEP}}PART=PART.filter(q=>q.life>0);
    if((G.winT>2&&!speaking()&&(inp().j||taps.length||G.bot))||G.winT>12&&G.bot||(G.bot&&G.winT>2)){STATS.levels[G.level]={t:+G.lt.toFixed(1),bad:STATS.badFeet};G.scene='map';if(WX.afterWin)WX.afterWin(G.level)}
    if(!G.bot&&G.winT>2&&!speaking()){C.onpointerup=()=>{C.onpointerup=null;if(G.won&&G.scene!='map'&&G.scene!='cut'){G.scene='map';if(WX.afterWin)WX.afterWin(G.level)}}}}

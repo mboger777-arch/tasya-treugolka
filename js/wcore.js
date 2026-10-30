@@ -64,9 +64,9 @@ WX.drawTile=function(v,tx,ty){const x=tx*T,y=ty*T;
 const WNAME=['','Долина Колёс','Треугольные горы','Квадратный город','Подводный риф','Небесный храм','Замок Осколка'];
 const WCOL=['','#ff8a1f','#5ec8ff','#35c46a','#2fc6b5','#c58cff','#e0448a'];
 const POS=[[.14,.78],[.3,.66],[.46,.78],[.62,.66],[.8,.74]];
-function curW(){const n=MAPN.find(n=>unlocked(n.id)&&!SAVE.done[n.id]);return n?n.w:6}
+function curW(){const n=MAPN.find(n=>unlocked(n.id)&&!SAVE.done[n.id]&&LV[n.id]);let m=1;for(let w=1;w<=6;w++)if(LV[w+'-1'])m=w;return n?n.w:m}
 function pageW(){if(!G.mapW)G.mapW=curW();return G.mapW}
-function canW(w){return w>=1&&w<=6&&unlocked(w+'-1')}
+function canW(w){return w>=1&&w<=6&&unlocked(w+'-1')&&!!LV[w+'-1']}
 WX.drawMap=function(){const w=pageW();const m=w==1?IMG.map:IMG['bg_w'+w];if(m&&m.width){const s=Math.max(W/m.width,H/m.height);X.drawImage(m,(W-m.width*s)/2,(H-m.height*s)/2,m.width*s,m.height*s)}
  X.fillStyle=w==1?'rgba(20,10,40,.25)':'rgba(20,10,40,.38)';X.fillRect(0,0,W,H);txt('Мир '+w,W/2,40,40,'#fff');txt(WNAME[w],W/2,98,64,'#fff3a0');
  const ns=MAPN.filter(n=>n.w==w);X.strokeStyle='rgba(255,243,160,.8)';X.lineWidth=10;X.setLineDash([4,22]);X.lineCap='round';X.beginPath();ns.forEach((n,i)=>i?X.lineTo(n.x*W,n.y*H):X.moveTo(n.x*W,n.y*H));X.stroke();X.setLineDash([]);
@@ -77,7 +77,7 @@ WX.drawMap=function(){const w=pageW();const m=w==1?IMG.map:IMG['bg_w'+w];if(m&&m
  img('coin_circ',W-230,H-40,44,0,1,.5,.5);txt('× '+SAVE.shards,W-200,H-40,38,'#fff','left');
  if(IDLE>6){const nx=canW(w+1)&&cur==ns[ns.length-1]&&SAVE.done[cur.id];if(nx)hand(W-60,H/2+30,G.t,(G.t%1)>.6?(G.t%1-.6)/.4:0);else hand(cur.x*W+20,cur.y*H+30,G.t,(G.t%1)>.6?(G.t%1-.6)/.4:0)}};
 WX.mapTap=function(p){IDLE=0;const w=pageW();for(const [d,ax] of [[-1,70],[1,W-70]])if(canW(w+d)&&Math.hypot(p.x-ax,p.y-H/2)<80){G.mapW=w+d;SFX.coin();return}
- for(const n of MAPN){if(n.w==w&&Math.hypot(p.x-n.x*W,p.y-n.y*H)<80&&unlocked(n.id)){SFX.coin();loadLevel(n.id);return}}};
+ for(const n of MAPN){if(n.w==w&&Math.hypot(p.x-n.x*W,p.y-n.y*H)<80&&unlocked(n.id)&&LV[n.id]){SFX.coin();loadLevel(n.id);return}}};
 // ---- сцены-картинки
 WX.cut=null;
 WX.startCut=function(im,lines,next,fin){WX.cut={im,lines,next,fin,t:0};G.scene='cut';for(const k of lines)say(k)};

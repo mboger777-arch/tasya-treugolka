@@ -8,7 +8,7 @@ function nearest(pts,mask,wx,wy,d){let bi=-1,bd=d;pts.forEach((q,i)=>{if(mask&(1
 function firstFree(pts,mask){for(let i=0;i<pts.length;i++)if(!(mask&(1<<i)))return i;return -1}
 const wall=(gx,v)=>{for(let y=0;y<=9;y++)setT(gx,y,v)};
 // ---- декор рифа: водоросли и кораллы
-EX.reef={setup(o){o.its=o.xs.map((x,i)=>({x:x*T+30,k:i%3,s:.8+((x*37)%5)/10}))},
+EX.reef={setup(o){o.nc=1;o.its=o.xs.map((x,i)=>({x:x*T+30,k:i%3,s:.8+((x*37)%5)/10}))},
  draw(o){for(const it of o.its){if(it.x<CAM.x-200||it.x>CAM.x+WV+200)continue;const gy=600;X.save();
   if(it.k==0){X.strokeStyle='#2f9a5a';X.lineCap='round';for(let j=0;j<3;j++){X.lineWidth=12-j*2;X.beginPath();X.moveTo(it.x+j*16-16,gy);for(let s=1;s<=8;s++){const y=gy-s*26*it.s;X.lineTo(it.x+j*16-16+Math.sin(G.t*1.6+s*.7+j)*10*s/8,y)}X.stroke()}
    X.strokeStyle='#5fd08a';X.lineWidth=4;X.beginPath();X.moveTo(it.x-16,gy);for(let s=1;s<=8;s++)X.lineTo(it.x-16+Math.sin(G.t*1.6+s*.7)*10*s/8+3,gy-s*26*it.s);X.stroke()}
