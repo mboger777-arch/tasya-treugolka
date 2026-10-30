@@ -32,7 +32,7 @@ EX.find={setup(o){o.wx=Math.floor(o.x/T)+12;for(let y=0;y<=9;y++)setT(o.wx,y,15)
  draw(o){for(const it of o.its){const dx=it.sh>0?Math.sin(it.sh*50)*6:0;item(it.k,it.x+dx,7*T-4,1,o.okIt==it)}
   const x=o.wx*T;X.save();X.globalAlpha=o.done?1-(o.fade||0):1;if(X.globalAlpha>0){const g=X.createLinearGradient(x,0,x+T,0);g.addColorStop(0,'rgba(197,140,255,.15)');g.addColorStop(.5,'rgba(197,140,255,.7)');g.addColorStop(1,'rgba(197,140,255,.15)');X.fillStyle=g;X.fillRect(x,-60,T,660);
    X.fillStyle='rgba(255,255,255,.6)';for(let i=0;i<8;i++){const y=(G.t*90+i*83)%660-60;X.beginPath();X.arc(x+30+Math.sin(G.t*3+i)*12,y,4,0,7);X.fill()}
-   if(!o.done){const s={sq:'sq',circ:'circle',rect:'rect',tri:'tri'}[o.ans];X.globalAlpha=1;panel(x-50,120,160,130,28);paintShape(s,x+30,186,42,'#ffcc33',0,false,16)}}X.restore()},
+   if(!o.done){const l=(x-50-CAM.x)*Z,r=(x+110-CAM.x)*Z;if(r>W-480&&l<W)G.hideName=G.t;const s={sq:'sq',circ:'circle',rect:'rect',tri:'tri'}[o.ans];X.globalAlpha=1;panel(x-50,120,160,130,28);paintShape(s,x+30,186,42,'#ffcc33',0,false,16)}}X.restore()},
  hint(o){if(o.done||o.x-P.x>700||P.x>o.wx*T+60)return;const it=o.its.find(i=>i.k==KN[o.ans]);HAND={x:it.x,y:7*T-80,t:0,k:'tap'};say('t_find_'+o.ans);return true},
  bot(o,dt){if(o.done||o.x-P.x>700||P.x>o.wx*T+60)return;const it=o.its.find(i=>i.k==KN[o.ans]);const p=P;
   if(p.ground&&p.y>=599){if(WX.go(it.x,14))G.bj=.35}else if(!p.ground){BOT.r=it.x>p.x+10;BOT.l=it.x<p.x-10}WX.botJump(dt);if(!p.ground&&p.vy<0)BOT.j=1;return true}};
@@ -50,7 +50,7 @@ EX.racegoal={upd(o){const p=P;if(!G.won&&p.x>o.x-30){const r=ENTS.find(e=>e.type
 // сложи фигуру из кусочков
 EX.asm={setup(o){o.done=0;o.k=o.kind;o.cx=o.x;o.cy=230;o.st=o.kind=='tri'?[1,3]:[0,0];o.fade=0},
  ok(o){return o.k=='tri'?o.st[0]==0&&o.st[1]==2:o.st[0]==1&&o.st[1]==1},
- upd(o,dt){if(!o.done){const hw=(o.k=='tri'?200:270)+16;o.cx=WV>2*hw?clamp(o.x,CAM.x+hw,CAM.x+WV-hw):CAM.x+WV/2}if(near(o,700)&&!o.said){o.said=1;say(o.k=='tri'?'t_asm1':'t_asm2')}
+ upd(o,dt){if(!o.done){const hw=(o.k=='tri'?200:270)+16;o.cx=WV>2*hw?clamp(o.x,CAM.x+hw,CAM.x+WV-hw):CAM.x+WV/2}if(near(o,700)&&!o.said){o.said=1;if(o.k=='sq')hush();say(o.k=='tri'?'t_asm1':'t_asm2')}
   if(!o.done&&EX.asm.ok(o)){o.done=1;o.t=0;SFX.win();say('r_asm');part(o.cx,o.cy,30,'#7ff0a2',400,1,0,10)}
   if(o.done&&o.t<9){o.t+=dt;if(o.t>.9&&!o.built){o.built=1;for(const [x,y] of o.cells)setT(x,y,18);SFX.crash();shake(8);for(const [x,y] of o.cells)part(x*T+30,y*T+30,5,'#7ff0a2',260,.6,400,8)}}},
  top(o){return o.built?null:130},
@@ -73,7 +73,7 @@ EX.rob={setup(o){o.boss=1;o.h=250;o.st='intro';o.t=0;o.lit=0;o.bolts=[];o.cd=2;o
  corners(o){const cx=o.x-150,cy=600-150,r=62;return [[cx-r,cy-r],[cx+r,cy-r],[cx+r,cy+r],[cx-r,cy+r]]},
  upd(o,dt){const p=P;o.t+=dt;const bx=o.bx;
   if(p.x>o.x-90){p.x=o.x-90;p.vx=Math.min(0,p.vx)}
-  if(o.st=='intro'){if(o.t>3)o.st='fight';return}
+  if(o.st=='intro'){const m=CAM.x+WV-125;if(o.x0>m){o.x0=m;o.x=m}if(o.t>3)o.st='fight';return}
   if(o.st=='calm'){if(o.t>1.5&&!speaking()&&!G.won)win();return}
   if(o.stun>0){o.stun-=dt;if(o.stun<=0&&o.lit<4)o.used=0}
   else{o.x+=o.dir*90*dt;if(o.x<o.x0-2.5*T)o.dir=1;if(o.x>o.x0)o.dir=-1;o.cd-=dt;if(o.cd<=0){o.cd=2.2;o.bolts.push({x:o.x-60,y:600-95,vx:-430});SFX.light(1)}

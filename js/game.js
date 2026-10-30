@@ -356,7 +356,7 @@ function drawHUD(){btnLayout();// сердечки, осколки, звёзды
  for(let i=0;i<3;i++)img('heart',50+i*62,78,56,0,i<HUD.hearts?1:.25,.5,1);
  img('coin_circ',250,50,54,0,1,.5,.5);txt('× '+HUD.shards,285,52,46,'#fff','left');
  for(let i=0;i<3;i++)img('star',420+i*58,52,52,0,i<HUD.stars?1:.25,.5,.5);
- if(G.scene!='boss')txt(L.meta.name,W-30,46,38,'#fff3a0','right');
+ if(G.scene!='boss'&&!(G.t-(G.hideName??-9)<.15))txt(L.meta.name,W-30,46,38,'#fff3a0','right');
  // кнопки
  const B=(k,n,fl)=>{const b=BTN[k];X.save();X.globalAlpha=TOUCH[k]?1:.82;const s=TOUCH[k]?.92:1;X.translate(b.x,b.y);X.scale(s,s);if(fl)X.scale(-1,1);img(n,0,0,b.r*2,0,1,.5,.5);X.restore()};
  if(!G.fly){B('left','btn_arrow',1);B('right','btn_arrow')}B('jump','btn_jump');if(L.forms.length){B('form','btn_form');const nf=FORMS[nextForm()];if(nf){X.save();paintShape(nf.shape||'tri',BTN.form.x+BTN.form.r*.75,BTN.form.y-BTN.form.r*.75,22,nf.col,0,false);X.restore()}}
