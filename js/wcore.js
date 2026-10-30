@@ -36,13 +36,14 @@ EX.wx={upd(o,dt){const p=P;
  if(p.ground){const [w]=dims(p);for(const x of [Math.floor((p.x-w/2+3)/T),Math.floor((p.x+w/2-3)/T)]){const ty=Math.round(p.y/T);if(tileAt(x,ty)==17&&!L.seen[ty*L.w+x]){L.seen[ty*L.w+x]=1;SFX.light(3);part(x*T+30,ty*T,10,'#cfefff',200,.6,0,6)}}}}};
 // ---- фон
 WX.init=function(){for(const f of INITS)f();
- MAPN.length=0;ORDER.length=0;for(let w=1;w<=6;w++){const ids=[w+'-1',w+'-2',w+'-3',w+'-4',w+'-B'];ids.forEach((id,i)=>{ORDER.push(id);MAPN.push({id,w,x:POS[i][0],y:POS[i][1]})})}
+ MAPN.length=0;ORDER.length=0;for(let w=1;w<=6;w++){const ids=w==6?['6-1','6-2','6-B']:[w+'-1',w+'-2',w+'-3',w+'-4',w+'-B'];const ps=w==6?[[.2,.76],[.48,.64],[.78,.74]]:POS;ids.forEach((id,i)=>{ORDER.push(id);MAPN.push({id,w,x:ps[i][0],y:ps[i][1]})})}
  drawBG=function(){const n=wn(),bg=IMG['bg_w'+n]&&IMG['bg_w'+n].width?IMG['bg_w'+n]:IMG.bg_w1;const dy=(CAM.y-600+HV*L.gf);
   if(bg.width){const h=H*1.05,w=bg.width*h/bg.height;const off=CAM.x*.12,k0=Math.floor(off/w);for(let k=k0;k<k0+3;k++){const x=k*w-off;X.save();X.translate(x+(k%2?w:0),-dy*.05-20);if(k%2)X.scale(-1,1);X.drawImage(bg,0,0,w,h);X.restore()}}
   const th=TH[n]||TH[1];
   if(n==4){X.fillStyle='rgba(20,110,190,.32)';X.fillRect(0,0,W,H);X.save();X.globalAlpha=.16;X.fillStyle='#e8fbff';for(let i=0;i<5;i++){const x=((i*311-CAM.x*.2)%(W+300)+W+300)%(W+300)-150;X.beginPath();X.moveTo(x,0);X.lineTo(x+70,0);X.lineTo(x+220,H);X.lineTo(x+120,H);X.fill()}X.restore()}
   X.fillStyle=th.h1;X.beginPath();X.moveTo(0,H);for(let x=0;x<=W+20;x+=20){const wx=x+CAM.x*.4;X.lineTo(x,H*.72-dy*.3+Math.sin(wx*.004)*40+Math.sin(wx*.011)*18)}X.lineTo(W,H);X.fill();
   X.fillStyle=th.h2;X.beginPath();X.moveTo(0,H);for(let x=0;x<=W+20;x+=20){const wx=x+CAM.x*.6;X.lineTo(x,H*.8-dy*.5+Math.sin(wx*.006+1)*30)}X.lineTo(W,H);X.fill();
+  if(n==6&&WX.bg6)WX.bg6(dy);
   if(n==4){X.fillStyle='rgba(230,250,255,.55)';for(let i=0;i<14;i++){const x=((i*173-CAM.x*.3)%W+W)%W,y=H-((G.t*60+i*97)%H);X.beginPath();X.arc(x+Math.sin(G.t*2+i)*8,y,3+i%4,0,7);X.fill()}}};
  drawMap=WX.drawMap;mapTap=WX.mapTap};
 // ---- тайлы 10..19
@@ -81,12 +82,12 @@ WX.mapTap=function(p){IDLE=0;const w=pageW();for(const [d,ax] of [[-1,70],[1,W-7
 // ---- сцены-картинки
 WX.cut=null;
 WX.startCut=function(im,lines,next,fin){WX.cut={im,lines,next,fin,t:0};G.scene='cut';for(const k of lines)say(k)};
-WX.afterWin=function(id){const w=+id[0];G.mapW=id.endsWith('B')&&w<6?w+1:w;if(id=='3-B')WX.startCut('kidnap',['tw1','tw2','tw3'],4);if(id=='6-B')WX.startCut('ending',['f4','end1'],6,1)};
+WX.afterWin=function(id){const w=+id[0];G.mapW=id.endsWith('B')&&w<6?w+1:w;if(id=='3-B')WX.startCut('kidnap',['tw1','tw2','tw3'],4);if(id=='6-B')WX.startCut('ending',['f4','end1','cr1'],6,1)};
 WX.drawCut=function(){const c=WX.cut;if(!c)return;const m=IMG[c.im];if(m&&m.width){const s=Math.max(W/m.width,H/m.height),k=1+c.t*.006;X.save();X.translate(W/2,H/2);X.scale(k,k);X.drawImage(m,-m.width*s/2,-m.height*s/2,m.width*s,m.height*s);X.restore()}
- if(c.fin&&c.t>3){X.save();X.globalAlpha=Math.min(1,(c.t-3)/1.5);txt('Конец',W/2,H*.2,120,'#fff3a0','center','#5b2a8a');X.restore()}
+ if(c.fin&&WX.drawFin)WX.drawFin(c);else if(c.fin&&c.t>3){X.save();X.globalAlpha=Math.min(1,(c.t-3)/1.5);txt('Конец',W/2,H*.2,120,'#fff3a0','center','#5b2a8a');X.restore()}
  if(WX.cutReady())txt(c.fin?'Нажми, чтобы вернуться на карту':'Нажми, чтобы продолжить',W/2,H*.08+10,36,'#fff')};
 WX.cutReady=()=>{const c=WX.cut;return c&&c.t>2.5&&!speaking()&&!(SUB&&G.t<SUB.end-0.3)};
-WX.updCut=function(dt){const c=WX.cut;if(!c){G.scene='map';return}c.t+=dt;const tp=taps.splice(0);if(WX.cutReady()&&(tp.length||G.bot&&c.t>3)){G.scene='map';G.mapW=c.next;WX.cut=null}};
+WX.updCut=function(dt){const c=WX.cut;if(!c){G.scene='map';return}c.t+=dt;const tp=taps.splice(0);if(WX.cutReady()&&(tp.length||G.bot&&c.t>(c.fin?16:3))){G.scene='map';G.mapW=c.next;WX.cut=null}};
 // ---- камера в бою: и герой, и босс в кадре
 WX.camX=function(cx){const o=WX.boss;if(!o||G.scene!='boss')return cx;return clamp((P.x+o.x)/2-WV/2,0,Math.max(0,L.w*T-WV))};
 // ---- полёт (2-4)
@@ -98,8 +99,8 @@ WX.flyCamY=function(){const p=P;let s=null;for(const o of ENTS)if(o.type=='spire
 // ---- бот
 WX.botPre=function(dt){const p=P;
  if(G.fly){let s=null;for(const o of ENTS)if(o.type=='spire'&&o.x+110>p.x&&(!s||o.x<s.x))s=o;const tgt=s?s.gc:400;const err=tgt-(p.y-85);const want=clamp(err*3.2,-360,330);BOT.r=0;BOT.j=want<p.vy;return true}
- if(WX.path&&WX.path.length){const q=WX.path[0];const tx=q[0]*T,ty=q[1]*T;if(q[2]&&!q[2]()){BOT.r=0;BOT.l=0;BOT.j=0;return true}
-  if(tx-p.x<520&&tx-p.x>-200){if(p.ground&&Math.abs(p.y-ty)<3&&Math.abs(p.x-tx)<45){WX.path.shift();return true}
+ if(WX.path&&WX.path.length){const q=WX.path[0];const tx=q[0]*T,ty=q[1]*T;
+  if(tx-p.x<520&&tx-p.x>-200){if(q[2]&&!q[2]()){BOT.r=0;BOT.l=0;BOT.j=0;return true}if(p.ground&&Math.abs(p.y-ty)<3&&Math.abs(p.x-tx)<45){WX.path.shift();return true}
    if(p.ground){const up=ty<p.y-5;const d=Math.abs(tx-p.x);BOT.r=tx>p.x+8;BOT.l=tx<p.x-8;let gap=0;for(let x=Math.floor(Math.min(p.x,tx)/T);x<=Math.floor(Math.max(p.x,tx)/T);x++)if(!tileAt(x,Math.round(p.y/T))||tileAt(x,Math.round(p.y/T))==17&&!L.seen[Math.round(p.y/T)*L.w+x])gap=1;
     if((up&&d<(ty<p.y-150?120:170))||(gap&&!up&&ty<=p.y+5&&d<300&&d>60))G.bj=.4}
    else{BOT.r=tx>p.x+15;BOT.l=tx<p.x-15}
