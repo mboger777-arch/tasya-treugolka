@@ -18,7 +18,7 @@ EX.dots={off(o){return o.waitStop&&!G.v3stop},setup(o){o.P=o.pts.map(q=>({x:q[0]
   o.grow=o.grow.map((g,i)=>o.seg[i]?Math.min(1,g+dt*2.5):0);
   if(o.F&&o.F.gone){o.F.x+=o.F.vx*dt;o.F.y+=o.F.vy*dt;o.F.vy-=60*dt}},
  tap(o,wx,wy){if(o.done||EX.dots.off(o))return false;let best=-1,bd=115;o.P.forEach((q,i)=>{const d=Math.hypot(wx-q.x,wy-q.y);if(d<bd){bd=d;best=i}});
-  if(o.F&&!o.F.gone&&Math.hypot(wx-o.F.x,wy-o.F.y)<Math.min(bd,115)){o.F.gone=1;o.F.vx=260;o.F.vy=-220;SFX.no();say('t_fly');part(o.F.x,o.F.y,10,'#fff',200,.5,0);return true}
+  if(o.F&&!o.F.gone&&Math.hypot(wx-o.F.x,wy-o.F.y)<Math.min(bd,115)){o.F.gone=1;o.F.vx=260;o.F.vy=-220;SFX.no();say('t_mukha');part(o.F.x,o.F.y,10,'#fff',200,.5,0);return true}
   if(best<0)return false;const q=o.P[best];
   if(o.sel<0||o.sel==best){o.sel=o.sel==best?-1:best;SFX.light(1);part(q.x,q.y,10,'#fff3a0',220,.5,0);return true}
   const a=Math.min(o.sel,best);if(Math.abs(o.sel-best)==1&&!o.seg[a]){EX.dots.build(o,a);o.sel=-1;return true}
@@ -66,7 +66,7 @@ EX.wctr={setup(o){o.need=1;o.nc=1},
 // ===== ворота с отверстием-формой =====
 const GK={circle:7,oval:8,tilt:8,small:7,near:1};
 EX.sgate={setup(o){o.gx=Math.round(o.x/T-.5);o.top=o.top||4;for(let y=o.top;y<10;y++)setT(o.gx,y,GK[o.kind])},
- upd(o){if(!o.intro&&P.x>o.gx*T-520&&P.x<o.gx*T){o.intro=1;const k={circle:'t_rgate',small:'t_rgate',oval:'t_ogate',tilt:'t_tilt',near:'t_near'}[o.kind];
+ upd(o){if(!o.intro&&P.x>o.gx*T-520&&P.x<o.gx*T){o.intro=1;const k={circle:'t_cgate',small:'t_cgate',oval:'t_ogate',tilt:'t_tilt',near:'t_near'}[o.kind];
   if(o.kind=='near'||(o.kind=='tilt')||P.form!=(GK[o.kind]==7?'wheel':'bubble')){say(k);if(o.kind=='near'){const q=G.lseq;setTimeout(()=>{if(G.lseq==q)say('t_near2')},2600)}else HAND={x:0,y:0,t:0,k:'screen',bx:'form'}}}},
  hint(o){const f=GK[o.kind]==7?'wheel':'bubble';if(o.kind=='near'||!near(o.gx*T,600)||P.x>o.gx*T||P.form==f)return;HAND={x:0,y:0,t:0,k:'screen',bx:'form'};say(GK[o.kind]==7?'t_rgate':'t_ogate');return true},
  draw(o){const x=o.gx*T-16,w=T+32,top=o.top*T-30,h=600-top,cx=x+w/2,cy=top+h*.55;X.save();
