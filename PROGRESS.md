@@ -93,3 +93,9 @@
 - Меню: свечение за заголовком и летящие искорки на титуле, «дыхание» Таси; на карте — пульсирующее кольцо и искорки у текущего уровня.
 - Всё FX-доп. отключается лестницей качества (G.lowFx) и ?fx=0; коллизии и геймплей не менялись.
 - Листы: sheets/v14/915_*.png (новые), sheets/v13/ (старые), sheets/before_after_v14_915.png, по мирам sheets/v14/ba_915_w1–6.jpg.
+
+### v14 test results
+- Bot: W1–W6 at 915x412@3 and 844x390@3 — all done, bad 0, badFeet 0, errs [].
+- rotate.py: FAILS 0 (aniso≈1, tile ≤0.003).
+- phone.py (915x412, dpr 2.625): hero 0, sprite ≤0.007, tile ≤0.003, aniso 0.9998, ERRS [].
+- Headless fps (no adapt, screenshots): 17–54; adaptive ladder handles real devices.
