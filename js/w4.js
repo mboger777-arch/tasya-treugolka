@@ -80,7 +80,8 @@ EX.crab={setup(o){o.boss=1;o.h=270;o.st='intro';o.t=0;o.lit=0;o.mask=0;o.pearls=
  hc(o){return [o.x+o.h*.12,600-o.h*.48+(o.stun>0?6:0),o.h*.44]},
  pts(o){const [cx,cy,r]=EX.crab.hc(o);const v=ngon(6,cx,cy,r,-Math.PI/2);return v.map((q,i)=>{const n=v[(i+1)%6];return [(q[0]+n[0])/2,(q[1]+n[1])/2]})},
  upd(o,dt){const p=P;o.t+=dt;if(p.x>o.x-190){p.x=o.x-190;p.vx=Math.min(0,p.vx)}
-  if(o.st=='intro'){const m=CAM.x+WV-o.h*499/400/2-10;if(o.x0>m){o.x0=m;o.x=m}if(o.t>3)o.st='fight';return}
+  {const m=CAM.x+WV-o.h*499/400/2-12;if(o.x>m)o.x=o.st=='intro'?m:Math.max(m,o.x-160*dt)}
+  if(o.st=='intro'){if(o.t>3)o.st='fight';return}
   if(o.st=='calm'){if(o.t>1.5&&!speaking()&&!G.won)win();return}
   if(o.stun>0){o.stun-=dt;if(o.stun<=0)o.cd=2}
   else{o.cd-=dt;if(o.cd<=0){o.cd=2.4;o.pearls.push({x:o.x-o.h*.5,y:600-80,vx:-380,b:0});SFX.boom()}}
