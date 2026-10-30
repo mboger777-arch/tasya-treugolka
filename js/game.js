@@ -23,7 +23,7 @@ let seed=+(Q.get('seed')||Date.now()%100000);function rnd(){seed|=0;seed=seed+0x
 const pick=a=>a[Math.floor(rnd()*a.length)],shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v,lerp=(a,b,t)=>a+(b-a)*t;
 // ---- картинки
-var EX=self.EX||{},WX=self.WX||{};const IMG={};const LIST='t_wv t_lk t_hrt t_lnd t_look t_wave f_wheel f_kite f_cube f_board f_shield f_hex f_bubble f_bubble2 t_idle t_blink t_jump t_fall t_hurt t_land t_r0 t_r1 t_r2 t_r3 t_r4 t_r5 t_jmp t_fal t_std t_run0 t_run1 t_run2 t_run3 fm0 fm1 fm2 fm3 ground e_wheel stone plank sign bush block kuv heart coin_tri coin_circ star btn_jump btn_form btn_arrow tile_top tile_dirt oskolok_0 oskolok_3 oskolok_1 oskolok_2 lineup_1 lineup_2 crab_0 owl_0 e_w2 e_w3 e_w4 e_w5 e_w6 e_wheel_0 e_wheel_1 e_w2_0 e_w2_1 e_w3_0 e_w3_1 e_w4_0 e_w4_1 e_w5_0 e_w5_1 e_w6_0 e_w6_1'.split(' ');
+var EX=self.EX||{},WX=self.WX||{};const IMG={};const LIST='t_wv t_lk t_hrt t_lnd t_look t_wave f_wheel f_kite f_cube f_board f_shield f_hex f_bubble f_bubble2 t_idle t_blink t_jump t_fall t_hurt t_land t_r0 t_r1 t_r2 t_r3 t_r4 t_r5 t_jmp t_fal t_std t_run0 t_run1 t_run2 t_run3 fm0 fm1 fm2 fm3 ground e_wheel stone plank sign bush block kuv heart coin_tri coin_circ star btn_jump btn_form btn_arrow tile_top tile_dirt oskolok_0 oskolok_3 oskolok_1 oskolok_2 lineup_1 lineup_2 crab_0 owl_0 e_w2 e_w3 e_w4 e_w5 e_w6 e_wheel_0 e_wheel_1 e_w2_0 e_w2_1 e_w3_0 e_w3_1 e_w4_0 e_w4_1 e_w5_0 e_w5_1 e_w6_0 e_w6_1 stk_ball stk_clock stk_egg stk_plate mill ostone fly'.split(' ');
 let loaded=0;for(const n of LIST){const i=new Image();i.onload=()=>loaded++;i.onerror=()=>{if(!i.fb){i.fb=1;i.src='assets/img/'+n+'.png?v='+V}};i.src='assets/img/'+n+'.webp?v='+V;IMG[n]=i}
 for(const n of ['bg_w1','map','bg_w2','bg_w3','bg_w4','bg_w5','bg_w6','ending','kidnap']){const i=new Image();i.onload=()=>loaded++;i.src='assets/img/'+n+'.jpg?v='+V;IMG[n]=i}
 const TOTAL=LIST.length+9;
@@ -45,7 +45,7 @@ function musicTick(){if(!music||!AC)return;const base=G.scene=='boss'?220:262;wh
 // p3 задание/важная подсказка > p2 история > p1 похвала/счёт. Реплика ждёт в очереди не дольше maxAge, иначе выбрасывается.
 const VQ=[];let vcur=null,vEnd=0,VB=0;const vplayed={};G.vlog=[];
 function vpri(k){const b=k.replace(/^T(?=[a-z])/,'');
- if(/^(n\d|c_|r_good|r_star$|r_win|r_race|r_odd_ok|r_pat|r_asm|r_starf)/.test(b))return 1;
+ if(/^(n\d|c_|s_|r_good|r_star$|r_win|r_race|r_odd_ok|r_pat|r_asm|r_starf)/.test(b))return 1;
  if(/^(t_|q_|e_|f_p|f_t|f_w2|b\d[bfth]|b\dh2|b4s|r_\w*no$|r_oops|l\d[1-4]$|l5[234]$|l4[1-4]$|m1)/.test(b)&&!/^l(24|33)$/.test(b))return 3;return 2}
 function vage(p,k){if(G.scene=='cut'||G.scene=='title'||G.scene=='map')return 1e9;return /^T?n\d/.test(k)?.8:p==1?1.2:p==2?2.5:6}
 function vlog(o){if(G.vlog.length<4000)G.vlog.push(o)}
@@ -60,7 +60,7 @@ let HSAID={};function say(k,force){if(typeof L!='undefined'&&L&&L.meta&&L.meta.n
  if(p==1&&!/^T?n\d/.test(k)&&(VQ.some(q=>q.p>1)||(vcur&&vcur.p>1&&!vcur.fade))){vlog({k,lv,te:now,drop:'flavor-busy',t:now});return}
  VQ.push(o);
  // прервать текущую, если пришло событие не ниже по важности (кроме своей пачки и кроме задания, перебиваемого не-заданием)
- if(vcur&&!vcur.fade&&vcur.b!=b&&p>=vcur.p&&G.scene!='cut'){vfade(vcur,'interrupt')}}
+ if(vcur&&!vcur.fade&&vcur.b!=b&&(p>=vcur.p||(p==2&&vcur.p==3&&/^r_/.test(k)))&&G.scene!='cut'){vfade(vcur,'interrupt')}}
 function vfade(c,why){const a=c.a;let left=1;try{left=(a.duration||c.dur)-a.currentTime}catch(e){}if(left<.3&&!a.paused){c.soft=1;return}c.fade=performance.now();vlog({k:c.k,lv:c.lv,te:c.te,cut:why,t:G.t,at:+(a.currentTime||0).toFixed(2)});if(c.p==3)G.cutTask=c.k}
 function voiceTick(){
  if(vcur&&vcur.fade){const u=(performance.now()-vcur.fade)/150;try{vcur.a.volume=Math.max(0,1-u)}catch(e){}if(u>=1){try{vcur.a.pause()}catch(e){}vend()}}
@@ -175,7 +175,8 @@ function killEnemy(e){e.dead=1;SFX.stomp();part(e.x,e.y-40,14,'#c08a50',350,.7);
 function transform(p){const fs=L.forms||[];const order=['girl',...fs];let i=order.indexOf(p.form);const nx=order[(i+1)%order.length];if(nx==p.form)return;
  const [w0,h0]=dims(p);p.form=nx;const [w1,h1]=dims(p);
  // не застрять: проверить место
- for(let ty=Math.floor((p.y-h1)/T);ty<=Math.floor((p.y-2)/T);ty++)for(let tx=Math.floor((p.x-w1/2)/T);tx<=Math.floor((p.x+w1/2)/T);tx++)if(solidFor(tileAt(tx,ty),p)&&tileAt(tx,ty)!=5&&tileAt(tx,ty)!=6){p.form=order[i];return}
+ const fits=x=>{for(let ty=Math.floor((p.y-h1)/T);ty<=Math.floor((p.y-2)/T);ty++)for(let tx=Math.floor((x-w1/2)/T);tx<=Math.floor((x+w1/2)/T);tx++)if(solidFor(tileAt(tx,ty),p)&&tileAt(tx,ty)!=5&&tileAt(tx,ty)!=6)return false;return true};
+ {let ok=0;for(const d of [0,-12,12,-24,24,-36,36,-50,50,-65,65,-80,80])if(fits(p.x+d)){p.x+=d;ok=1;break}if(!ok){p.form=order[i];return}}
  SFX.form(nx);part(p.x,p.y-h1/2,26,(FORMS[nx]||FORMS.girl).col,420,.8,0,10);shake(4);FLASH=.15;if(nx!='girl')BANNER={t:1.6,txt:FORMS[nx].name+' '+(FORMS[nx].say||'')}}
 // ---- фигуры (рисование)
 function shapePts(shape,cx,cy,r,rot=0){const P=[];const reg=(n,a0)=>{for(let i=0;i<n;i++){const a=a0+rot+i*Math.PI*2/n;P.push([cx+Math.cos(a)*r,cy+Math.sin(a)*r])}};
@@ -234,7 +235,7 @@ function loadLevel(id){hush();vlog({ev:'load',lv:id,t:G.t});G.level=id;G.lastTas
  for(const e of ents){const o=Object.assign({},e);if(o.type=='enemy'){o.vx=-90;o.ph=rnd()*6}if(o.type=='odd')setupOdd(o);if(o.type=='stone')setupStone(o);if(o.type=='kuv')setupKuv(o);if(EX[o.type]&&EX[o.type].setup)EX[o.type].setup(o);ENTS.push(o)}
  P=newPlayer(b.start.x*T,b.start.y*T+T);P.y=10*T;if(b.meta.startForm&&b.meta.startForm!='girl'){P.form=b.meta.startForm}if(Q.get('form'))P.form=Q.get('form');
  FM={x:P.x-80,y:P.y-200,vx:0,vy:0,catch:0};L.zoom=b.zoom||1.5;L.gf=b.gf||(b.zoom?.75:.72);Z=L.zoom;WV=W/Z;HV=H/Z;CAM.x=clamp(P.x-WV*.35,0,L.w*T-WV);CAM.y=600-HV*L.gf;G.auto=null;
- if(b.meta.chase)G.boulder={x:-400,v:b.meta.chaseV||330,max:b.meta.chaseMax||560,kind:b.meta.chase};else G.boulder=null;G.fly=null;G.race=null;if(WX.onLoad)WX.onLoad(b);
+ if(b.meta.chase)G.boulder={x:-400,v:b.meta.chaseV||330,max:b.meta.chaseMax||560,kind:b.meta.chase};else G.boulder=null;G.fly=null;G.race=null;FORMS.wheel.max=720;if(WX.onLoad)WX.onLoad(b);
  G.level=id;G.scene=b.meta.boss?'boss':'play';G.lt=0;G.inputLock=0;G.won=0;for(const k of b.meta.intro)say(k);BANNER={t:3,txt:b.meta.name}}
 // ---- задания
 function setupStone(o){const n=FORMS[o.give].corners||0;o.n=n;o.lit=0;o.done=0;o.r=95;o.cy=o.y-330;}
@@ -250,7 +251,8 @@ function tapWorld(p){const wx=p.x/Z+CAM.x,wy=p.y/Z+CAM.y;IDLE=0;
    if(!pts.length){if(Math.hypot(wx-o.x,wy-o.cy)<o.r*1.5)stoneDone(o);continue}
    for(let i=0;i<pts.length;i++){const q=pts[i];if(Math.hypot(wx-q[0],wy-q[1])<75&&!(o.litMask&(1<<i))){o.litMask=(o.litMask||0)|1<<i;o.lit++;SFX.light(o.lit);say('n'+o.lit);part(q[0],q[1],14,'#fff3a0',260,.6,0);if(o.lit==o.n)setTimeout(()=>stoneDone(o),500);return}}}
   if(o.type=='odd'&&!o.done){for(const it of o.items)if(Math.hypot(wx-it.x,wy-it.y)<it.r*1.4){throwBoom(it.x,it.y,()=>{if(it.odd){it.hit=1;o.done=1;SFX.win();say('r_odd_ok');for(let y=0;y<12;y++)if(tileAt(o.wx,y)==1&&y<10)setT(o.wx,y,0);part(o.wx*T,6*T,30,'#fff',500,.9)}else{it.wob=1;SFX.no();say('r_odd_no')}});return}}
-  if(o.type=='kuv'&&o.state=='fight'){for(const s of o.spikes){if(!s.on)continue;const a=s.a+o.rot,sx=o.x+Math.cos(a)*o.r*1.05,sy=o.y-o.r+Math.sin(a)*o.r*1.05;if(Math.hypot(wx-sx,wy-sy)<80){if(!o.dizzy){throwBoom(sx,sy,()=>{SFX.no();part(sx,sy,8,'#fff',300,.4,0)});if(!G.kuvTip){G.kuvTip=1;say('b1f')}return}throwBoom(sx,sy,()=>{if(!s.on||!o.dizzy)return;s.on=0;o.cnt++;o.hitR++;SFX.light(o.cnt);say('n'+o.cnt);part(sx,sy,18,'#a98bd6',400,.8,900);shake(6);if(o.cnt==8){o.state='calm';SFX.win();say('b1c');say('b1d');say('b1e')}});return}}}}
+  if(o.type=='kuv'&&o.state=='ctr'){const d=Math.hypot(wx-o.x,wy-(o.y-o.r));if(d<o.r*.42){o.state='calm';SFX.win();part(o.x,o.y-o.r,40,'#fff3a0',500,1,0,10);say('r_b1ctr');say('b1c');say('b1d');say('b1e');say('rule1');return}if(d<o.r*1.4){o.miss=1;SFX.no();say('b1g');return}}
+  if(o.type=='kuv'&&o.state=='fight'){for(const s of o.spikes){if(!s.on)continue;const a=s.a+o.rot,sx=o.x+Math.cos(a)*o.r*1.05,sy=o.y-o.r+Math.sin(a)*o.r*1.05;if(Math.hypot(wx-sx,wy-sy)<80){if(!o.dizzy){throwBoom(sx,sy,()=>{SFX.no();part(sx,sy,8,'#fff',300,.4,0)});if(!G.kuvTip){G.kuvTip=1;say('b1f')}return}throwBoom(sx,sy,()=>{if(!s.on||!o.dizzy)return;s.on=0;o.cnt++;o.hitR++;SFX.light(o.cnt);say('n'+o.cnt);part(sx,sy,18,'#a98bd6',400,.8,900);shake(6);if(o.cnt==1)say('t_kray');if(o.cnt==8){o.state='ctr';o.dizzy=0;o.vx=o.dir*150;SFX.win();say('b1g')}});return}}}}
  for(const o of ENTS){const x=EX[o.type];if(x&&x.tap&&!o.dead&&x.tap(o,wx,wy))return}
  throwBoom(wx,wy)}
 const BOOM=[];function throwBoom(tx,ty,cb){if(BOOM.length>1)return;SFX.boom();BOOM.push({x:P.x,y:P.y-100,tx,ty,t:0,cb,back:0})}
@@ -305,12 +307,14 @@ function hint0(){IDLE=0;// подсказка ладошкой к ближайш
  for(const o of ENTS){const x=EX[o.type];if(x&&x.hint&&!o.dead&&x.hint(o))return}
  for(const o of ENTS){if(o.type=='stone'&&!o.done&&Math.abs(o.x-P.x)<700){const pts=stonePts(o);const q=pts.find((q,i)=>!(o.litMask&(1<<i)))||[o.x,o.cy];HAND={x:q[0],y:q[1],t:0,k:'tap'};say(o.n?'t_stone':'t_stone0');return}
   if(o.type=='odd'&&!o.done&&Math.abs(o.x-P.x)<800){const it=o.items.find(i=>i.odd);HAND={x:it.x,y:it.y,t:0,k:'tap'};say('t_odd');return}
+  if(o.type=='kuv'&&o.state=='ctr'){HAND={x:o.x,y:o.y-o.r,t:0,k:'tap'};say('b1g');return}
   if(o.type=='kuv'&&o.state=='fight'){const s=o.spikes.find(s=>s.on);const a=s.a+o.rot;HAND={x:o.x+Math.cos(a)*o.r,y:o.y-o.r+Math.sin(a)*o.r,t:0,k:'tap'};say('b1b');return}}
  HAND={x:BTN.right?BTN.right.x+CAM.x:0,y:BTN.right?BTN.right.y+CAM.y:0,t:0,k:'screen',bx:'right'}}
 function updKuv(o,dt){const p=P;if(o.state=='fight'){
   if(o.dizzy>0){o.dizzy-=dt;o.vx=0;o.wob=(o.wob||0)+dt;if(o.dizzy<=0||o.hitR>=2){o.dizzy=0;o.vx=o.dir*(240+o.cnt*30);shake(4);SFX.bump()}}
   else{o.x+=o.vx*dt;o.rot+=o.vx*dt/o.r;if(o.x<o.r*1.1+4*T||o.x>L.w*T-o.r*1.1-4*T){o.dir=-Math.sign(o.vx);o.x=clamp(o.x,o.r*1.1+4*T,L.w*T-o.r*1.1-4*T);shake(10);SFX.land();o.dizzy=3.4;o.hitR=0;o.wob=0;part(o.x+Math.sign(-o.dir)*o.r,o.y-o.r,20,'#d8c7a0',500,.7,600)}}
   if(!o.dizzy&&Math.hypot(p.x-o.x,(p.y-70)-(o.y-o.r))<o.r+30){if(p.vy>200&&p.y<o.y-o.r*1.6){p.vy=-1000;SFX.bump()}else hurt(p,o.x)}}
+ else if(o.state=='ctr'){o.x+=o.vx*dt;o.rot+=o.vx*dt/o.r;const lo=o.r*1.1+4*T,hi=L.w*T-o.r*1.1-4*T;if(o.x<lo||o.x>hi){o.vx*=-1;o.x=clamp(o.x,lo,hi)}o.y=10*T-Math.abs(Math.sin(o.rot*1.5))*22}
  else{o.vx*=Math.pow(.2,dt);o.rot+=o.vx*dt/o.r;o.y=10*T;if(!speaking()&&!G.won)win()}}
 function win(){if(G.won)return;G.won=1;SFX.win();vlog({ev:'win',lv:G.level,t:G.t});vEndLevel();say('r_win');if(L.meta.boss){HUD.boss=1;HUD.stars=clamp(HUD.hearts,1,3);HUD.bonus=10*HUD.stars;HUD.shards+=HUD.bonus;HUD.coins0=HUD.shards-HUD.bonus}const id=G.level;SAVE.done[id]=1;SAVE.stars[id]=Math.max(SAVE.stars[id]||0,HUD.stars);SAVE.shards+=HUD.shards;save();G.winT=0;part(P.x,P.y-100,60,'#fff3a0',600,1.4,200,10)}
 // ---- рисование мира
@@ -445,10 +449,11 @@ function drawEnts(){for(const e of ENTS){if(!e.nc&&(e.x<CAM.x-400||e.x>CAM.x+WV+
   for(const it of e.items){if(it.y>H+200)continue;const wob=Math.sin(G.t*30)*it.wob*12;paintShape(it.shape,it.x+wob,it.y+Math.sin(G.t*2+it.x)*6,it.r,it.col,0,true,10)}}
  else if(e.type=='kuv')drawKuv(e);
  else if(EX[e.type]&&EX[e.type].draw)EX[e.type].draw(e)}}
-function drawKuv(o){X.save();const cy=o.y-o.r;X.translate(o.x,cy);X.rotate(o.rot);const i=IMG.kuv;
+function drawKuv(o){X.save();const cy=o.y-o.r;X.translate(o.x+(o.state=='ctr'?Math.cos(o.rot*3)*12:0),cy);X.rotate(o.rot);const i=IMG.kuv;
  // колесо без шипов: картинка содержит шипы — поверх рисуем свои: берём круг из картинки
  X.save();X.beginPath();X.arc(0,0,o.r*.86,0,7);X.clip();X.drawImage(i,-o.r*1.27,-o.r*1.32,o.r*2.55,o.r*2.55*i.height/i.width);X.restore();X.lineWidth=14;X.strokeStyle='#7a4a24';X.beginPath();X.arc(0,0,o.r*.88,0,7);X.stroke();X.lineWidth=4;X.strokeStyle='rgba(255,214,150,.75)';X.beginPath();X.arc(0,0,o.r*.83,0,7);X.stroke();
  X.restore();X.save();X.translate(o.x,cy);for(const s of o.spikes){if(!s.on)continue;const a=s.a+o.rot;X.save();X.rotate(a);X.fillStyle=o.dizzy?'#b394ff':'#5d4590';X.strokeStyle=o.dizzy?'#fff3a0':'#2b1d4d';X.lineWidth=o.dizzy?7:4;X.beginPath();X.moveTo(o.r*.9,-26);X.lineTo(o.r*1.45,0);X.lineTo(o.r*.9,26);X.closePath();X.fill();X.stroke();X.fillStyle='rgba(255,255,255,.5)';X.beginPath();X.moveTo(o.r*.95,-12);X.lineTo(o.r*1.3,0);X.lineTo(o.r*.95,4);X.fill();X.restore()}X.restore();
+ if(o.state=='ctr'&&o.miss&&WX.glowDot){X.save();X.strokeStyle='rgba(255,243,160,.85)';X.lineWidth=6;X.setLineDash([10,10]);X.beginPath();X.arc(o.x,cy,46+Math.sin(G.t*6)*6,0,7);X.stroke();X.restore()}
  if(o.dizzy){X.save();for(let i=0;i<3;i++){const a=G.t*4+i*2.1;const sx=o.x+Math.cos(a)*90,sy=cy-o.r-20+Math.sin(a)*22;X.fillStyle='#ffe36b';X.strokeStyle='#a86a00';X.lineWidth=3;X.beginPath();for(let k=0;k<10;k++){const b=k*Math.PI/5-Math.PI/2,rr=k%2?9:22;X.lineTo(sx+Math.cos(b)*rr,sy+Math.sin(b)*rr)}X.closePath();X.fill();X.stroke()}X.restore()}
  txt(o.cnt+' из 8',o.x,cy-o.r-(o.dizzy?110:80),46,'#fff3a0')}
 function plural(n,a,b,c){n=Math.abs(n)%100;const n1=n%10;if(n>10&&n<20)return c;if(n1>1&&n1<5)return b;if(n1==1)return a;return c}
@@ -484,6 +489,7 @@ function botThink(dt){if(!G.bot||G.scene=='map'||G.scene=='title')return;BOT.l=0
  if(WX.botPre&&WX.botPre(dt))return;
  for(const o of ENTS){if(o.type=='stone'&&!o.done&&Math.abs(o.x-p.x)<420){BOT.r=p.x<o.x-60;if(G.bt>.6){G.bt=0;const pts=stonePts(o);const q=pts.find((q,i)=>!(o.litMask&(1<<i)))||[o.x,o.cy];taps.push({x:(q[0]-CAM.x)*Z,y:(q[1]-CAM.y)*Z})}return}
   if(o.type=='odd'&&!o.done&&o.x-p.x<500&&o.x-p.x>-200){BOT.r=p.x<o.x-200;if(G.bt>.8){G.bt=0;const it=G.botWrong?o.items.find(i=>i.odd):o.items.find(i=>!i.odd&&!G.botW1)||o.items.find(i=>i.odd);G.botW1=1;G.botWrong=1;taps.push({x:(it.x-CAM.x)*Z,y:(it.y-CAM.y)*Z})}return}
+  if(o.type=='kuv'&&o.state=='ctr'){BOT.r=0;BOT.l=0;BOT.j=0;if(G.bt>.6){G.bt=0;taps.push({x:(o.x-CAM.x)*Z,y:(o.y-o.r-CAM.y)*Z})}return}
   if(o.type=='kuv'&&o.state=='fight'){const tx=100;BOT.r=p.x<tx-25;BOT.l=p.x>tx+25;if(o.dizzy>0&&o.dizzy<3.0&&G.bt>.45){G.bt=0;let best=null,by=1e9;for(const s of o.spikes){if(!s.on)continue;const y=Math.sin(s.a+o.rot);if(y<by){by=y;best=s}}if(best){const a=best.a+o.rot;taps.push({x:(o.x+Math.cos(a)*o.r*1.05-CAM.x)*Z,y:(o.y-o.r+Math.sin(a)*o.r*1.05-CAM.y)*Z})}}
    G.bj=(G.bj||0)-dt;BOT.j=G.bj>0;return}}
  // форма
@@ -536,9 +542,9 @@ function render(){X.setTransform(SC,0,0,SC,0,0);X.clearRect(0,0,W,H);
   for(const d of L.deco)img(d.img,d.x+T/2,d.y,(IMG[d.img].height||200)*d.s*.45);drawTiles();FX.tiles();FX.shadows();drawEnts();PITSIGN(Math.max(0,Math.floor(CAM.x/T)-1),Math.min(L.w,Math.ceil((CAM.x+WV)/T)+2));FX.glints();
   if(G.boulder&&G.boulder.kind==2)WX.drawCollapse(G.boulder);else if(G.boulder){const B=G.boulder;X.save();X.translate(B.x,10*T-170);X.rotate(B.x/170);paintShape('circle',0,0,170,'#8d7b66',0,false);X.strokeStyle='#5b4a3a';X.lineWidth=8;X.beginPath();X.moveTo(-90,-40);X.lineTo(30,10);X.lineTo(60,90);X.stroke();X.restore();for(let i=0;i<2;i++)PART.push({x:B.x+60,y:10*T-10,vx:-100+rnd()*-200,vy:-200*rnd(),life:.5,l0:.5,col:'#b8a27a',g:600,sz:10})}
   drawFM();drawP();drawBoom();for(const q of PART){const f=Math.max(0,Math.min(1,q.life/q.l0));X.globalAlpha=q.pf?f*.8:f;X.fillStyle=q.col;if(q.st){st4(q.x,q.y,q.sz*(.4+f))}else if(q.bb){X.strokeStyle=q.col;X.lineWidth=2;X.beginPath();X.arc(q.x+Math.sin(q.life*9)*3,q.y,q.sz,0,7);X.stroke();X.fillStyle='rgba(255,255,255,.8)';X.beginPath();X.arc(q.x-q.sz*.35,q.y-q.sz*.35,q.sz*.28,0,7);X.fill()}else{X.beginPath();X.arc(q.x,q.y,q.pf?q.sz*(1.9-f):q.sz,0,7);X.fill()}}X.globalAlpha=1;
-  if(HAND&&HAND.k!='screen')hand(HAND.x+10,HAND.y+20,HAND.t,(HAND.t%1)>.6?(HAND.t%1-.6)/.4:0);
+  if(HAND&&HAND.k!='screen'){const pr=WX.hpos?WX.hpos(HAND):null;hand(HAND.x+10,HAND.y+20,HAND.t,pr!=null?pr:(HAND.t%1)>.6?(HAND.t%1-.6)/.4:0)}
   X.restore();FX.light();FX.front(1/60);if(FLASH>0){X.fillStyle='rgba(255,255,255,'+FLASH*4+')';X.fillRect(0,0,W,H);FLASH-=1/60}
-  drawHUD();if(G.won)drawWin()}
+  drawHUD();if(WX.drawStkFx)WX.drawStkFx();if(G.won)drawWin()}
  drawSub();if(Q.has('fps'))txt(G.fps.toFixed(0)+' fps',W-80,H-20,24)}
 // ---- главный цикл, фиксированный шаг
 let last=performance.now(),acc=0,fpsT=0,fpsN=0;
