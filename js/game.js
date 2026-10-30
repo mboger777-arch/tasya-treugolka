@@ -129,7 +129,7 @@ let onBump=null;
 function spawnShard(x,y){ENTS.push({type:'coin',x,y,vy:-600,fly:1,kind:L.id[0]=='1'?'coin_circ':'coin_tri'})}
 function stompWave(p){for(const e of ENTS)if(e.type=='enemy'&&Math.abs(e.x-p.x)<300&&Math.abs(e.y-p.y)<80)killEnemy(e)}
 function fallCatch(p){p.x=p.safe.x;p.y=p.safe.y-10;p.vx=0;p.vy=0;p.ground=false;FM.x=p.x;FM.y=p.y-200;FM.catch=1;say('r_oops');part(p.x,p.y-80,20,'#fff7c0',300,.8,0);if(G.auto)G.auto.rewind=1}
-function hurt(p,from){if(p.inv>0)return;HUD.hearts--;p.inv=1.6;p.hurt=.4;p.vx=(p.x<from?-1:1)*500;p.vy=-600;SFX.hurt();shake(8);if(HUD.hearts<=0){HUD.hearts=3;fallCatch(p)}}
+function hurt(p,from){if(p.inv>0)return;G.log.push('hurt '+G.level+' '+Math.round(p.x)+','+Math.round(p.y)+' '+p.form);HUD.hearts--;p.inv=1.6;p.hurt=.4;p.vx=(p.x<from?-1:1)*500;p.vy=-600;SFX.hurt();shake(8);if(HUD.hearts<=0){HUD.hearts=3;fallCatch(p)}}
 function killEnemy(e){e.dead=1;SFX.stomp();part(e.x,e.y-40,14,'#c08a50',350,.7);HUD.shards++}
 function transform(p){const fs=L.forms||[];const order=['girl',...fs];let i=order.indexOf(p.form);const nx=order[(i+1)%order.length];if(nx==p.form)return;
  const [w0,h0]=dims(p);p.form=nx;const [w1,h1]=dims(p);
