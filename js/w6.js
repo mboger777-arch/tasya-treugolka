@@ -51,7 +51,7 @@ EX.ally={top(o){return o.st=='ask'||o.st=='wait'&&P.x>o.sx*T-700?o.cy0-95:null},
   if(o.stop!=null)wall(o.stop,15,o.gy-1);o.kx=o.ax;o.ky=o.gy*T;o.kr=0},
  upd(o,dt){const p=P,d=o.d;o.t+=dt;o.opts.forEach(q=>q.w=Math.max(0,q.w-dt));if(o.st!='wait')o.in=Math.min(1,o.in+dt*2.5);
   o.cy=Math.max(o.cy0,CAM.y+90/Z+80);o.cx=clamp(o.ax,CAM.x+250,CAM.x+WV-250);o.opts.forEach((q,i)=>{q.x=o.cx+(i-1)*150;q.y=o.cy});
-  if(o.st=='wait'){if(p.x>o.sx*T-460){o.st='ask';o.t=0;hush();say(d.q)}return}
+  if(o.st=='wait'){if(p.x>o.sx*T-460&&G.lt>3.2&&!speaking()){o.st='ask';o.t=0;hush();say(d.q)}return}
   if(o.st!='act')return;const t=o.t;
   if(o.act=='ride'){if(t<.7){o.kx=lerp(o.ax,p.x,t/.7);o.kr+=dt*8;G.inputLock=1;p.vx=0;return}
    if(!o.x0){o.x0=p.x;if(o.stop!=null)wall(o.stop,0,o.gy-1)}
