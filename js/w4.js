@@ -37,7 +37,7 @@ EX.sstar={top(o){return o.done?null:o.cy-o.r-100},setup(o){o.gx=Math.floor(o.x/T
   if(!o.done){txt(o.lit+' из 5',cx,cy-r-48,big(),'#fff3a0');panelHide(cx-r,cy-r-90,2*r)}}};
 // ---- падающие осколки: щит отбивает
 EX.shards={setup(o){o.a=o.x0*T;o.b=o.x1*T;o.list=[];o.cd=1},
- upd(o,dt){const p=P;const inz=p.x>o.a-120&&p.x<o.b;if(!o.said&&p.x>o.a-500){o.said=1;say('t_shard')}
+ upd(o,dt){const p=P;o.x=clamp(p.x,o.a,o.b);const inz=p.x>o.a-120&&p.x<o.b;if(!o.said&&p.x>o.a-500){o.said=1;say('t_shard')}
   if(inz){o.cd-=dt;if(o.cd<=0){o.cd=.55+Math.random()*.25;const x=clamp(p.x+(Math.random()*500-160)+p.vx*.4,o.a,o.b);o.list.push({x,y:CAM.y+20,vy:120,vx:0,rot:Math.random()*6,k:Math.floor(Math.random()*3),warn:.5})}}
   const [w,h]=dims(p);
   for(const s of o.list){if(s.warn>0){s.warn-=dt;continue}s.vy=Math.min(s.vy+700*dt,420);s.y+=s.vy*dt;s.x+=s.vx*dt;s.rot+=dt*(s.bn?9:3);
