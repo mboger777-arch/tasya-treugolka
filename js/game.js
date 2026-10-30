@@ -41,24 +41,53 @@ let music=null;function musicStart(){const a=ac();if(!a||music)return;music={t:a
 const MEL=[[0,2],[4,1],[7,1],[9,2],[7,2],[4,2],[5,1],[4,1],[2,2],[0,2],[2,1],[4,1],[7,2],[4,2],[2,4]];
 function musicTick(){if(!music||!AC)return;const base=G.scene=='boss'?220:262;while(music.t<AC.currentTime+.4){const [n,d]=MEL[music.i%MEL.length];const f=base*Math.pow(2,n/12),len=d*.22;
  tone(f,len*.9,'triangle',.035,0,music.t-AC.currentTime);if(music.i%2==0)tone(base/2*Math.pow(2,[0,5,7,0][(music.i/4|0)%4]/12),.4,'sine',.05,0,music.t-AC.currentTime);music.t+=len;music.i++}}
-// ---- голос: очередь, реплики не обрываются
-const VQ=[];let vcur=null,vEnd=0;const vplayed={};
-let HSAID={};function say(k,force){if(typeof L!='undefined'&&L&&L.meta&&L.meta.noFM&&(VOICE['T'+k]||TXTS['T'+k]))k='T'+k;if(G.inHint){if(speaking()||G.t-(HSAID[k]??-99)<14)return;HSAID[k]=G.t}if(!VOICE[k]){G.log.push('novoice '+k);if(!(SUB&&SUB.k==k&&G.t<SUB.end))SUB={k,end:Math.max(G.t,SUB&&SUB.end||0)+Math.max(2.5,(TXTS[k]||'').length*.07)};return}if(VQ.includes(k)||(vcur&&vcur.k==k))return;VQ.push(k)}
-function voiceTick(){if(vcur&&!vcur.a.ended&&!vcur.a.paused)return;if(vcur&&vcur.a.ended)vcur=null;if(vcur&&performance.now()>vcur.until)vcur=null;if(vcur)return;const k=VQ.shift();if(!k)return;
- const a=new Audio('assets/voice/'+VOICE[k][0]);a.play().catch(()=>{});vcur={k,a,until:performance.now()+VOICE[k][1]*1000+1500};SUB={k,end:G.t+VOICE[k][1]+.3}}
+// ---- голос v16: приоритеты, срок годности, мягкое прерывание, субтитры = звук
+// p3 задание/важная подсказка > p2 история > p1 похвала/счёт. Реплика ждёт в очереди не дольше maxAge, иначе выбрасывается.
+const VQ=[];let vcur=null,vEnd=0,VB=0;const vplayed={};G.vlog=[];
+function vpri(k){const b=k.replace(/^T(?=[a-z])/,'');
+ if(/^(n\d|c_|r_good|r_star$|r_win|r_race|r_odd_ok|r_pat|r_asm|r_starf)/.test(b))return 1;
+ if(/^(t_|q_|e_|f_p|f_t|f_w2|b\d[bfth]|b\dh2|b4s|r_\w*no$|r_oops|l\d[1-4]$|l5[234]$|l4[1-4]$|m1)/.test(b)&&!/^l(24|33)$/.test(b))return 3;return 2}
+function vage(p,k){if(G.scene=='cut'||G.scene=='title'||G.scene=='map')return 1e9;return /^T?n\d/.test(k)?.8:p==1?1.2:p==2?2.5:6}
+function vlog(o){if(G.vlog.length<4000)G.vlog.push(o)}
+let HSAID={};function say(k,force){if(typeof L!='undefined'&&L&&L.meta&&L.meta.noFM&&(VOICE['T'+k]||TXTS['T'+k]))k='T'+k;if(G.inHint){if(speaking()||G.t-(HSAID[k]??-99)<14)return;HSAID[k]=G.t}
+ if(!VOICE[k]){G.log.push('novoice '+k);if(!(SUB&&SUB.k==k&&G.t<SUB.end))SUB={k,end:Math.max(G.t,SUB&&SUB.end||0)+Math.max(2.5,(TXTS[k]||'').length*.07)};return}
+ if(VQ.some(q=>q.k==k)||(vcur&&vcur.k==k&&!vcur.fade))return;
+ const p=vpri(k),now=G.t,b=(VB&&VB.t==now)?VB.id:(VB={t:now,id:(VB.id||0)+1}).id,lv=G.level,o={k,p,t0:now,te:now,tr:performance.now(),b,bi:VQ.filter(q=>q.b==b).length+(vcur&&vcur.b==b?1:0),wait:vcur&&!vcur.fade?vcur.k:0,lv,x:typeof P!='undefined'&&P?P.x:0,age:vage(p,k)};
+ if(p==3)G.lastTask=k;
+ // устаревшие реплики в очереди: старые числа, старая похвала, старые задания из прошлой зоны
+ for(let i=VQ.length-1;i>=0;i--){const q=VQ[i];if(q.b==b)continue;if((q.p==1)||(p==3&&q.p==3)||(/^T?n\d/.test(k)&&/^T?n\d/.test(q.k))){vlog({k:q.k,lv:q.lv,te:q.te,drop:'replaced',t:now});VQ.splice(i,1)}}
+ // похвала не нужна, если что-то важнее уже звучит или ждёт
+ if(p==1&&!/^T?n\d/.test(k)&&(VQ.some(q=>q.p>1)||(vcur&&vcur.p>1&&!vcur.fade))){vlog({k,lv,te:now,drop:'flavor-busy',t:now});return}
+ VQ.push(o);
+ // прервать текущую, если пришло событие не ниже по важности (кроме своей пачки и кроме задания, перебиваемого не-заданием)
+ if(vcur&&!vcur.fade&&vcur.b!=b&&p>=vcur.p&&G.scene!='cut'){vfade(vcur,'interrupt')}}
+function vfade(c,why){const a=c.a;let left=1;try{left=(a.duration||c.dur)-a.currentTime}catch(e){}if(left<.3&&!a.paused){c.soft=1;return}c.fade=performance.now();vlog({k:c.k,lv:c.lv,te:c.te,cut:why,t:G.t,at:+(a.currentTime||0).toFixed(2)});if(c.p==3)G.cutTask=c.k}
+function voiceTick(){
+ if(vcur&&vcur.fade){const u=(performance.now()-vcur.fade)/150;try{vcur.a.volume=Math.max(0,1-u)}catch(e){}if(u>=1){try{vcur.a.pause()}catch(e){}vend()}}
+ if(vcur&&vcur.a.ended)vend();if(vcur&&performance.now()>vcur.until)vend();
+ if(vcur)return;
+ while(VQ.length){const q=VQ[0];if(G.t-q.t0>q.age||(q.lv!=G.level&&G.scene!='map'&&G.scene!='cut')){VQ.shift();vlog({k:q.k,lv:q.lv,te:q.te,drop:'stale',t:G.t});continue}break}
+ const q=VQ.shift();if(!q)return;for(const r of VQ)if(r.b==q.b)r.t0=G.t+VOICE[q.k][1];
+ const a=new Audio('assets/voice/'+VOICE[q.k][0]);const c=vcur={...q,a,dur:VOICE[q.k][1],until:performance.now()+VOICE[q.k][1]*1000+400,ts:G.t,tsr:performance.now()};
+ a.addEventListener('playing',()=>{c.tp=G.t;c.tpr=performance.now()},{once:true});a.play().catch(()=>{c.blocked=1});SUB={k:q.k,end:G.t+VOICE[q.k][1]+.3}}
+function vend(){const c=vcur;if(!c)return;vlog({k:c.k,lv:c.lv,p:c.p,b:c.b,bi:c.bi,wait:c.wait,te:c.te,ts:c.ts,tp:c.tp,tr:c.tr,tsr:c.tsr,tpr:c.tpr,endr:performance.now(),end:G.t,cut:c.fade?1:0});if(SUB&&SUB.k==c.k)SUB=null;vcur=null}
 let SUB=null;const TXT={};
-function hush(){VQ.length=0;if(vcur){try{vcur.a.pause()}catch(e){}vcur=null}SUB=null}
+function hush(){for(const q of VQ)vlog({k:q.k,lv:q.lv,te:q.te,drop:'hush',t:G.t});VQ.length=0;if(vcur){try{vcur.a.pause()}catch(e){}vend()}SUB=null}
+function vEndLevel(){// конец уровня: задания и похвала больше не нужны, история (финал босса) дозвучивает
+ for(let i=VQ.length-1;i>=0;i--)if(VQ[i].p!=2){vlog({k:VQ[i].k,lv:VQ[i].lv,te:VQ[i].te,drop:'levelend',t:G.t});VQ.splice(i,1)}if(vcur&&vcur.p!=2)vfade(vcur,'levelend')}
 function speaking(){return !!vcur||VQ.length>0}
+function vRepeat(){const k=G.cutTask||G.lastTask;if(!k)return;G.cutTask=0;hush();say(k)}
+function vPrefetch(){if(G.bot||vPrefetch.d)return;vPrefetch.d=1;const ks=Object.keys(VOICE);let i=0;const nx=()=>{if(i>=ks.length)return;fetch('assets/voice/'+VOICE[ks[i++]][0]).then(r=>r.blob()).catch(()=>{}).finally(()=>setTimeout(nx,60))};setTimeout(nx,3000)}
 // ---- ввод
 const KEY={},TOUCH={};let taps=[];const BTN={};
 addEventListener('keydown',e=>{KEY[e.code]=1;ac();if(['Space','ArrowUp','ArrowDown'].includes(e.code))e.preventDefault()});addEventListener('keyup',e=>KEY[e.code]=0);
 function btnLayout(){const s=Math.min(124,H*.172),m=16,ml=m+SL,mr=m+SR,mb=m+SB;BTN.left={x:ml+s/2,y:H-mb-s/2,r:s/2};BTN.right={x:ml+s*1.6,y:H-mb-s/2,r:s/2};
- BTN.jump={x:W-mr-s/2-10,y:H-mb-s/2,r:s*.58};BTN.form={x:W-mr-s*1.75,y:H-mb-s*.45,r:s*.46};}
+ BTN.jump={x:W-mr-s/2-10,y:H-mb-s/2,r:s*.58};BTN.form={x:W-mr-s*1.75,y:H-mb-s*.45,r:s*.46};BTN.rep={x:W-SR-62,y:118,r:36};}
 const ptrs={};
 function evp(e){return {x:e.clientX*DPR/SC,y:e.clientY*DPR/SC}}
 function BTNW(){btnLayout();return Math.max(BTN.right.x+BTN.right.r,W-(BTN.form.x-BTN.form.r))}
-function hitBtn(p){btnLayout();for(const k in BTN){const b=BTN[k];if(Math.hypot(p.x-b.x,p.y-b.y)<b.r*1.25)return k}return null}
-C.addEventListener('pointerdown',e=>{ac();musicStart();fs();const p=evp(e);const b=(G.scene=='play'||G.scene=='boss')?hitBtn(p):null;ptrs[e.pointerId]=b;if(b)TOUCH[b]=1;else taps.push(p);e.preventDefault()});
+function hitBtn(p){btnLayout();for(const k in BTN){const b=BTN[k];if(k=='rep'&&!(G.lastTask&&!G.won))continue;if(Math.hypot(p.x-b.x,p.y-b.y)<b.r*1.25)return k}return null}
+C.addEventListener('pointerdown',e=>{ac();musicStart();fs();const p=evp(e);const b=(G.scene=='play'||G.scene=='boss')?hitBtn(p):null;ptrs[e.pointerId]=b;if(b=='rep')vRepeat();if(b)TOUCH[b]=1;else taps.push(p);e.preventDefault()});
 C.addEventListener('pointermove',e=>{if(!(e.pointerId in ptrs))return;const p=evp(e),b=(G.scene=='play'||G.scene=='boss')?hitBtn(p):null,o=ptrs[e.pointerId];if(o&&b!==o&&(o=='left'||o=='right')){TOUCH[o]=0;if(b=='left'||b=='right'){TOUCH[b]=1;ptrs[e.pointerId]=b}}});
 function up(e){const b=ptrs[e.pointerId];if(b)TOUCH[b]=0;delete ptrs[e.pointerId]}
 C.addEventListener('pointerup',up);C.addEventListener('pointercancel',up);
@@ -200,7 +229,7 @@ LV['1-4']=()=>{const b=new LB(220,'1-4');b.meta={name:'1-4 Бегство от �
 LV['1-B']=()=>{const n=Math.max(16,Math.ceil(W/1.38/T)+1);const b=new LB(n,'1-B');b.zoom=1.38;b.meta={name:'Босс: Кувырок',intro:['b1a','b1b'],forms:['wheel'],boss:'kuv'};b.g(0,n).col(0,0,9,1).col(n-1,0,9,1).col(3,8,9,1).col(n-4,8,9,1);b.start={x:1,y:9};b.e('kuv',n-8,10);return b};
 const ORDER=['1-1','1-2','1-3','1-4','1-B'];
 // ---- загрузка уровня
-function loadLevel(id){VQ.length=0;if(vcur){try{vcur.a.pause()}catch(e){}vcur=null}SUB=null;G.lseq=(G.lseq||0)+1;G.f2=0;G.said14=0;HSAID={};const b=LV[id]();seed=+(Q.get('seed')||((Date.now()/1000|0)%100000));const [l,ents]=mkLevel(b);L=l;L.forms=b.meta.forms.slice();L.meta=b.meta;
+function loadLevel(id){hush();vlog({ev:'load',lv:id,t:G.t});G.level=id;G.lastTask=0;G.cutTask=0;vPrefetch();G.lseq=(G.lseq||0)+1;G.f2=0;G.said14=0;HSAID={};const b=LV[id]();seed=+(Q.get('seed')||((Date.now()/1000|0)%100000));const [l,ents]=mkLevel(b);L=l;L.forms=b.meta.forms.slice();L.meta=b.meta;
  ENTS=[];PART=[];TASK=null;HAND=null;IDLE=0;HUD={shards:0,stars:0,hearts:3,got:0};
  for(const e of ents){const o=Object.assign({},e);if(o.type=='enemy'){o.vx=-90;o.ph=rnd()*6}if(o.type=='odd')setupOdd(o);if(o.type=='stone')setupStone(o);if(o.type=='kuv')setupKuv(o);if(EX[o.type]&&EX[o.type].setup)EX[o.type].setup(o);ENTS.push(o)}
  P=newPlayer(b.start.x*T,b.start.y*T+T);P.y=10*T;if(b.meta.startForm&&b.meta.startForm!='girl'){P.form=b.meta.startForm}if(Q.get('form'))P.form=Q.get('form');
@@ -247,7 +276,7 @@ function update(dt){G.lt+=dt;const p=P;const I=inp();
   else if(e.type=='coin'){if(e.fly){e.vy+=1800*dt;e.y+=e.vy*dt;if(e.vy>0){e.fly=0;}}
    if(Math.abs(e.x-p.x)<pw/2+30&&e.y-30<p.y&&e.y+30>p.y-ph){e.dead=1;HUD.shards++;SFX.coin();part(e.x,e.y,8,'#ffe36b',200,.4,0,6);sparkle(e.x,e.y,8)}}
   else if(e.type=='star'){if(Math.abs(e.x-p.x)<pw/2+40&&e.y-50<p.y&&e.y+50>p.y-ph){e.dead=1;HUD.stars++;SFX.star();say('r_star');part(e.x,e.y,30,'#fff',400,.9,0,10)}}
-  else if(e.type=='tip'){if(!e.said&&p.x>e.when*T){e.said=1;say(e.k);if(e.k=='t_bump')HAND={x:36.5*T+T,y:5*T,t:0,k:'bump'}}}
+  else if(e.type=='tip'){if(!e.said&&p.x>e.when*T){e.said=1;if(ENTS.some(o=>o.type=='tip'&&!o.said&&o.when>e.when&&p.x>o.when*T)){vlog({k:e.k,lv:G.level,te:G.t,drop:'passed',t:G.t});continue}say(e.k);if(e.k=='t_bump')HAND={x:36.5*T+T,y:5*T,t:0,k:'bump'}}}
   else if(e.type=='stone'){if(!e.intro&&Math.abs(p.x-e.x)<500){e.intro=1;say(e.n?'t_stone':(e.shape=='oval'?'t_oval':'t_stone0'))}
    if(!e.done&&!e.n&&Math.abs(p.x-e.x)<80)stoneDone(e);if(!e.done&&e.n==0&&false);
    if(!e.done&&p.x>e.x+40){p.x=e.x+40;p.vx=Math.min(p.vx,0)}}
@@ -283,7 +312,7 @@ function updKuv(o,dt){const p=P;if(o.state=='fight'){
   else{o.x+=o.vx*dt;o.rot+=o.vx*dt/o.r;if(o.x<o.r*1.1+4*T||o.x>L.w*T-o.r*1.1-4*T){o.dir=-Math.sign(o.vx);o.x=clamp(o.x,o.r*1.1+4*T,L.w*T-o.r*1.1-4*T);shake(10);SFX.land();o.dizzy=3.4;o.hitR=0;o.wob=0;part(o.x+Math.sign(-o.dir)*o.r,o.y-o.r,20,'#d8c7a0',500,.7,600)}}
   if(!o.dizzy&&Math.hypot(p.x-o.x,(p.y-70)-(o.y-o.r))<o.r+30){if(p.vy>200&&p.y<o.y-o.r*1.6){p.vy=-1000;SFX.bump()}else hurt(p,o.x)}}
  else{o.vx*=Math.pow(.2,dt);o.rot+=o.vx*dt/o.r;o.y=10*T;if(!speaking()&&!G.won)win()}}
-function win(){if(G.won)return;G.won=1;SFX.win();say('r_win');if(L.meta.boss){HUD.boss=1;HUD.stars=clamp(HUD.hearts,1,3);HUD.bonus=10*HUD.stars;HUD.shards+=HUD.bonus;HUD.coins0=HUD.shards-HUD.bonus}const id=G.level;SAVE.done[id]=1;SAVE.stars[id]=Math.max(SAVE.stars[id]||0,HUD.stars);SAVE.shards+=HUD.shards;save();G.winT=0;part(P.x,P.y-100,60,'#fff3a0',600,1.4,200,10)}
+function win(){if(G.won)return;G.won=1;SFX.win();vlog({ev:'win',lv:G.level,t:G.t});vEndLevel();say('r_win');if(L.meta.boss){HUD.boss=1;HUD.stars=clamp(HUD.hearts,1,3);HUD.bonus=10*HUD.stars;HUD.shards+=HUD.bonus;HUD.coins0=HUD.shards-HUD.bonus}const id=G.level;SAVE.done[id]=1;SAVE.stars[id]=Math.max(SAVE.stars[id]||0,HUD.stars);SAVE.shards+=HUD.shards;save();G.winT=0;part(P.x,P.y-100,60,'#fff3a0',600,1.4,200,10)}
 // ---- рисование мира
 function drawBG(){const bg=IMG.bg_w1;if(bg.width){const h=H*1.05,w=bg.width*h/bg.height;const off=CAM.x*.12,k0=Math.floor(off/w);for(let k=k0;k<k0+3;k++){const x=k*w-off;X.save();X.translate(x+(k%2?w:0),-(CAM.y-600+HV*L.gf)*.05-20);if(k%2)X.scale(-1,1);X.drawImage(bg,0,0,w,h);X.restore()}}
  // средний слой: холмы
@@ -421,10 +450,15 @@ function drawHUD(){btnLayout();// сердечки, осколки, звёзды
  for(let i=0;i<3;i++)img('star',420+i*58,52,52,0,i<HUD.stars?1:.25,.5,.5);X.restore();
  if(G.scene!='boss'&&!(G.t-(G.hideName??-9)<.15))txt(L.meta.name,W-30-SR,46,38,'#fff3a0','right');
  // кнопки
+ if(G.lastTask&&!G.won)drawRep();
  const B=(k,n,fl)=>{const b=BTN[k];X.save();X.globalAlpha=TOUCH[k]?1:.82;const s=TOUCH[k]?.92:1;X.translate(b.x,b.y);X.scale(s,s);if(fl)X.scale(-1,1);img(n,0,0,b.r*2,0,1,.5,.5);X.restore()};
  if(!G.fly){B('left','btn_arrow',1);B('right','btn_arrow')}B('jump','btn_jump');if(L.forms.length&&!L.meta.noFM){B('form','btn_form');const nf=FORMS[nextForm()];if(nf){X.save();paintShape(nf.shape||'tri',BTN.form.x+BTN.form.r*.75,BTN.form.y-BTN.form.r*.75,22,nf.col,0,false);X.restore()}}
  if(BANNER&&BANNER.t>0){BANNER.t-=1/60;X.save();X.globalAlpha=Math.min(1,BANNER.t*2);txt(BANNER.txt,W/2,H*.2,70,'#fff3a0');X.restore()}
  if(HAND&&HAND.k=='screen'){const b=BTN[HAND.bx];hand(b.x+10,b.y-20,HAND.t,(HAND.t%1)>.6?(HAND.t%1-.6)/.4:0)}}
+function drawRep(){const b=BTN.rep,pu=G.cutTask?1+Math.sin(G.t*6)*.08:1;X.save();X.translate(b.x,b.y);X.scale(pu,pu);X.globalAlpha=TOUCH.rep?1:.85;
+ X.fillStyle='rgba(60,30,100,.55)';X.beginPath();X.arc(0,0,b.r,0,7);X.fill();X.lineWidth=4;X.strokeStyle=G.cutTask?'#ffd34d':'#fff3a0';X.stroke();
+ X.fillStyle='#fff';X.beginPath();X.moveTo(-16,-7);X.lineTo(-6,-7);X.lineTo(6,-17);X.lineTo(6,17);X.lineTo(-6,7);X.lineTo(-16,7);X.closePath();X.fill();
+ X.strokeStyle='#fff';X.lineWidth=4;X.lineCap='round';for(const r of [10,18]){X.beginPath();X.arc(6,0,r,-.7,.7);X.stroke()}X.restore()}
 function nextForm(){const o=['girl',...L.forms];return o[(o.indexOf(P.form)+1)%o.length]}
 function panel(x,y,w,h,r=28){X.save();const g=X.createLinearGradient(0,y,0,y+h);g.addColorStop(0,'rgba(255,250,235,.9)');g.addColorStop(1,'rgba(238,222,255,.88)');X.shadowColor='rgba(60,30,90,.35)';X.shadowBlur=18;X.shadowOffsetY=6;X.fillStyle=g;X.beginPath();X.roundRect(x,y,w,h,r);X.fill();X.shadowColor='transparent';
  X.lineWidth=6;X.strokeStyle='#e2a93b';X.stroke();X.lineWidth=2;X.strokeStyle='rgba(255,255,255,.9)';X.beginPath();X.roundRect(x+7,y+7,w-14,h-14,r-6);X.stroke();
@@ -505,8 +539,8 @@ function frame(now){let dt=Math.min(.1,(now-last)/1000);last=now;resize();qualit
  else if(G.scene=='cut'){WX.updCut(dt)}
  else if(G.scene=='map'){IDLE+=dt;for(const t of taps.splice(0))mapTap(t);if(G.bot){const n=MAPN.find(n=>!SAVE.done[n.id]&&LV[n.id]&&(!Q.get('level')||ORDER.indexOf(n.id)>=ORDER.indexOf(Q.get('level')))&&(!Q.get('upto')||ORDER.indexOf(n.id)<=ORDER.indexOf(Q.get('upto'))));if(n)loadLevel(n.id);else G.botDone=1}}
  else{if(G.won){G.winT+=dt;taps.length=0;acc+=dt;while(acc>=STEP){acc-=STEP;for(const q of PART){q.life-=STEP;q.vy+=q.g*STEP;q.x+=q.vx*STEP;q.y+=q.vy*STEP}}PART=PART.filter(q=>q.life>0);
-   const bw=HUD.boss?4.5:2;if((G.winT>2&&!speaking()&&(inp().j||taps.length))||G.winT>12&&G.bot||(G.bot&&G.winT>bw)){STATS.levels[G.level]={t:+G.lt.toFixed(1),bad:STATS.badFeet};G.scene='map';if(WX.afterWin)WX.afterWin(G.level)}
-   if(!G.bot&&G.winT>2&&!speaking()){C.onpointerup=()=>{C.onpointerup=null;if(G.won&&G.scene!='map'&&G.scene!='cut'){G.scene='map';if(WX.afterWin)WX.afterWin(G.level)}}}}
+   const bw=HUD.boss?4.5:2;if((G.winT>2&&!speaking()&&(inp().j||taps.length))||G.winT>12&&G.bot||(G.bot&&G.winT>bw)){STATS.levels[G.level]={t:+G.lt.toFixed(1),bad:STATS.badFeet};hush();G.scene='map';if(WX.afterWin)WX.afterWin(G.level)}
+   if(!G.bot&&G.winT>2&&!speaking()){C.onpointerup=()=>{C.onpointerup=null;if(G.won&&G.scene!='map'&&G.scene!='cut'){hush();G.scene='map';if(WX.afterWin)WX.afterWin(G.level)}}}}
   else{acc+=dt;let n=0;while(acc>=STEP&&n<20){acc-=STEP;n++;botThink(STEP);update(STEP);checkFeet()}}}
  render();requestAnimationFrame(frame)}
 fetch('tools/lines.json?v='+V).then(r=>r.json()).then(a=>a.forEach(o=>TXTS[o.k]=o.t)).catch(()=>{});
