@@ -44,7 +44,7 @@ EX.shards={setup(o){o.a=o.x0*T;o.b=o.x1*T;o.list=[];o.cd=1},
    if(!s.bn&&Math.abs(s.x-p.x)<w/2+16&&s.y>p.y-h-10&&s.y<p.y){if(p.form=='shield'){s.bn=1;s.vy=-380;s.vx=(s.x<p.x?-1:1)*260;tone(1568+Math.random()*400,.25,'triangle',.08);part(s.x,s.y,10,'#fff3a0',260,.5,0,6)}else{s.dead=1;hurt(p,s.x);part(s.x,s.y,12,'#d29bff',260,.5,300,6)}}
    if(s.y>590){s.dead=1;part(s.x,590,8,'#d29bff',220,.5,300,5);SFX.bump&&0}}
   o.list=o.list.filter(s=>!s.dead)},
- hint(o){if(!(P.x>o.a-300&&P.x<o.b))return;if(P.form!='shield'){HAND={x:0,y:0,t:0,k:'screen',bx:'form'};say('t_shard');return true}},
+ hint(o){if(!(P.x>o.a-300&&P.x<o.b))return;if(P.form!='shield'&&L.meta.noFM&&L.forms.includes('shield')){P.form='girl';transform(P);return}if(P.form!='shield'){HAND={x:0,y:0,t:0,k:'screen',bx:'form'};say('t_shard');return true}},
  draw(o){if(o.b<CAM.x-100||o.a>CAM.x+WV+100)return;X.save();const cy0=CAM.y-4;
   for(let x=o.a-30;x<o.b+30;x+=46){if(x<CAM.x-60||x>CAM.x+WV+60)continue;const h=40+((x*13)%5)*12;X.fillStyle=(x/46)%2<1?'#7a3fb0':'#5a2a8a';X.beginPath();X.moveTo(x-24,cy0);X.lineTo(x,cy0+h);X.lineTo(x+24,cy0);X.fill();X.fillStyle='rgba(255,255,255,.25)';X.beginPath();X.moveTo(x-10,cy0);X.lineTo(x,cy0+h*.7);X.lineTo(x-2,cy0);X.fill()}
   for(const s of o.list){if(s.warn>0){X.fillStyle='rgba(120,40,160,'+(.25+.25*Math.sin(G.t*20))+')';X.beginPath();X.ellipse(s.x,598,30,8,0,0,7);X.fill();continue}
@@ -76,7 +76,7 @@ EX.honey={hint(o){if(!near(o,520)||P.x>o.x)return;if(P.form!='hex'){HAND={x:0,y:
  upd(o){if(!o.said&&near(o,420)&&L.forms.includes('hex')){o.said=1;say('t_cliff')}},
  bot(o){if(P.form=='hex'&&Math.abs(P.wall)==2){BOT.r=1;BOT.l=0;BOT.j=1;return true}}};
 // ---- босс: Краб Отшельник
-EX.crab={setup(o){o.boss=1;o.h=270;o.st='intro';o.t=0;o.lit=0;o.mask=0;o.pearls=[];o.cd=2.6;o.stun=0;o.x0=o.x},
+EX.crab={setup(o){o.boss=1;o.h=235;o.st='intro';o.t=0;o.lit=0;o.mask=0;o.pearls=[];o.cd=2.6;o.stun=0;o.x0=o.x},
  hc(o){return [o.x+o.h*.12,600-o.h*.48+(o.stun>0?6:0),o.h*.44]},
  pts(o){const [cx,cy,r]=EX.crab.hc(o);const v=ngon(6,cx,cy,r,-Math.PI/2);return v.map((q,i)=>{const n=v[(i+1)%6];return [(q[0]+n[0])/2,(q[1]+n[1])/2]})},
  upd(o,dt){const p=P;o.t+=dt;if(p.x>o.x-190){p.x=o.x-190;p.vx=Math.min(0,p.vx)}
@@ -149,6 +149,6 @@ LV['4-4']=()=>{const b=new LB(176,'4-4');b.meta={name:'4-4 Спасение Фо
  b.e('enemy',22,8).e('enemy',40,9).e('enemy',96,10).e('enemy',130,10).e('enemy',162,10);
  b.e('star',34,6).e('star',120,1).e('star',145,3).e('goal',170,10);
  b.e('reef',0,10,{xs:[4,12,26,38,46,58]});return b};
-LV['4-B']=()=>{const n=bossN();const b=new LB(n,'4-B');b.zoom=1.6;b.gf=.78;b.meta={name:'Босс: Краб Отшельник',intro:['b4a','t_shield'],forms:['shield','hex'],startForm:'shield',boss:'crab',water:true};b.g(0,n).col(0,0,9,1).col(n-1,0,9,1);b.start={x:1,y:9};b.e('crab',n-3,10);b.e('reef',0,10,{xs:[2,5]});return b};
+LV['4-B']=()=>{const n=Math.max(13,Math.ceil(W/1.95/T)+1);const b=new LB(n,'4-B');b.zoom=1.95;b.gf=.8;b.meta={name:'Босс: Краб Отшельник',intro:['b4a','t_shield'],forms:['shield','hex'],startForm:'shield',boss:'crab',water:true};b.g(0,n).col(0,0,9,1).col(n-1,0,9,1);b.start={x:1,y:9};b.e('crab',n-3,10);b.e('reef',0,10,{xs:[2,5]});return b};
 });
 })();

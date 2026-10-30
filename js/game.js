@@ -128,7 +128,7 @@ function bump(tx,ty){const v=tileAt(tx,ty);SFX.bump();if(v==3){setT(tx,ty,9);con
 let onBump=null;
 function spawnShard(x,y){ENTS.push({type:'coin',x,y,vy:-600,fly:1,kind:L.id[0]=='1'?'coin_circ':'coin_tri'})}
 function stompWave(p){for(const e of ENTS)if(e.type=='enemy'&&Math.abs(e.x-p.x)<300&&Math.abs(e.y-p.y)<80)killEnemy(e)}
-function fallCatch(p){p.x=p.safe.x;p.y=p.safe.y-10;p.vx=0;p.vy=0;FM.x=p.x;FM.y=p.y-200;FM.catch=1;say('r_oops');part(p.x,p.y-80,20,'#fff7c0',300,.8,0);if(G.auto)G.auto.rewind=1}
+function fallCatch(p){p.x=p.safe.x;p.y=p.safe.y-10;p.vx=0;p.vy=0;p.ground=false;FM.x=p.x;FM.y=p.y-200;FM.catch=1;say('r_oops');part(p.x,p.y-80,20,'#fff7c0',300,.8,0);if(G.auto)G.auto.rewind=1}
 function hurt(p,from){if(p.inv>0)return;HUD.hearts--;p.inv=1.6;p.hurt=.4;p.vx=(p.x<from?-1:1)*500;p.vy=-600;SFX.hurt();shake(8);if(HUD.hearts<=0){HUD.hearts=3;fallCatch(p)}}
 function killEnemy(e){e.dead=1;SFX.stomp();part(e.x,e.y-40,14,'#c08a50',350,.7);HUD.shards++}
 function transform(p){const fs=L.forms||[];const order=['girl',...fs];let i=order.indexOf(p.form);const nx=order[(i+1)%order.length];if(nx==p.form)return;
@@ -215,7 +215,7 @@ function stoneDone(o){if(o.done)return;o.done=1;SFX.win();shake(8);part(o.x,o.cy
  {const q=G.lseq;setTimeout(()=>{if(G.lseq!=q)return;if(P.form!=o.give){P.form='girl';const i=L.forms.indexOf(o.give);P.form=i>0?L.forms[i-1]:'girl';transform(P)}const tk=(L.meta.tk&&L.meta.tk[o.give])||{wheel:'t_wheel',kite:'t_kite',cube:'t_cube',shield:'t_shield',hex:'t_hexf'}[o.give];if(tk)say(tk)},700)}}
 // ---- обновление игры
 function update(dt){G.lt+=dt;const p=P;const I=inp();
- if(I.f&&!p.lastF&&!G.won)transform(p);p.lastF=I.f;
+ if(I.f&&!p.lastF&&!G.won&&!L.meta.noFM)transform(p);p.lastF=I.f;
  if(G.fly)WX.moveFly(p,dt);else moveP(p,dt);p.inv-=dt;p.hurt-=dt;p.land-=dt;
  if(Math.abs(p.vx)>20&&p.ground)p.run+=Math.abs(p.vx)*dt/85;
  IDLE+=dt;if(I.l||I.r||I.j)IDLE=0;
@@ -269,7 +269,7 @@ function updKuv(o,dt){const p=P;if(o.state=='fight'){
   else{o.x+=o.vx*dt;o.rot+=o.vx*dt/o.r;if(o.x<o.r*1.1+4*T||o.x>L.w*T-o.r*1.1-4*T){o.dir=-Math.sign(o.vx);o.x=clamp(o.x,o.r*1.1+4*T,L.w*T-o.r*1.1-4*T);shake(10);SFX.land();o.dizzy=3.4;o.hitR=0;o.wob=0;part(o.x+Math.sign(-o.dir)*o.r,o.y-o.r,20,'#d8c7a0',500,.7,600)}}
   if(!o.dizzy&&Math.hypot(p.x-o.x,(p.y-70)-(o.y-o.r))<o.r+30){if(p.vy>200&&p.y<o.y-o.r*1.6){p.vy=-1000;SFX.bump()}else hurt(p,o.x)}}
  else{o.vx*=Math.pow(.2,dt);o.rot+=o.vx*dt/o.r;o.y=10*T;if(!speaking()&&!G.won)win()}}
-function win(){if(G.won)return;G.won=1;SFX.win();say('r_win');const id=G.level;SAVE.done[id]=1;SAVE.stars[id]=Math.max(SAVE.stars[id]||0,HUD.stars);SAVE.shards+=HUD.shards;save();G.winT=0;part(P.x,P.y-100,60,'#fff3a0',600,1.4,200,10)}
+function win(){if(G.won)return;G.won=1;SFX.win();say('r_win');if(L.meta.boss){HUD.boss=1;HUD.stars=clamp(HUD.hearts,1,3);HUD.bonus=10*HUD.stars;HUD.shards+=HUD.bonus;HUD.coins0=HUD.shards-HUD.bonus}const id=G.level;SAVE.done[id]=1;SAVE.stars[id]=Math.max(SAVE.stars[id]||0,HUD.stars);SAVE.shards+=HUD.shards;save();G.winT=0;part(P.x,P.y-100,60,'#fff3a0',600,1.4,200,10)}
 // ---- рисование мира
 function drawBG(){const bg=IMG.bg_w1;if(bg.width){const h=H*1.05,w=bg.width*h/bg.height;const off=CAM.x*.12,k0=Math.floor(off/w);for(let k=k0;k<k0+3;k++){const x=k*w-off;X.save();X.translate(x+(k%2?w:0),-(CAM.y-600+HV*L.gf)*.05-20);if(k%2)X.scale(-1,1);X.drawImage(bg,0,0,w,h);X.restore()}}
  // средний слой: холмы
@@ -360,7 +360,7 @@ function drawHUD(){btnLayout();// сердечки, осколки, звёзды
  if(G.scene!='boss'&&!(G.t-(G.hideName??-9)<.15))txt(L.meta.name,W-30,46,38,'#fff3a0','right');
  // кнопки
  const B=(k,n,fl)=>{const b=BTN[k];X.save();X.globalAlpha=TOUCH[k]?1:.82;const s=TOUCH[k]?.92:1;X.translate(b.x,b.y);X.scale(s,s);if(fl)X.scale(-1,1);img(n,0,0,b.r*2,0,1,.5,.5);X.restore()};
- if(!G.fly){B('left','btn_arrow',1);B('right','btn_arrow')}B('jump','btn_jump');if(L.forms.length){B('form','btn_form');const nf=FORMS[nextForm()];if(nf){X.save();paintShape(nf.shape||'tri',BTN.form.x+BTN.form.r*.75,BTN.form.y-BTN.form.r*.75,22,nf.col,0,false);X.restore()}}
+ if(!G.fly){B('left','btn_arrow',1);B('right','btn_arrow')}B('jump','btn_jump');if(L.forms.length&&!L.meta.noFM){B('form','btn_form');const nf=FORMS[nextForm()];if(nf){X.save();paintShape(nf.shape||'tri',BTN.form.x+BTN.form.r*.75,BTN.form.y-BTN.form.r*.75,22,nf.col,0,false);X.restore()}}
  if(BANNER&&BANNER.t>0){BANNER.t-=1/60;X.save();X.globalAlpha=Math.min(1,BANNER.t*2);txt(BANNER.txt,W/2,H*.2,70,'#fff3a0');X.restore()}
  if(HAND&&HAND.k=='screen'){const b=BTN[HAND.bx];hand(b.x+10,b.y-20,HAND.t,(HAND.t%1)>.6?(HAND.t%1-.6)/.4:0)}}
 function nextForm(){const o=['girl',...L.forms];return o[(o.indexOf(P.form)+1)%o.length]}
@@ -418,9 +418,9 @@ function drawTitle(){const m=IMG.map;if(m.width){const s=Math.max(W/m.width,H/m.
  const pr=1+Math.sin(G.t*4)*.05;X.save();X.translate(W/2,H*.58);X.scale(pr,pr);X.fillStyle='#ff8a1f';X.beginPath();X.roundRect(-160,-48,320,96,48);X.fill();X.strokeStyle='#fff';X.lineWidth=6;X.stroke();txt('Играть!',0,2,60,'#fff');X.restore()}
 function drawWin(){const a=Math.min(1,G.winT*2.5);X.save();X.globalAlpha=a;X.fillStyle='rgba(20,10,40,.6)';X.fillRect(0,0,W,H);
  const pw=Math.min(W*.62,820),ph=H*.74,px=W/2-pw/2,py=H*.1+(1-a)*40;panel(px,py,pw,ph,44);
- txt('Уровень пройден!',W/2,py+82,72,'#8a4fc7');
+ txt(HUD.boss?'Босс побеждён!':'Уровень пройден!',W/2,py+82,72,'#8a4fc7');if(HUD.boss){X.save();X.translate(W/2,py+ph*.44);X.rotate(G.t*.4);for(let i=0;i<12;i++){X.rotate(Math.PI/6);X.fillStyle=['rgba(255,138,138,.35)','rgba(255,204,51,.35)','rgba(127,240,162,.35)','rgba(127,211,255,.35)','rgba(197,140,255,.35)','rgba(255,167,38,.35)'][i%6];X.beginPath();X.moveTo(0,0);X.lineTo(-40,-ph*.42);X.lineTo(40,-ph*.42);X.fill()}X.restore()}
  for(let i=0;i<3;i++){const on=i<HUD.stars,t=clamp(G.winT*2-.6-i*.35,0,1),sc=on?(t<1?.4+t*.8+Math.sin(t*Math.PI)*.3:1.2):1;X.save();X.translate(W/2-130+i*130,py+ph*.44);X.scale(sc,sc);img('star',0,0,110,0,on?(t>0?1:0):.22,.5,.5);X.restore()}
- img('coin_circ',W/2-70,py+ph*.7,62,0,1,.5,.5);txt('× '+HUD.shards,W/2-28,py+ph*.7,58,'#7a4a12','left');
+ {const sh=HUD.boss?Math.round(HUD.coins0+HUD.bonus*clamp(G.winT-1.4,0,1)):HUD.shards;img('coin_circ',W/2-(HUD.boss?140:70),py+ph*.7,62,0,1,.5,.5);txt('× '+sh,W/2-(HUD.boss?98:28),py+ph*.7,58,'#7a4a12','left');if(HUD.boss&&G.winT>1.2)txt('+'+HUD.bonus+' за победу!',W/2+40,py+ph*.7,44,'#e0682a','left')}
  if(!speaking()&&G.winT>1.5)txt('Нажми, чтобы продолжить',W/2,py+ph*.9,40,'#5b3a8a');X.restore()}
 function render(){X.setTransform(SC,0,0,SC,0,0);X.clearRect(0,0,W,H);
  if(G.scene=='title'){drawTitle();if(loaded<TOTAL)txt('Загрузка… '+Math.round(loaded/TOTAL*100)+'%',W/2,H*.75,40)}
