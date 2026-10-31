@@ -181,3 +181,11 @@
 - Стикеры: chouse 7-1 (pl 100,7), gstar 7-2 (pl 150,7), oball 7-3 (pl 60,7), rose 7-4 (pl 122,7). Реплики «# v3 мир 7» в lines.py (53 шт.), voicegen запущен (лог /tmp/vg7.log). r_win7 переименован в b7c (r_win* = p1, резался) — нужен повторный lines.py+voicegen.
 - 05:03 UTC+1: голоса готовы (WER ок; s_oball «авальный» — редукция), voicetest 7 PASS task_cuts [] (244 с).
 - Тесты: test.py 7-1..7-B done 179 с, bad 0, badFeet 0, errs []; листы sheets/v3/w7_7-*.png; phone 7-* fps 38–48 (как W5 42–50), ERRS []; rotate 7-1/7-B FAILS 0; voicetest 7 PASS. V=22, push.
+
+## Замок (мир 6, «Мир 7») — v3w6.js (WIP 31.10 ~06:00 UTC+1)
+- 5 уровней 6-1..6-4 + 6-B (wcore: стандартные ids/POS). 6-1/6-2 — старые + наклейки flag/frame.
+- 6-3 «Зал поворотов»: tgate треугольники, повёрнутый домик, облака-квадрат ромбиком, облака-прямоугольник набок (sqb убран — требовал кубик).
+- 6-4 «Мастерская Маяка»: dots, half, lamp-яйцо(овал), mill, mosaic домик.
+- 6-B graf6: throw×5 (ловушка «с дыркой») → щит (4 угла, прямоугольник) → сердце (счёт углов 3/4/5) → Формик → принц → маяк → rule6 → win → ending.
+- Книга правил на карте (кнопка «Правила»).
+- RESUME: дождаться /tmp/vg6.log, затем lines.py + voicegen для t_cl_rect6; проверить WER; commit voice.js+mp3; test.py 6-1..6-B, sheets, phone, rotate, voicetest 6; V=23 push; финальная регрессия 1-7.

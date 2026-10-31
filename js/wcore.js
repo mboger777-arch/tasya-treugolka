@@ -46,7 +46,7 @@ const SURF=72;WX.splash=function(o,x,y,s){SFX.land&&SFX.land();(o.rg=o.rg||[]).p
  for(let i=0;i<n;i++){const a=-Math.PI/2+(Math.random()-.5)*1.6,v=(260+Math.random()*260)*s;PART.push({x:x+(Math.random()-.5)*40,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:.55+Math.random()*.3,l0:.85,col:i%3?'rgba(220,248,255,.95)':'rgba(255,255,255,.95)',g:1500,sz:4+Math.random()*5})}};
 // ---- фон
 WX.init=function(){for(const f of INITS)f();
- MAPN.length=0;ORDER.length=0;for(const w of WSEQ){const ids=w==6?['6-1','6-2','6-B']:[w+'-1',w+'-2',w+'-3',w+'-4',w+'-B'];const ps=w==6?[[.2,.76],[.48,.64],[.78,.74]]:POS;ids.forEach((id,i)=>{ORDER.push(id);MAPN.push({id,w,x:ps[i][0],y:ps[i][1]})})}
+ MAPN.length=0;ORDER.length=0;for(const w of WSEQ){const ids=[w+'-1',w+'-2',w+'-3',w+'-4',w+'-B'];const ps=POS;ids.forEach((id,i)=>{ORDER.push(id);MAPN.push({id,w,x:ps[i][0],y:ps[i][1]})})}
  drawBG=function(){const n=wn();const bk=L&&L.id[0]=='7'&&IMG.bg_w7&&IMG.bg_w7.width?'bg_w7':'bg_w'+n;let bg=IMG[bk]&&IMG[bk].width?IMG[bk]:IMG.bg_w1;if(bg.width&&self.FX&&FX.gbg)bg=FX.gbg(n,bg)||bg;const dy=(CAM.y-600+HV*L.gf);
   if(bg.width){const h=H*1.05,w=bg.width*h/bg.height;const off=CAM.x*.12,k0=Math.floor(off/w);for(let k=k0;k<k0+3;k++){const x=k*w-off;X.save();X.translate(x+(k%2?w:0),-dy*.05-20);if(k%2)X.scale(-1,1);X.drawImage(bg,0,0,w,h);X.restore()}}
   const th=TH[n]||TH[1];
