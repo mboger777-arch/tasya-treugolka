@@ -130,7 +130,7 @@ EX.cage4=Object.assign({},C,{
    for(const b of EX.cage4.nums(o)){const sh=o.lsh>0&&b.n!=6?Math.sin(o.lsh*40)*6:0;panel(b.x-52+sh,b.y-52,104,104,24);txt(String(b.n),b.x+sh,b.y+2,70,'#3a1d55','center','#fff')}
    panelHide(cx-220,cy-r-150,440)}
   else C.draw(o);
-  if(!o.done&&o.lock!=1){const v=ngon(6,o.cx,o.cy,o.r,-Math.PI/2);for(const i of [1,2]){const q=v[i];X.save();X.lineCap='round';for(let j=0;j<5;j++){X.strokeStyle=j%2?'#2f9a5a':'#5fd08a';X.lineWidth=18;X.beginPath();X.moveTo(q[0]-30+j*15,600);X.quadraticCurveTo(q[0]-40+j*18+Math.sin(G.t*1.5+j)*12,q[1]+80,q[0]-24+j*12,q[1]-50);X.stroke()}X.restore()}}}});
+  if(!o.done&&o.lock!=1){const v=ngon(6,o.cx,o.cy,o.r,-Math.PI/2);for(const i of [1,2]){const q=v[i];X.save();X.lineCap='round';for(let j=0;j<4;j++){X.strokeStyle=j%2?'#2f9a5a':'#5fd08a';X.lineWidth=15;X.beginPath();X.moveTo(q[0]-22+j*14,q[1]+42);X.quadraticCurveTo(q[0]-30+j*16+Math.sin(G.t*1.5+j)*8,q[1],q[0]-18+j*12,q[1]-40);X.stroke()}X.restore()}}}});
 // ===== 4-B: краб примеряет домики =====
 const K=EX.crab;
 EX.crab4=Object.assign({},K,{
@@ -212,7 +212,7 @@ LV['4-4']=()=>{const b=new LB(176,'4-4');b.meta={name:'4-4 Спасение Фо
  b.g(140,150,5).col(140,5,9,19).e('honey',139,10);
  b.e('stk',120,2,{id:'honey',k:'s_honey'});
  b.coins(4,7,6,'coin_circ',2).coins(30,6,8,'coin_circ',2).coins(80,3,8,'coin_circ',1).coins(142,3,7,'coin_circ',1).coins(156,8,8,'coin_circ',1);
- b.e('enemy',40,9).e('enemy',96,10).e('enemy',162,10);
+ b.e('enemy',96,10).e('enemy',162,10);
  b.e('star',34,6).e('star',108,4).e('star',145,3).e('goal',170,10);
  reef(b,[4,12,26,38,46,58]);return b};
 LV['4-B']=()=>{const n=Math.max(13,Math.ceil(W/1.95/T)+1);const b=new LB(n,'4-B');b.zoom=1.95;b.gf=.8;b.meta={name:'Босс: Краб Отшельник',intro:['b4a','t_shield'],forms:['shield','hex'],startForm:'shield',boss:'crab4',water:true};
