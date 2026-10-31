@@ -6,7 +6,7 @@ const pulse=(k=4)=>.5+.5*Math.sin(G.t*k);
 const sm=k=>{k=clamp(k,0,1);return k*k*(3-2*k)};
 const big=()=>Math.max(52,58/Z);
 const wall=(gx,v)=>{for(let y=0;y<=9;y++)setT(gx,y,v)};
-const R3=Math.sqrt(3);
+const showHand=(s,k,d)=>WX.showHand(s,k,d);
 function path(v){X.beginPath();v.forEach((q,i)=>i?X.lineTo(q[0],q[1]):X.moveTo(q[0],q[1]));X.closePath()}
 const ell=(rx,ry,n=20)=>{const a=[];for(let i=0;i<n;i++){const t=i/n*Math.PI*2;a.push([Math.cos(t)*rx,Math.sin(t)*ry])}return a};
 // кусочки (центр в 0,0), sym — поворот, после которого фигура та же
@@ -46,7 +46,7 @@ EX.mosaic={setup(o){o.gx=o.bridge?o.bridge[0]:Math.floor(o.x/T)+(o.open||4);if(!
  nextCard(o){const C=EX.mosaic.cards(o);return C.find(c=>!o.used[c.i]&&EX.mosaic.free(o,c.k)>=0)},
  hint(o){if(o.done||!near(o.cx,780)||(!o.boss&&P.x>o.gx*T))return;const c=EX.mosaic.nextCard(o);if(!c)return;const j=EX.mosaic.free(o,c.k);
   showHand([[c.x,c.y],[o.cx+o.S[j][1],o.cy+o.S[j][2]]],o.k||'t_mos',1);return true},
- bot(o,dt){if(o.done)return;const d=o.cx-P.x;if(d>560||P.x>o.gx*T+20)return;if(!o.boss)WX.go(o.cx-330,30);G.bt=(G.bt||0)+dt;
+ bot(o,dt){if(o.done)return;const d=o.cx-P.x;if(!o.boss&&(d>560||P.x>o.gx*T+20))return;if(!o.boss)WX.go(o.cx-330,30);G.bt=(G.bt||0)+dt;
   if(G.bt>.9&&!o.fly.length&&!speaking()&&(o.boss||Math.abs(P.x-(o.cx-330))<90)){G.bt=0;const c=EX.mosaic.nextCard(o);if(c)tapAt(c.x,c.y)}return true},
  draw(o){if(o.cx<CAM.x-600||o.cx>CAM.x+WV+600)return;X.save();X.lineJoin='round';
   if(!o.done&&!o.bridge){const x=o.gx*T;X.fillStyle='rgba(150,210,255,.35)';X.fillRect(x+8,0,T-16,600);X.strokeStyle='rgba(255,255,255,.7)';X.lineWidth=3;for(let y=20;y<600;y+=60){X.beginPath();X.moveTo(x+8,y);X.lineTo(x+T-8,y+30);X.stroke()}}
@@ -119,6 +119,18 @@ EX.scloud={setup(o){o.gx=o.br[0];wall(o.gx,15);o.cx=(o.br[0]+o.br[1]+1)*T/2;o.cy
   if(o.done)cloud(o.cx,615,(o.br[1]-o.br[0]+1)*T*.75,1);
   if(o.done&&o.ft<2.5&&o.name)txt(o.name,o.cx,o.cy-120,big()*.75,'#fff3a0');
   if(!o.done)panelHide(o.cx-420,o.cy-110,840);X.restore()}};
+// ===== босс: Сова Зеркалица — собрать её крыло из кусочков =====
+const WING=[['tri',-70,-40,180],['rt',40,-30,90],['ssq',-30,50,0],['stri',60,60,0],['tri',0,-40,0]];
+{const OW=EX.owl;EX.owl7=Object.assign({},OW,{
+ setup(o){OW.setup(o);o.F=null},
+ upd(o,dt){if(o.st=='wing'){o.t+=dt;const F=o.F;F.cx=o.x-o.h*1.05;F.cy=600-o.h*.62;EX.mosaic.upd(F,dt);if(F.done&&F.ft>1.2&&!o.r7){o.r7=1;o.st='calm';o.t=0;say('rule7');SFX.win();shake(8);part(o.x,600-o.h*.6,60,'#fff3a0',600,1.2,0,12)}return}
+  if(o.st=='calm'&&!o.F){o.st='wing';o.t=0;say('b7w');o.F={x:0,boss:1,gx:-5,S:WING,C:[['tri',60],['ssq',0],['rt',0],['circ',0],['tri',0],['stri',0]],step:60,sc:.75,name:'Крыло!',rk:'r_wing',said:1};EX.mosaic.setup(o.F);o.F.cx=o.x-o.h;o.F.cy=600-o.h*.62}
+  OW.upd(o,dt);
+  if(o.st=='calm'&&o.r7&&o.t>3&&!speaking()&&!G.won)win()},
+ tap(o,wx,wy){if(o.st=='wing')return EX.mosaic.tap(o.F,wx,wy);return OW.tap(o,wx,wy)},
+ hint(o){if(o.st=='wing'){EX.mosaic.hint(o.F);return true}return OW.hint(o)},
+ bot(o,dt){if(o.st=='wing'){BOT.r=0;BOT.l=0;BOT.j=0;EX.mosaic.bot(o.F,dt);return true}return OW.bot(o,dt)},
+ draw(o){OW.draw(o);if(o.F&&(o.st=='wing'||o.st=='calm'&&o.t<2))EX.mosaic.draw(o.F)}})}
 const HEX=[0,1,2,3,4,5].map(k=>{const a=(-90+60*k)*Math.PI/180;return['tri',Math.cos(a)*69.3,Math.sin(a)*69.3,k%2?0:180]});
 const M={house:[['tri',0,-55,0],['sq',0,40,0]],rocket:[['tri',0,-95,0],['rect',0,10,0],['stri',-62,60,0],['stri',62,60,0]],
  tree:[['tri',0,-125,0],['tri',0,-60,0],['tri',0,5,0],['ssq',0,70,0]],sq2:[['rt',0,0,0],['rt',0,0,180]],sq4:[['ssq',-30,-30,0],['ssq',30,-30,0],['ssq',-30,30,0],['ssq',30,30,0]]};
@@ -148,6 +160,7 @@ LV['7-4']=()=>{const b=new LB(190,'7-4');b.meta={name:'7-4 Найди в вещ�
  b.coins(8,7,6,'coin_circ',2).coins(48,7,8,'coin_tri',2).coins(118,7,8,'coin_sq',2);
  b.e('enemy',20,10).e('enemy',90,10).e('enemy',160,10);
  b.e('star',28,6).e('star',96,5).e('star',150,6).e('goal',186,10);return b};
+LV['7-B']=()=>{const b=LV['5-B']();b.id='7-B';b.meta=Object.assign({},b.meta,{name:'7-B Сова Мозаики',intro:['b7'],boss:'owl7'});b.ents.forEach(e=>{if(e.type=='owl'||e.type=='owl5')e.type='owl7'});return b};
 LV['7-2']=()=>{const b=new LB(170,'7-2');b.meta={name:'7-2 Мозаика-мост',intro:['l72'],forms:[]};
  b.g(0,40);b.g(47,85);b.g(92,130);b.g(137,170);
  b.e('mosaic',40,10,{bridge:[40,46],S:HEX,C:[['tri',0],['tri',60],['tri',0],['tri',180],['tri',60],['tri',0]],step:60,cy:230,sc:.85,name:'Шестиугольник!',k:'t_hex',rk:'r_hex'});
