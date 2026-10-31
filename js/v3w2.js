@@ -68,6 +68,7 @@ EX.peak={setup(o){o.ay=o.y-(o.dy!=null?o.dy:3.5)*T;o.op=o.kind=='obtuse'?1:0;o.t
   X.globalAlpha=lerp(.34,.2,o.op);const gr=X.createLinearGradient(0,o.ay,0,w.top);gr.addColorStop(0,'#bfefff');gr.addColorStop(1,'rgba(191,239,255,0)');X.fillStyle=gr;X.fillRect(o.x-w.w/2,w.top,w.w,o.ay-w.top);X.restore();
   if(o.ceil!=null){X.save();for(let x=o.x-(o.cw||10*T);x<o.x+(o.cw||10*T);x+=46){const hh=26+((x*7)%23);X.fillStyle='#9fe3ff';X.strokeStyle='#3f7fb0';X.lineWidth=3;X.beginPath();X.moveTo(x,o.ceil);X.lineTo(x+14,o.ceil+hh+14);X.lineTo(x+28,o.ceil);X.closePath();X.fill();X.stroke()}X.restore()}},
  bot(o,dt){const p=P;if(p.x<Math.min(o.x-560,o.stand!=null&&o.to==0?o.stand*T-500:1e9)||p.x>o.lx*T+40)return;const w=EX.peak.W(o);
+  if(!o.seen&&!o.open&&p.x>o.x-7.5*T&&p.x<o.x-3*T&&p.ground){BOT.r=0;BOT.l=0;BOT.j=0;o.sw=(o.sw||0)+dt;if(o.sw<1.6||speaking()&&o.sw<5)return true}if(p.x>o.x-7.5*T)o.seen=1;
   if(o.open&&o.to==0){if(p.form!='kite'||p.ground)WX.go(o.stand!=null?o.stand*T:o.x-T*9,14);BOT.j=0;G.bt3=(G.bt3||0)+dt;if(G.bt3>.6&&p.ground){G.bt3=0;tapAt(o.x,o.ay+20)}return true}
   if(p.form!='kite'){BOT.r=0;if(p.ground&&(!G.bpf||G.t-G.bpf>.7)){G.bpf=G.t;BOT.f=1}return true}
   const ly=o.lrow*T;if(o.op>.5){BOT.r=1;BOT.j=!p.ground||p.x>o.x-w.w/2-90;return true}
@@ -178,19 +179,19 @@ LV['2-1']=()=>{const b=new LB(170,'2-1');b.meta={name:'2-1 Ломаная тро
  deco(b,[5,30,56,80,108,128,158],x=>x>=27&&x<58?5:x>=58?8:10);return b};
 LV['2-2']=()=>{const b=new LB(170,'2-2');b.meta={name:'2-2 Острые и тупые',intro:['l22','t_acw'],forms:['kite'],startForm:'kite'};
  // 1) знакомство: острая вершина — узкий сильный ветер вверх
- b.g(0,27).e('peak',31,9.5,{kind:'acute',lx:35,lrow:3}).g(35,54,3);
+ b.g(0,24).e('peak',31,9.5,{kind:'acute',dy:4.5,atop:1.5*T,lx:38,lrow:3}).g(38,54,3);
  // 2) тупая вершина — широкий мягкий ветер далеко
- b.e('peak',63,9.5,{kind:'obtuse',ww:16*T,otop:4.4*T,lx:72,lrow:5,k:'t_obw'}).g(72,96,5);
+ b.e('peak',63,9.5,{kind:'obtuse',dy:6,ww:16*T,otop:2.6*T,lx:72,lrow:5,k:'t_obw'}).g(72,96,5);
  // 3) снова острая — на высокий уступ
- b.e('peak',98,9.5,{kind:'acute',lx:100,lrow:2}).g(100,112,2);
+ b.e('peak',98,9.5,{kind:'acute',dy:4.5,lx:104,lrow:2}).g(104,112,2);
  // 4) поворот: кристаллический потолок — острую вершину надо раскрыть в тупую
  b.g(112,122,7).e('peak',132,10,{dy:2.2,kind:'acute',open:1,stand:119,ww:20*T,otop:6.7*T,ceil:2,cw:14*T,lx:142,lrow:7});
  // 5) финал
- b.g(142,152,7).e('peak',154,9.5,{kind:'acute',lx:156,lrow:2}).g(156,170,2);
- b.coins(8,8,5,'coin_tri',1).coins(40,1,6,'coin_tri',1).coins(58,4,10,'coin_tri',2).coins(103,0,5,'coin_tri',1).coins(126,6,10,'coin_tri',1).coins(159,0,6,'coin_tri',1);
- b.e('enemy',16,10).e('enemy',86,5).e('enemy',164,2);// v3: не у мест приземления
- b.e('star',63,3.4).e('star',108,1).e('star',137,5.5).e('stk',105,2,{id:'pizza',k:'s_pizza'}).e('goal',165,2);
- deco(b,[5,22,40,76,90,115,145,160],x=>x>=34&&x<54?3:x>=72&&x<96?5:x>=112&&x<152?7:x>=156?2:10);return b};
+ b.g(142,150,7).e('peak',155,9.5,{kind:'acute',dy:4.5,lx:160,lrow:2}).g(160,170,2);
+ b.coins(8,8,5,'coin_tri',1).coins(42,1,6,'coin_tri',1).coins(58,4,10,'coin_tri',2).coins(105,0,5,'coin_tri',1).coins(126,6,10,'coin_tri',1).coins(161,0,6,'coin_tri',1);
+ b.e('enemy',16,10);// v3: не у мест приземления
+ b.e('star',63,3.4).e('star',108,1).e('star',137,5.5).e('stk',108,2,{id:'pizza',k:'s_pizza'}).e('goal',166,2);
+ deco(b,[5,20,44,76,90,115,145,163],x=>x>=38&&x<54?3:x>=72&&x<96?5:x>=112&&x<150?7:x>=160?2:10);return b};
 LV['2-3']=()=>{const b=new LB(180,'2-3');b.meta={name:'2-3 Треугольные ворота',intro:['l23'],forms:['kite']};
  b.g(0,126).g(138,180);
  b.e('tgate',34,10,{cards:['tri','quad','tri'],need:2});

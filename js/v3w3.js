@@ -127,7 +127,7 @@ EX.sqr={setup(o){o.gx=o.gate;o.nc=1},
 const R=EX.rob;
 EX.rob3=Object.assign({},R,{
  setup(o){R.setup(o);o.hk=.45;o.hs=0},
- head(o){return [o.x-150,600-o.h-150]},
+ head(o){return [o.x-230,600-o.h+60]},
  upd(o,dt){if(o.st=='head'){o.t+=dt;const p=P;if(p.x>o.x-90){p.x=o.x-90;p.vx=Math.min(0,p.vx)}if(o.hs&&o.hk<1){o.hk=Math.min(1,o.hk+dt*.9);if(o.hk>=1){o.st='calm';o.t=0;SFX.win();shake(8);part(o.x,600-o.h,40,'#7ff0a2',460,1,0,10);say('b3r');say('b3c');say('rule3')}}return}
   if(o.st=='calm'){o.t+=dt;if(o.t>1.5&&!speaking()&&!G.won)win();return}R.upd(o,dt)},
  tap(o,wx,wy){if(o.st=='head'){if(o.hs)return true;const [cx,cy]=EX.rob3.head(o);if(Math.abs(wx-cx)<170&&Math.abs(wy-cy)<150){o.hs=1;SFX.light(3);HAND=null}return true}
@@ -137,7 +137,7 @@ EX.rob3=Object.assign({},R,{
  bot(o,dt){if(o.st=='head'){BOT.r=0;BOT.l=0;BOT.j=0;G.bt=(G.bt||0)+dt;if(G.bt>1&&!o.hs){G.bt=0;const [cx,cy]=EX.rob3.head(o);tapAt(cx,cy)}return true}return R.bot(o,dt)},
  draw(o){R.draw(o);if(o.st!='head'&&!(o.st=='calm'&&o.t<2.5))return;const [cx,cy]=EX.rob3.head(o),S=150;X.save();
   // табличка-образец: прямоугольник 2:1
-  panel(cx-430,cy-90,200,150,24);X.strokeStyle='#5d97d6';X.lineWidth=8;X.strokeRect(cx-400,cy-50,140,70);
+  {const sx=o.x+40,sy=300;panel(sx,sy,180,120,24);X.strokeStyle='#5d97d6';X.lineWidth=8;X.strokeRect(sx+30,sy+30,120,60);}
   // голова-рамка: ширина растёт до образца
   const w=S*2*o.hk,h=S;X.shadowColor=o.hk>=1?'#7ff0a2':'#7fd3ff';X.shadowBlur=24;X.strokeStyle=o.hk>=1?'#7ff0a2':'#7fd3ff';X.lineWidth=9;X.fillStyle='rgba(127,211,255,.15)';X.beginPath();X.rect(cx-w/2,cy-h/2,w,h);X.fill();X.stroke();X.shadowBlur=0;
   if(!o.hs){const a=pulse(6);X.fillStyle='#fff3a0';X.strokeStyle='#8a4b00';X.lineWidth=3;X.beginPath();X.moveTo(cx+w/2+44+a*8,cy);X.lineTo(cx+w/2+16+a*8,cy-20);X.lineTo(cx+w/2+16+a*8,cy+20);X.closePath();X.fill();X.stroke()}
@@ -146,7 +146,7 @@ EX.rob3=Object.assign({},R,{
 WX.add(()=>{
 const pw=WX.wantF;WX.wantF=function(want,fx,fy){if(WX.wn()==3){const p=P;
   for(const o of ENTS)if(o.type=='sqb'&&!o.on&&o.x-p.x<9*T&&o.x-p.x>-60)return 'cube';
-  for(let k=0;k<6;k++){const g=WX.gateAt(fx+k);if(g=='board'&&!L.forms.includes('board')&&L.forms.includes('cube'))return 'cube'}}
+  for(let k=-2;k<6;k++){const g=WX.gateAt(fx+k);if(g=='board'&&!L.forms.includes('board')&&L.forms.includes('cube'))return 'cube'}}
  return pw?pw(want,fx,fy):want};
 const deco=(b,xs,row)=>xs.forEach((x,i)=>b.d(i%2?'bush':'sign',x,row&&row(x)||10,.9));
 LV['3-1']=()=>{const b=new LB(172,'3-1');b.meta={name:'3-1 Уголок-выпрямитель',intro:['w3','l31'],forms:[]};
