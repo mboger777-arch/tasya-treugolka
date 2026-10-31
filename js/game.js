@@ -23,7 +23,7 @@ let seed=+(Q.get('seed')||Date.now()%100000);function rnd(){seed|=0;seed=seed+0x
 const pick=a=>a[Math.floor(rnd()*a.length)],shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v,lerp=(a,b,t)=>a+(b-a)*t;
 // ---- картинки
-var EX=self.EX||{},WX=self.WX||{};const IMG={};const LIST='t_wv t_lk t_hrt t_lnd t_look t_wave f_wheel f_kite f_cube f_board f_shield f_hex f_bubble f_bubble2 t_idle t_blink t_jump t_fall t_hurt t_land t_r0 t_r1 t_r2 t_r3 t_r4 t_r5 t_jmp t_fal t_std t_run0 t_run1 t_run2 t_run3 fm0 fm1 fm2 fm3 ground e_wheel stone plank sign bush block kuv heart coin_tri coin_circ star btn_jump btn_form btn_arrow tile_top tile_dirt oskolok_0 oskolok_3 oskolok_1 oskolok_2 lineup_1 lineup_2 crab_0 owl_0 e_w2 e_w3 e_w4 e_w5 e_w6 e_wheel_0 e_wheel_1 e_w2_0 e_w2_1 e_w3_0 e_w3_1 e_w4_0 e_w4_1 e_w5_0 e_w5_1 e_w6_0 e_w6_1 stk_ball stk_clock stk_egg stk_plate stk_sign stk_pizza stk_hanger stk_sail stk_window stk_grid stk_door stk_phone mill ostone fly'.split(' ');
+var EX=self.EX||{},WX=self.WX||{};const IMG={};const LIST='t_wv t_lk t_hrt t_lnd t_look t_wave f_wheel f_kite f_cube f_board f_shield f_hex f_bubble f_bubble2 t_idle t_blink t_jump t_fall t_hurt t_land t_r0 t_r1 t_r2 t_r3 t_r4 t_r5 t_jmp t_fal t_std t_run0 t_run1 t_run2 t_run3 fm0 fm1 fm2 fm3 ground e_wheel stone plank sign bush block kuv heart coin_tri coin_sq coin_circ star btn_jump btn_form btn_arrow tile_top tile_dirt oskolok_0 oskolok_3 oskolok_1 oskolok_2 lineup_1 lineup_2 crab_0 owl_0 e_w2 e_w3 e_w4 e_w5 e_w6 e_wheel_0 e_wheel_1 e_w2_0 e_w2_1 e_w3_0 e_w3_1 e_w4_0 e_w4_1 e_w5_0 e_w5_1 e_w6_0 e_w6_1 stk_ball stk_clock stk_egg stk_plate stk_sign stk_pizza stk_hanger stk_sail stk_window stk_grid stk_door stk_phone mill ostone fly'.split(' ');
 let loaded=0;for(const n of LIST){const i=new Image();i.onload=()=>loaded++;i.onerror=()=>{if(!i.fb){i.fb=1;i.src='assets/img/'+n+'.png?v='+V}};i.src='assets/img/'+n+'.webp?v='+V;IMG[n]=i}
 for(const n of ['bg_w1','map','bg_w2','bg_w3','bg_w4','bg_w5','bg_w6','ending','kidnap']){const i=new Image();i.onload=()=>loaded++;i.src='assets/img/'+n+'.jpg?v='+V;IMG[n]=i}
 const TOTAL=LIST.length+9;
@@ -47,7 +47,7 @@ const VQ=[];let vcur=null,vEnd=0,VB=0;const vplayed={};G.vlog=[];
 function vpri(k){const b=k.replace(/^T(?=[a-z])/,'');
  if(/^(n\d|c_|s_|r_good|r_star$|r_win|r_race|r_odd_ok|r_pat|r_asm|r_starf)/.test(b))return 1;
  if(/^(t_|q_|e_|f_p|f_t|f_w2|b\d[bfth]|b\dh2|b4s|r_\w*no$|r_oops|l\d[1-4]$|l5[234]$|l4[1-4]$|m1)/.test(b)&&!/^l(24|33)$/.test(b))return 3;return 2}
-function vage(p,k){if(G.scene=='cut'||G.scene=='title'||G.scene=='map')return 1e9;return /^T?n\d/.test(k)?.8:p==1?1.2:p==2?2.5:6}
+function vage(p,k){if(G.scene=='cut'||G.scene=='title'||G.scene=='map')return 1e9;return /^T?n\d/.test(k)?.8:p==1?1.2:p==2?20:9}
 function vlog(o){if(G.vlog.length<4000)G.vlog.push(o)}
 let HSAID={};function say(k,force){if(typeof L!='undefined'&&L&&L.meta&&L.meta.noFM&&(VOICE['T'+k]||TXTS['T'+k]))k='T'+k;if(G.inHint){if(speaking()||G.t-(HSAID[k]??-99)<14)return;HSAID[k]=G.t}
  if(!VOICE[k]){G.log.push('novoice '+k);if(!(SUB&&SUB.k==k&&G.t<SUB.end))SUB={k,end:Math.max(G.t,SUB&&SUB.end||0)+Math.max(2.5,(TXTS[k]||'').length*.07)};return}
@@ -60,8 +60,9 @@ let HSAID={};function say(k,force){if(typeof L!='undefined'&&L&&L.meta&&L.meta.n
  if(p==1&&!/^T?n\d/.test(k)&&(VQ.some(q=>q.p>1)||(vcur&&vcur.p>1&&!vcur.fade))){vlog({k,lv,te:now,drop:'flavor-busy',t:now});return}
  VQ.push(o);
  // прервать текущую, если пришло событие не ниже по важности (кроме своей пачки и кроме задания, перебиваемого не-заданием)
- if(vcur&&!vcur.fade&&vcur.b!=b&&(p>=vcur.p||(p==2&&vcur.p==3&&/^r_/.test(k)))&&G.scene!='cut'){vfade(vcur,'interrupt')}}
-function vfade(c,why){const a=c.a;let left=1;try{left=(a.duration||c.dur)-a.currentTime}catch(e){}if(left<.3&&!a.paused){c.soft=1;return}c.fade=performance.now();vlog({k:c.k,lv:c.lv,te:c.te,cut:why,t:G.t,at:+(a.currentTime||0).toFixed(2)});if(c.p==3)G.cutTask=c.k}
+ // v3: задание/история никогда не обрываются — новая реплика ждёт конца текущей; перебивается только похвала/счёт
+ if(vcur&&!vcur.fade&&vcur.b!=b&&vcur.p==1&&p>=1&&G.scene!='cut'){vfade(vcur,'interrupt')}}
+function vfade(c,why){const a=c.a;let left=1;try{left=(a.duration||c.dur)-a.currentTime}catch(e){}if(left<.3&&!a.paused){c.soft=1;return}c.fade=performance.now();vlog({k:c.k,p:c.p,lv:c.lv,te:c.te,cut:why,t:G.t,at:+(a.currentTime||0).toFixed(2)});if(c.p==3)G.cutTask=c.k}
 function voiceTick(){
  if(vcur&&vcur.fade){const u=(performance.now()-vcur.fade)/150;try{vcur.a.volume=Math.max(0,1-u)}catch(e){}if(u>=1){try{vcur.a.pause()}catch(e){}vend()}}
  if(vcur&&vcur.a.ended)vend();if(vcur&&performance.now()>vcur.until)vend();
@@ -72,11 +73,13 @@ function voiceTick(){
  a.addEventListener('playing',()=>{c.tp=G.t;c.tpr=performance.now();c.until=c.tpr+c.dur*1000+400},{once:true});a.play().catch(()=>{c.blocked=1});SUB={k:q.k,end:G.t+VOICE[q.k][1]+.3}}
 function vend(){const c=vcur;if(!c)return;if(!c.a.ended)try{c.a.pause()}catch(e){}vlog({k:c.k,lv:c.lv,p:c.p,b:c.b,bi:c.bi,wait:c.wait,te:c.te,ts:c.ts,tp:c.tp,tr:c.tr,tsr:c.tsr,tpr:c.tpr,endr:performance.now(),end:G.t,cut:c.fade?1:0});if(SUB&&SUB.k==c.k)SUB=null;vcur=null}
 let SUB=null;const TXT={};
-function hush(){for(const q of VQ)vlog({k:q.k,lv:q.lv,te:q.te,drop:'hush',t:G.t});VQ.length=0;if(vcur){try{vcur.a.pause()}catch(e){}vend()}SUB=null}
+function hush(hard){for(let i=VQ.length-1;i>=0;i--){const q=VQ[i];if(!hard&&q.p>1)continue;vlog({k:q.k,lv:q.lv,te:q.te,drop:'hush',t:G.t});VQ.splice(i,1)}if(!vcur){if(hard)SUB=null;return}
+ if(!hard){if(vcur.p==1&&!vcur.fade)vfade(vcur,'hush');return}// мягко: задание/история дозвучивают
+ if(!vcur.a.ended&&vcur.p>1&&G.scene=='play'&&(vcur.a.currentTime||0)>.05)vlog({k:vcur.k,p:vcur.p,lv:vcur.lv,te:vcur.te,cut:'hardhush',t:G.t,at:+(vcur.a.currentTime||0).toFixed(2)});try{vcur.a.pause()}catch(e){}vend();SUB=null}
 function vEndLevel(){// конец уровня: задания и похвала больше не нужны, история (финал босса) дозвучивает
- for(let i=VQ.length-1;i>=0;i--)if(VQ[i].p!=2){vlog({k:VQ[i].k,lv:VQ[i].lv,te:VQ[i].te,drop:'levelend',t:G.t});VQ.splice(i,1)}if(vcur&&vcur.p!=2)vfade(vcur,'levelend')}
+ for(let i=VQ.length-1;i>=0;i--)if(VQ[i].p!=2){vlog({k:VQ[i].k,lv:VQ[i].lv,te:VQ[i].te,drop:'levelend',t:G.t});VQ.splice(i,1)}if(vcur&&vcur.p==1)vfade(vcur,'levelend')}
 function speaking(){return !!vcur||VQ.length>0}
-function vRepeat(){const k=G.cutTask||G.lastTask;if(!k)return;G.cutTask=0;hush();say(k)}
+function vRepeat(){const k=G.cutTask||G.lastTask;if(!k)return;G.cutTask=0;hush(1);say(k)}
 function vPrefetch(){if(G.bot||vPrefetch.d)return;vPrefetch.d=1;const ks=Object.keys(VOICE);let i=0;const nx=()=>{if(i>=ks.length)return;fetch('assets/voice/'+VOICE[ks[i++]][0]).then(r=>r.blob()).catch(()=>{}).finally(()=>setTimeout(nx,60))};setTimeout(nx,3000)}
 // ---- ввод
 const KEY={},TOUCH={};let taps=[];const BTN={};
@@ -111,7 +114,7 @@ const FORMS={
 let L=null;
 function tileAt(tx,ty){if(!L||tx<0||tx>=L.w)return 1;if(ty<0)return 0;if(ty>=L.h)return 0;return L.m[ty*L.w+tx]}
 function setT(tx,ty,v){if(tx>=0&&tx<L.w&&ty>=0&&ty<L.h)L.m[ty*L.w+tx]=v}
-function solidFor(v,p,dir){if(v==1||v==3||v==9)return true;if(v==4)return true;if(v==7)return p.form!='wheel';if(v==8)return p.form!='bubble';if(v>=10&&v<=14)return p.form!=GATEF[v];if(v==15||v==16||v==18||v==19)return true;if(v==17)return false;return false}
+function solidFor(v,p,dir){if(v==1||v==3||v==9)return true;if(v==4)return true;if(v==7)return p.form!='wheel';if(v==8)return p.form!='bubble';if(v==12)return p.form!='board'&&p.form!='cube';if(v>=10&&v<=14)return p.form!=GATEF[v];if(v==15||v==16||v==18||v==19)return true;if(v==17)return false;return false}
 const GATEF={10:'kite',11:'cube',12:'board',13:'shield',14:'hex'},GATES={10:'tri',11:'sq',12:'rect',13:'pent',14:'hex'};
 class LB{ // строитель уровня
  constructor(w,id){this.id=id;this.w=w;this.h=12;this.m=new Array(w*12).fill(0);this.ents=[];this.deco=[];this.gy=10;this.task=[];this.start={x:6,y:9}}
@@ -168,7 +171,7 @@ function moveP(p,dt){const F=FORMS[p.form],[w,h]=dims(p);const I=G.inputLock?{}:
 function breakWall(tx,ty){for(let y=0;y<12;y++)if(tileAt(tx,y)==4){setT(tx,y,0);part(tx*T+30,y*T+30,10,'#9a8b78',500,.9,1400,12)}SFX.crash();shake(14);say('r_good2')}
 const BMP={};function bump(tx,ty){const v=tileAt(tx,ty);SFX.bump();if(v==3||v==9){BMP[tx+','+ty]=G.t;if(!G.lowFx)sparkle(tx*T+30,ty*T-6,6)}if(v==3){setT(tx,ty,9);const e=ENTS.find(e=>e.type=='coin'&&false);spawnShard(tx*T+30,ty*T-20);part(tx*T+30,ty*T,12,'#ffe36b',300,.6);L.bumps=(L.bumps||0)+1;onBump&&onBump(tx,ty)}}
 let onBump=null;
-function spawnShard(x,y){ENTS.push({type:'coin',x,y,vy:-600,fly:1,kind:L.id[0]=='1'?'coin_circ':'coin_tri'})}
+function spawnShard(x,y){ENTS.push({type:'coin',x,y,vy:-600,fly:1,kind:L.id[0]=='1'?'coin_circ':L.id[0]=='3'?'coin_sq':'coin_tri'})}
 function stompWave(p){for(const e of ENTS)if(e.type=='enemy'&&Math.abs(e.x-p.x)<300&&Math.abs(e.y-p.y)<80)killEnemy(e)}
 function fallCatch(p){p.x=p.safe.x;p.y=p.safe.y-10;p.vx=0;p.vy=0;p.ground=false;FM.x=p.x;FM.y=p.y-200;FM.catch=1;say('r_oops');part(p.x,p.y-80,20,'#fff7c0',300,.8,0);if(G.auto)G.auto.rewind=1}
 function hurt(p,from){if(p.inv>0)return;HUD.hearts--;p.inv=1.6;p.hurt=.4;p.vx=(p.x<from?-1:1)*500;p.vy=-600;SFX.hurt();shake(8);if(HUD.hearts<=0){HUD.hearts=3;fallCatch(p)}}
@@ -231,7 +234,7 @@ LV['1-4']=()=>{const b=new LB(220,'1-4');b.meta={name:'1-4 Бегство от �
 LV['1-B']=()=>{const n=Math.max(16,Math.ceil(W/1.38/T)+1);const b=new LB(n,'1-B');b.zoom=1.38;b.meta={name:'Босс: Кувырок',intro:['b1a','b1b'],forms:['wheel'],boss:'kuv'};b.g(0,n).col(0,0,9,1).col(n-1,0,9,1).col(3,8,9,1).col(n-4,8,9,1);b.start={x:1,y:9};b.e('kuv',n-8,10);return b};
 const ORDER=['1-1','1-2','1-3','1-4','1-B'];
 // ---- загрузка уровня
-function loadLevel(id){hush();vlog({ev:'load',lv:id,t:G.t});G.level=id;G.lastTask=0;G.cutTask=0;vPrefetch();G.lseq=(G.lseq||0)+1;G.f2=0;G.said14=0;HSAID={};const b=LV[id]();seed=+(Q.get('seed')||((Date.now()/1000|0)%100000));const [l,ents]=mkLevel(b);L=l;L.forms=b.meta.forms.slice();L.meta=b.meta;
+function loadLevel(id){hush(1);vlog({ev:'load',lv:id,t:G.t});G.level=id;G.lastTask=0;G.cutTask=0;vPrefetch();G.lseq=(G.lseq||0)+1;G.f2=0;G.said14=0;HSAID={};const b=LV[id]();seed=+(Q.get('seed')||((Date.now()/1000|0)%100000));const [l,ents]=mkLevel(b);L=l;L.forms=b.meta.forms.slice();L.meta=b.meta;
  ENTS=[];PART=[];TASK=null;HAND=null;IDLE=0;HUD={shards:0,stars:0,hearts:3,got:0};
  for(const e of ents){const o=Object.assign({},e);if(o.type=='enemy'){o.vx=-90;o.ph=rnd()*6}if(o.type=='odd')setupOdd(o);if(o.type=='stone')setupStone(o);if(o.type=='kuv')setupKuv(o);if(EX[o.type]&&EX[o.type].setup)EX[o.type].setup(o);ENTS.push(o)}
  P=newPlayer(b.start.x*T,b.start.y*T+T);P.y=10*T;if(b.meta.startForm&&b.meta.startForm!='girl'){P.form=b.meta.startForm}if(Q.get('form'))P.form=Q.get('form');
@@ -484,6 +487,8 @@ const TXTS={};
 // ---- бот-проверка (?bot=1): проходит уровни сам
 const STATS={frames:0,ground:0,badFeet:0,minFps:999,levels:{}};G.stats=STATS;
 function botThink(dt){if(!G.bot||G.scene=='map'||G.scene=='title')return;BOT.l=0;BOT.r=1;BOT.f=0;const p=P;G.bt=(G.bt||0)+dt;
+ // бот «слушает», как ребёнок: стоит на земле, пока ждёт новое задание (до 4 с)
+ if(p.ground&&!L.meta.boss&&!G.won&&VQ.some(q=>q.p==3)){G.bw=(G.bw||0)+dt;if(G.bw<4){BOT.r=0;return}}else G.bw=0;
  const F=FORMS[p.form],[w,h]=dims(p);const fx=Math.floor((p.x+w/2+30)/T),fy=Math.floor((p.y-5)/T);
  // задания
  for(const o of ENTS){const x=EX[o.type];if(x&&x.bot&&!o.dead&&x.bot(o,dt))return}
@@ -494,7 +499,7 @@ function botThink(dt){if(!G.bot||G.scene=='map'||G.scene=='title')return;BOT.l=0
   if(o.type=='kuv'&&o.state=='fight'){const tx=100;BOT.r=p.x<tx-25;BOT.l=p.x>tx+25;if(o.dizzy>0&&o.dizzy<3.0&&G.bt>.45){G.bt=0;let best=null,by=1e9;for(const s of o.spikes){if(!s.on)continue;const y=Math.sin(s.a+o.rot);if(y<by){by=y;best=s}}if(best){const a=best.a+o.rot;taps.push({x:(o.x+Math.cos(a)*o.r*1.05-CAM.x)*Z,y:(o.y-o.r+Math.sin(a)*o.r*1.05-CAM.y)*Z})}}
    G.bj=(G.bj||0)-dt;BOT.j=G.bj>0;return}}
  // форма
- let want=p.form;for(let k=0;k<4;k++){const tx=fx+k;let has7=0,has8=0,has4=0;for(let y=0;y<11;y++){const v=tileAt(tx,y);if(v==7)has7=1;if(v==8)has8=1;if(v==4)has4=1}if(has7||has4){want='wheel';break}if(has8){want='bubble';break}const gf=WX.gateAt&&WX.gateAt(tx);if(gf){want=gf;break}}
+ let want=p.form;for(let k=0;k<4;k++){const tx=fx+k;let has7=0,has8=0,has4=0;for(let y=0;y<11;y++){const v=tileAt(tx,y);if(v==7)has7=1;if(v==8)has8=1;if(v==4)has4=1}if(has7||has4){want='wheel';break}if(has8){want='bubble';break}let gf=WX.gateAt&&WX.gateAt(tx);if(gf=='board'&&!L.forms.includes('board')&&L.forms.includes('cube'))gf='cube';if(gf){want=gf;break}}
  if(WX.botWant)want=WX.botWant(want,fx,fy);
  if(G.boulder&&G.boulder.kind==1)want='wheel';if(p.form=='bubble'&&want=='bubble'){}
  if(want!=p.form&&(want=="girl"||L.forms.includes(want))&&!G.botF){BOT.f=1;G.botF=.15}else BOT.f=0;G.botF=Math.max(0,(G.botF||0)-dt);if(G.botF>0&&G.botF<.08)BOT.f=0;
@@ -555,8 +560,8 @@ function frame(now){let dt=Math.min(.1,(now-last)/1000);last=now;resize();qualit
  else if(G.scene=='cut'){WX.updCut(dt)}
  else if(G.scene=='map'){IDLE+=dt;for(const t of taps.splice(0))mapTap(t);if(G.bot){const n=MAPN.find(n=>!SAVE.done[n.id]&&LV[n.id]&&(!Q.get('level')||ORDER.indexOf(n.id)>=ORDER.indexOf(Q.get('level')))&&(!Q.get('upto')||ORDER.indexOf(n.id)<=ORDER.indexOf(Q.get('upto'))));if(n)loadLevel(n.id);else G.botDone=1}}
  else{if(G.won){G.winT+=dt;taps.length=0;acc+=dt;while(acc>=STEP){acc-=STEP;for(const q of PART){q.life-=STEP;q.vy+=q.g*STEP;q.x+=q.vx*STEP;q.y+=q.vy*STEP}}PART=PART.filter(q=>q.life>0);
-   const bw=HUD.boss?4.5:2;if((G.winT>2&&!speaking()&&(inp().j||taps.length))||G.winT>12&&G.bot||(G.bot&&G.winT>bw)){STATS.levels[G.level]={t:+G.lt.toFixed(1),bad:STATS.badFeet};hush();G.scene='map';if(WX.afterWin)WX.afterWin(G.level)}
-   if(!G.bot&&G.winT>2&&!speaking()){C.onpointerup=()=>{C.onpointerup=null;if(G.won&&G.scene!='map'&&G.scene!='cut'){hush();G.scene='map';if(WX.afterWin)WX.afterWin(G.level)}}}}
+   const bw=HUD.boss?4.5:2;if((G.winT>2&&!speaking()&&(inp().j||taps.length))||G.winT>14&&G.bot||(G.bot&&G.winT>bw&&!speaking())){STATS.levels[G.level]={t:+G.lt.toFixed(1),bad:STATS.badFeet};hush(1);G.scene='map';if(WX.afterWin)WX.afterWin(G.level)}
+   if(!G.bot&&G.winT>2&&!speaking()){C.onpointerup=()=>{C.onpointerup=null;if(G.won&&G.scene!='map'&&G.scene!='cut'){hush(1);G.scene='map';if(WX.afterWin)WX.afterWin(G.level)}}}}
   else{acc+=dt;let n=0;while(acc>=STEP&&n<20){acc-=STEP;n++;botThink(STEP);update(STEP);checkFeet()}}}
  render();requestAnimationFrame(frame)}
 fetch('tools/lines.json?v='+V).then(r=>r.json()).then(a=>a.forEach(o=>TXTS[o.k]=o.t)).catch(()=>{});

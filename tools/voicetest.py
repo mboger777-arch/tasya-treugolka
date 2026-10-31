@@ -20,12 +20,19 @@ async def world(pw,n):
         if await pg.evaluate('G.botDone'):break
     r=await pg.evaluate('({vlog:G.vlog,vmax:window.__vmax,vov:window.__vov,st:G.stats})')
     await b.close();return r,errs,t
+import re
+def vp(k):
+    b=re.sub(r'^T(?=[a-z])','',k)
+    if re.match(r'(n\d|c_|s_|r_good|r_star$|r_win|r_race|r_odd_ok|r_pat|r_asm|r_starf)',b):return 1
+    return 2
 def analyse(n,r):
     V=r['vlog'];played=[v for v in V if 'tsr' in v];drops=[v for v in V if 'drop' in v];cuts=[v for v in V if v.get('cut')]
-    lat=[];late=[]
-    for v in played:
+    lat=[];late=[];waits=[];pend=-1e9
+    for v in sorted(played,key=lambda v:v['tsr']):
+        st=(v.get('tpr') or v['tsr']);w=max(0,(pend-v['tr'])/1000);pend=v.get('endr',st)
+        if w>3 and v['p']==3:waits.append((v['k'],round(w,1)))
         if v.get('bi',0)!=0:continue  # следующая реплика той же пачки (интро/катсцена) — ждёт по сюжету
-        d=((v.get('tpr') or v['tsr'])-v['tr'])/1000
+        d=(st-v['tr'])/1000-w  # задержка сверх ожидания конца предыдущей реплики
         lat.append(d)
         if d>.5:late.append((v['k'],round(d,2),v.get('wait')))
     # реплики уровня, начавшиеся после его конца (кроме финальной истории босса и r_win)
@@ -42,13 +49,14 @@ def analyse(n,r):
     p=lambda q:round(lat[min(len(lat)-1,int(q*len(lat)))],3) if lat else None
     return dict(world=n,played=len(played),events=len(lat),lat_med=p(.5),lat_p95=p(.95),lat_max=round(max(lat),3) if lat else None,
         late=late,dropped=len(drops),drop_kinds={k:sum(1 for d in drops if d['drop']==k) for k in set(d['drop'] for d in drops)},
-        interrupted=[c['k']+'@'+str(c['at'])+'s:'+c['cut'] for c in cuts if 'at' in c],stale=stale,overlap_max=r['vmax'],overlaps=r['vov'][:5],levels=list(r['st']['levels'].keys()))
+        interrupted=[c['k']+'@'+str(c['at'])+'s:'+c['cut'] for c in cuts if 'at' in c],
+        task_cuts=[c['k']+'@'+str(c['at'])+'s:'+c['cut'] for c in cuts if 'at' in c and c.get('p',vp(c['k']))>1],task_waits=waits,stale=stale,overlap_max=r['vmax'],overlaps=r['vov'][:5],levels=list(r['st']['levels'].keys()))
 async def main():
     ws=[int(a) for a in sys.argv[1:]] or [1,2,3,4,5,6]
     async with async_playwright() as pw:
         for n in ws:
             r,errs,t=await world(pw,n);a=analyse(n,r);a['time']=t;a['errs']=errs[:3]
             os.makedirs('shots',exist_ok=True);json.dump(r['vlog'],open(f'shots/vlog_w{n}.json','w'))
-            ok=a['lat_max'] is not None and a['lat_max']<.5 and not a['stale'] and a['overlap_max']<=1
+            ok=a['lat_max'] is not None and a['lat_max']<.5 and not a['stale'] and a['overlap_max']<=1 and not a['task_cuts']
             print('PASS' if ok else 'FAIL',json.dumps(a,ensure_ascii=False),flush=True)
 asyncio.run(main())

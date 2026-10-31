@@ -68,7 +68,7 @@ const GK={circle:7,oval:8,tilt:8,small:7,near:1};
 EX.sgate={setup(o){o.gx=Math.round(o.x/T-.5);o.top=o.top||4;for(let y=o.top;y<10;y++)setT(o.gx,y,GK[o.kind])},
  upd(o){if(!o.intro&&P.x>o.gx*T-520&&P.x<o.gx*T){o.intro=1;const k={circle:'t_cgate',small:'t_cgate',oval:'t_ogate',tilt:'t_tilt',near:'t_near'}[o.kind];
   if(o.kind=='near'||(o.kind=='tilt')||P.form!=(GK[o.kind]==7?'wheel':'bubble')){say(k);if(o.kind=='near'){const q=G.lseq;setTimeout(()=>{if(G.lseq==q)say('t_near2')},2600)}else HAND={x:0,y:0,t:0,k:'screen',bx:'form'}}}},
- hint(o){const f=GK[o.kind]==7?'wheel':'bubble';if(o.kind=='near'||!near(o.gx*T,600)||P.x>o.gx*T||P.form==f)return;HAND={x:0,y:0,t:0,k:'screen',bx:'form'};say(GK[o.kind]==7?'t_rgate':'t_ogate');return true},
+ hint(o){const f=GK[o.kind]==7?'wheel':'bubble';if(o.kind=='near'||!near(o.gx*T,600)||P.x>o.gx*T||P.form==f)return;HAND={x:0,y:0,t:0,k:'screen',bx:'form'};say(GK[o.kind]==7?'t_cgate':'t_ogate');return true},
  draw(o){const x=o.gx*T-16,w=T+32,top=o.top*T-30,h=600-top,cx=x+w/2,cy=top+h*.55;X.save();
   const g=X.createLinearGradient(x,0,x+w,0);g.addColorStop(0,'#b9a58c');g.addColorStop(.5,'#9a8670');g.addColorStop(1,'#6d5c4a');X.fillStyle=g;X.strokeStyle='#4a3b2c';X.lineWidth=6;
   X.beginPath();X.roundRect?X.roundRect(x,top,w,h+10,18):X.rect(x,top,w,h+10);X.fill();X.stroke();
