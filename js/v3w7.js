@@ -21,6 +21,7 @@ const PC={tri:{v:[[0,-69],[60,35],[-60,35]],sym:120},          // равност
 const COL={hex:'#ffd34a',tri:'#ff8a5c',sq:'#5ec8ff',ssq:'#7ad97a',rt:'#ffc94a',rect:'#c58cff',circ:'#ff6fae',oval:'#ff6fae',stri:'#ffb04a'};
 function shp(k,x,y,r,s,fill,a){const v=PC[k].v,c=Math.cos(r*Math.PI/180),n=Math.sin(r*Math.PI/180);
  path(v.map(q=>[x+(q[0]*c-q[1]*n)*s,y+(q[0]*n+q[1]*c)*s]));if(fill){X.globalAlpha=a??1;X.fillStyle=fill;X.fill();X.globalAlpha=1}}
+const stp=k=>PC[k].sym==120||PC[k].sym==60?60:90;
 const rmatch=(k,a,b)=>{const s=PC[k].sym;return s==1||((a-b)%s+s*9)%s==0};
 // ===== мозаика: силуэт из слотов + лоток кусочков; тап по кусочку = повернуть/вставить =====
 // o.S=[[k,dx,dy,r]...] слоты; o.C=[[k,r0]...] карточки; o.name; o.bridge=[x0,x1] — тайлы моста ряда 10 по мере сборки
@@ -40,7 +41,7 @@ EX.mosaic={setup(o){o.gx=o.bridge?o.bridge[0]:Math.floor(o.x/T)+(o.open||4);if(!
  tap(o,wx,wy){if(o.done||!near(o.cx,WV))return false;const C=EX.mosaic.cards(o);for(const c of C){if(o.used[c.i]||Math.abs(wx-c.x)>85||Math.abs(wy-c.y)>85)continue;
    HAND=null;const k=c.k;if(EX.mosaic.free(o,k)<0){o.sh=.6;o.shi=c.i;SFX.no();hush();say(o.no||'r_mosno');return true}
    const j=EX.mosaic.free(o,k,o.cr[c.i]);if(j>=0){o.used[c.i]=1;o.fly.push({i:c.i,j,t:0,x:c.x,y:c.y})}
-   else{o.cr[c.i]+=o.step||90;o.rt[c.i]=1;SFX.light(1);if(!o.rsaid){o.rsaid=1;say('r_mosrot')}
+   else{o.cr[c.i]+=stp(k);o.rt[c.i]=1;SFX.light(1);if(!o.rsaid){o.rsaid=1;say('r_mosrot')}
     const j2=EX.mosaic.free(o,k,o.cr[c.i]);if(j2>=0){o.used[c.i]=1;o.fly.push({i:c.i,j:j2,t:-.25,x:c.x,y:c.y})}}
    return true}return false},
  nextCard(o){const C=EX.mosaic.cards(o);return C.find(c=>!o.used[c.i]&&EX.mosaic.free(o,c.k)>=0)},
@@ -60,7 +61,7 @@ EX.mosaic={setup(o){o.gx=o.bridge?o.bridge[0]:Math.floor(o.x/T)+(o.open||4);if(!
    for(const f of o.fly){const s=o.S[f.j],k=sm(Math.max(0,f.t)),x=f.x+(o.cx+s[1]-f.x)*k,y=f.y+(o.cy+s[2]-f.y)*k-Math.sin(k*Math.PI)*80;X.save();shp(s[0],x,y,s[3],(.6+.4*k)*(o.sc||1),COL[s[0]]);X.strokeStyle='#3a1d55';X.lineWidth=5;X.stroke();X.restore()}
    C.forEach(c=>{if(o.used[c.i])return;let x=c.x;if(o.sh>0&&o.shi==c.i)x+=Math.sin(o.sh*40)*8;
     X.save();X.fillStyle='rgba(255,255,255,.88)';X.strokeStyle='#5a7ac8';X.lineWidth=5;X.beginPath();X.roundRect(x-78,c.y-78,156,156,22);X.fill();X.stroke();X.restore();
-    const r=o.cr[c.i]-(o.rt[c.i]>0?(o.step||90)*o.rt[c.i]:0);X.save();shp(c.k,x,c.y,r,.6*(o.sc||1),COL[c.k]);X.strokeStyle='#3a1d55';X.lineWidth=4;X.stroke();X.restore();
+    const r=o.cr[c.i]-(o.rt[c.i]>0?stp(c.k)*o.rt[c.i]:0);X.save();shp(c.k,x,c.y,r,.6*(o.sc||1),COL[c.k]);X.strokeStyle='#3a1d55';X.lineWidth=4;X.stroke();X.restore();
     if(!rmatch(c.k,o.cr[c.i],o.cr[c.i])||PC[c.k].sym<360&&o.S.some(s=>s[0]==c.k)&&!o.S.some((s,j)=>s[0]==c.k&&o.fill[j]<0&&rmatch(c.k,s[3],o.cr[c.i]))){
      X.save();X.strokeStyle='#ffd34a';X.lineWidth=5;X.beginPath();X.arc(x+52,c.y-52,16,-2.6,1.6);X.stroke();X.restore()}});
    panelHide(o.cx-400,o.cy-160,800)}
