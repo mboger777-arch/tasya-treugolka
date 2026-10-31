@@ -134,7 +134,7 @@ EX.cage4=Object.assign({},C,{
 // ===== 4-B: краб примеряет домики =====
 const K=EX.crab;
 EX.crab4=Object.assign({},K,{
- hs(o){const x0=CAM.x+WV*.18;return [{n:6,crv:1},{n:5},{n:6}].map((h,i)=>({...h,x:x0+i*Math.min(170,WV*.17),y:600-o.h-40}))},
+ hs(o){const x0=CAM.x+WV*.25;return [{n:6,crv:1},{n:5},{n:6}].map((h,i)=>({...h,x:x0+i*Math.min(150,WV*.14),y:600-o.h*.93}))},
  upd(o,dt){if(o.st=='pick'){o.t+=dt;const p=P;if(p.x>o.x-190)p.x=o.x-190;if(o.sh>0)o.sh-=dt;return}
   if(o.st=='wear'){o.t+=dt;if(o.t>1){o.st='fight';o.stun=7;say('b4l')}return}
   K.upd(o,dt);if(o.stun>0&&!o.picked&&o.st=='fight'){o.picked=1;o.st='pick';o.t=0;o.stun=0;o.pearls=[];hush();say('b4p')}
@@ -145,12 +145,12 @@ EX.crab4=Object.assign({},K,{
  hint(o){if(o.st=='pick'){const h=EX.crab4.hs(o)[2];showHand([[h.x,h.y],[o.x,600-o.h*.5]],'b4p',1);return true}if(o.st=='wear')return true;return K.hint(o)},
  bot(o,dt){if(o.st=='pick'){BOT.r=0;BOT.l=0;BOT.j=0;G.bt=(G.bt||0)+dt;if(G.bt>1.2&&!speaking()){G.bt=0;const h=EX.crab4.hs(o)[2];tapAt(h.x,h.y)}return true}if(o.st=='wear'){BOT.r=0;return true}return K.bot(o,dt)},
  draw(o){if(o.st=='pick'||o.st=='wear'){X.save();X.translate(o.x,600);img('crab_0',0,0,o.h,0);X.restore();
-   const H=EX.crab4.hs(o);H.forEach((h,i)=>{let x=h.x,y=h.y,r=58;if(o.st=='wear'){if(!(h.n==6&&!h.crv))return;const [cx,cy,rr]=K.hc(o),k=sm(o.t);x=lerp(o.hx,cx,k);y=lerp(o.hy,cy,k)-Math.sin(k*Math.PI)*80;r=lerp(58,rr,k)}
+   const H=EX.crab4.hs(o);H.forEach((h,i)=>{let x=h.x,y=h.y,r=52;if(o.st=='wear'){if(!(h.n==6&&!h.crv))return;const [cx,cy,rr]=K.hc(o),k=sm(o.t);x=lerp(o.hx,cx,k);y=lerp(o.hy,cy,k)-Math.sin(k*Math.PI)*80;r=lerp(52,rr,k)}
     else if(o.sh>0&&o.shi==i)x+=Math.sin(o.sh*40)*8;
     const v=ngon(h.n,x,y,r,-Math.PI/2);X.save();const g=X.createRadialGradient(x,y,6,x,y,r);g.addColorStop(0,'#fff0e0');g.addColorStop(1,['#f7a8c4','#9fd0ff','#ffe08a'][i]);X.fillStyle=g;X.strokeStyle='#7d2f52';X.lineWidth=6;X.lineJoin='round';
     if(h.crv){X.beginPath();X.moveTo(v[0][0],v[0][1]);X.quadraticCurveTo((v[0][0]+v[1][0])/2+r*.55,(v[0][1]+v[1][1])/2-r*.35,v[1][0],v[1][1]);for(let j=2;j<=h.n;j++)X.lineTo(v[j%h.n][0],v[j%h.n][1]);X.closePath()}else path(v);
     X.fill();X.stroke();X.restore()});
-   if(o.st=='pick')panelHide(CAM.x,600-o.h-120,WV*.7);return}
+   if(o.st=='pick')panelHide(CAM.x,600-o.h-70,WV*.6);return}
   K.draw(o)}});
 WX.add(()=>{
 const pw=WX.wantF;WX.wantF=function(want,fx,fy){if(WX.wn()==4){const p=P;for(const o of ENTS)if(o.type=='mir'&&!o.done&&o.cx-p.x<9*T&&o.cx-p.x>-60&&L.forms.includes('shield'))return 'shield'}return pw?pw(want,fx,fy):want};
