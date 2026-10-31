@@ -142,7 +142,7 @@ EX.crab4=Object.assign({},K,{
   if(o.st=='calm'&&!o.r4){o.r4=1;say('rule4')}},
  tap(o,wx,wy){if(o.st=='pick'){const H=EX.crab4.hs(o);for(let i=0;i<3;i++){const h=H[i];if(Math.hypot(wx-h.x,wy-h.y)<75){if(h.n==6&&!h.crv){o.st='wear';o.t=0;o.hx=h.x;o.hy=h.y;SFX.win();HAND=null;hush();say('b4ok')}else{o.sh=.6;o.shi=i;SFX.no();say(h.crv?'b4nc':'b4n5')}return true}}return false}
   if(o.st=='wear')return false;return K.tap(o,wx,wy)},
- hint(o){if(o.st=='pick'){const h=EX.crab4.hs(o)[2];showHand([[h.x,h.y],[o.x,600-o.h*.5]],'b4p',1);return true}if(o.st=='wear')return true;return K.hint(o)},
+ hint(o){if(o.st=='pick'){const h=EX.crab4.hs(o)[2];showHand([[h.x,h.y],[o.x,600-o.h*.5]],'b4p',1);return true}if(o.st=='wear'||(!o.picked&&o.stun>0))return true;return K.hint(o)},
  bot(o,dt){if(o.st=='pick'){BOT.r=0;BOT.l=0;BOT.j=0;G.bt=(G.bt||0)+dt;if(G.bt>1.2&&!speaking()){G.bt=0;const h=EX.crab4.hs(o)[2];tapAt(h.x,h.y)}return true}if(o.st=='wear'){BOT.r=0;return true}return K.bot(o,dt)},
  draw(o){if(o.st=='pick'||o.st=='wear'){X.save();X.translate(o.x,600);img('crab_0',0,0,o.h,0);X.restore();
    const H=EX.crab4.hs(o);H.forEach((h,i)=>{let x=h.x,y=h.y,r=52;if(o.st=='wear'){if(!(h.n==6&&!h.crv))return;const [cx,cy,rr]=K.hc(o),k=sm(o.t);x=lerp(o.hx,cx,k);y=lerp(o.hy,cy,k)-Math.sin(k*Math.PI)*80;r=lerp(52,rr,k)}
