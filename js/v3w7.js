@@ -16,8 +16,9 @@ const PC={tri:{v:[[0,-69],[60,35],[-60,35]],sym:120},          // равност
  rt:{v:[[-60,-60],[60,60],[-60,60]],sym:360},                   // половинка квадрата
  rect:{v:[[-40,-70],[40,-70],[40,70],[-40,70]],sym:180},        // «почти квадрат»
  circ:{v:ell(34,34),sym:1},oval:{v:ell(48,30),sym:180},
+ hex:{v:[0,1,2,3,4,5].map(k=>{const a=k*Math.PI/3;return[Math.cos(a)*60,Math.sin(a)*60]}),sym:60},
  stri:{v:[[0,-39],[34,20],[-34,20]],sym:120}};                  // маленький треугольник
-const COL={tri:'#ff8a5c',sq:'#5ec8ff',ssq:'#7ad97a',rt:'#ffc94a',rect:'#c58cff',circ:'#ff6fae',oval:'#ff6fae',stri:'#ffb04a'};
+const COL={hex:'#ffd34a',tri:'#ff8a5c',sq:'#5ec8ff',ssq:'#7ad97a',rt:'#ffc94a',rect:'#c58cff',circ:'#ff6fae',oval:'#ff6fae',stri:'#ffb04a'};
 function shp(k,x,y,r,s,fill,a){const v=PC[k].v,c=Math.cos(r*Math.PI/180),n=Math.sin(r*Math.PI/180);
  path(v.map(q=>[x+(q[0]*c-q[1]*n)*s,y+(q[0]*n+q[1]*c)*s]));if(fill){X.globalAlpha=a??1;X.fillStyle=fill;X.fill();X.globalAlpha=1}}
 const rmatch=(k,a,b)=>{const s=PC[k].sym;return s==1||((a-b)%s+s*9)%s==0};
@@ -64,6 +65,39 @@ EX.mosaic={setup(o){o.gx=o.bridge?o.bridge[0]:Math.floor(o.x/T)+(o.open||4);if(!
      X.save();X.strokeStyle='#ffd34a';X.lineWidth=5;X.beginPath();X.arc(x+52,c.y-52,16,-2.6,1.6);X.stroke();X.restore()}});
    panelHide(o.cx-400,o.cy-160,800)}
   X.restore()}};
+// ===== лампы-вещи: тёмная вещь, на панели Формика выбрать её фигуру =====
+const THING={clock:['circ'],book:['rect'],pizza:['tri'],honey:['hex'],egg:['oval'],house:['sq','tri']};
+function thing(k,x,y,lit){X.save();X.translate(x,y);X.lineJoin='round';X.lineWidth=6;X.strokeStyle='#3a1d55';
+ const f=c=>lit?c:'#4a4560';if(lit){X.shadowColor='#fff3a0';X.shadowBlur=40}
+ if(k=='clock'){X.beginPath();X.arc(0,0,70,0,7);X.fillStyle=f('#ffe7a8');X.fill();X.stroke();X.shadowBlur=0;X.beginPath();X.moveTo(0,0);X.lineTo(0,-48);X.moveTo(0,0);X.lineTo(34,10);X.stroke();for(let i=0;i<12;i++){const a=i*Math.PI/6;X.beginPath();X.arc(Math.cos(a)*56,Math.sin(a)*56,4,0,7);X.fillStyle='#3a1d55';X.fill()}}
+ else if(k=='book'){X.beginPath();X.roundRect(-50,-70,100,140,8);X.fillStyle=f('#ff7a6b');X.fill();X.stroke();X.shadowBlur=0;X.fillStyle=f('#fff3d6');X.fillRect(-32,-46,64,22)}
+ else if(k=='pizza'){path([[0,70],[-62,-62],[62,-62]]);X.fillStyle=f('#ffc94a');X.fill();X.stroke();X.shadowBlur=0;X.fillStyle=f('#e0443e');for(const q of [[-20,-30],[18,-36],[0,10]]){X.beginPath();X.arc(q[0],q[1],11,0,7);X.fill()}X.fillStyle=f('#c9853a');X.fillRect(-64,-72,128,16)}
+ else if(k=='honey'){shp('hex',0,0,0,1.1,f('#ffb300'));X.stroke();X.shadowBlur=0;shp('hex',0,0,0,.55,f('#ffd34a'));X.stroke()}
+ else if(k=='egg'){X.beginPath();X.ellipse(0,0,50,72,0,0,7);X.fillStyle=f('#fff6e8');X.fill();X.stroke()}
+ else if(k=='house'){shp('sq',0,25,0,1,f('#ff9a6b'));X.stroke();shp('tri',0,-70,0,1,f('#e0443e'));X.stroke();X.shadowBlur=0;X.fillStyle=f('#7fd3ff');X.fillRect(-18,10,36,36)}
+ X.restore()}
+EX.lamp={setup(o){o.gx=Math.floor(o.x/T)+4;wall(o.gx,15);o.cx=o.gx*T-170;o.cy=o.cy||240;o.need=THING[o.th].slice();o.got=[];o.done=0;o.sh=0;o.shi=-1;o.ft=0},
+ cards(o){const n=o.B.length,w=170;return o.B.map((k,i)=>({k,x:o.cx-(n-1)*w/2+i*w,y:o.cy+260,i}))},
+ top(o){return o.done?null:o.cy-150},
+ upd(o,dt){if(o.sh>0)o.sh-=dt;if(o.done){o.ft+=dt;return}
+  if(!o.said&&near(o.cx,780)&&P.x<o.gx*T){o.said=1;say(o.k||'t_lamp')}
+  if(P.x>o.gx*T-40){P.x=o.gx*T-40;P.vx=Math.min(P.vx,0)}},
+ tap(o,wx,wy){if(o.done||!near(o.cx,WV))return false;for(const c of EX.lamp.cards(o)){if(Math.abs(wx-c.x)>80||Math.abs(wy-c.y)>80)continue;HAND=null;
+   if(o.need.includes(c.k)&&!o.got.includes(c.k)){o.got.push(c.k);SFX.light(2);part(c.x,c.y,14,'#fff3a0',300,.6,0,6);
+    if(o.got.length>=o.need.length){o.done=1;o.ft=0;wall(o.gx,0);SFX.win();shake(5);hush();say(o.rk||'r_lamp');HUD.got=(HUD.got||0)+1}else{hush();say('r_lamp1')}}
+   else if(!o.got.includes(c.k)){o.sh=.6;o.shi=c.i;SFX.no();hush();say('r_lampno')}return true}return false},
+ hint(o){if(o.done||!near(o.cx,780)||P.x>o.gx*T)return;const c=EX.lamp.cards(o).find(c=>o.need.includes(c.k)&&!o.got.includes(c.k));showHand([[o.cx,o.cy],[c.x,c.y]],o.k||'t_lamp',1);return true},
+ bot(o,dt){if(o.done)return;const d=o.cx-P.x;if(d>560||P.x>o.gx*T+20)return;WX.go(o.cx-330,30);G.bt=(G.bt||0)+dt;
+  if(G.bt>1&&!speaking()&&Math.abs(P.x-(o.cx-330))<90){G.bt=0;const c=EX.lamp.cards(o).find(c=>o.need.includes(c.k)&&!o.got.includes(c.k));if(c)tapAt(c.x,c.y)}return true},
+ draw(o){if(o.cx<CAM.x-900||o.cx>CAM.x+WV+600)return;X.save();
+  if(!o.done){X.fillStyle='rgba(20,10,40,.5)';X.fillRect(o.gx*T-1100,0,1100+T,600);const x=o.gx*T;X.fillStyle='rgba(60,40,90,.8)';X.fillRect(x+8,0,T-16,600)}
+  thing(o.th,o.cx,o.cy,o.done);
+  if(o.done&&o.ft<2.5&&o.name)txt(o.name,o.cx,o.cy-130,big()*.75,'#fff3a0');
+  if(!o.done){EX.lamp.cards(o).forEach(c=>{let x=c.x;if(o.sh>0&&o.shi==c.i)x+=Math.sin(o.sh*40)*8;const g=o.got.includes(c.k);
+    X.save();X.fillStyle=g?'#fff3a0':'rgba(255,255,255,.9)';X.strokeStyle='#5a7ac8';X.lineWidth=5;X.beginPath();X.roundRect(x-72,c.y-72,144,144,22);X.fill();X.stroke();X.restore();
+    X.save();shp(c.k,x,c.y,0,.55,COL[c.k]||'#7fd3ff');X.strokeStyle='#3a1d55';X.lineWidth=4;X.stroke();X.restore()});
+   panelHide(o.cx-360,o.cy-150,720)}
+  X.restore()}};
 const HEX=[0,1,2,3,4,5].map(k=>{const a=(-90+60*k)*Math.PI/180;return['tri',Math.cos(a)*69.3,Math.sin(a)*69.3,k%2?0:180]});
 const M={house:[['tri',0,-55,0],['sq',0,40,0]],rocket:[['tri',0,-95,0],['rect',0,10,0],['stri',-62,60,0],['stri',62,60,0]],
  tree:[['tri',0,-125,0],['tri',0,-60,0],['tri',0,5,0],['ssq',0,70,0]],sq2:[['rt',0,0,0],['rt',0,0,180]],sq4:[['ssq',-30,-30,0],['ssq',30,-30,0],['ssq',-30,30,0],['ssq',30,30,0]]};
@@ -76,6 +110,15 @@ LV['7-1']=()=>{const b=new LB(160,'7-1');b.meta={name:'7-1 Домик из фи�
  b.coins(8,7,6,'coin_tri',2).coins(52,7,8,'coin_sq',2).coins(96,7,8,'coin_tri',2).coins(142,7,6,'coin_sq',2);
  b.e('enemy',20,10).e('enemy',62,10).e('enemy',110,10);
  b.e('star',30,6).e('star',75,5).e('star',118,6).e('goal',154,10);return b};
+LV['7-4']=()=>{const b=new LB(190,'7-4');b.meta={name:'7-4 Найди в вещах',intro:['l74'],forms:[]};b.g(0,190);
+ b.e('lamp',36,10,{th:'clock',B:['sq','circ','tri'],name:'Часы — круг!',k:'t_lamp',rk:'r_clock'});
+ b.e('lamp',72,10,{th:'pizza',B:['tri','sq','oval'],name:'Пицца — треугольник!',rk:'r_pizza'});
+ b.e('lamp',108,10,{th:'book',B:['circ','rect','tri'],name:'Книга — прямоугольник!',rk:'r_book'});
+ b.e('lamp',144,10,{th:'honey',B:['hex','circ','sq'],name:'Соты — шестиугольник!',rk:'r_honey'});
+ b.e('lamp',176,10,{th:'house',B:['circ','sq','tri'],name:'Домик — квадрат и треугольник!',k:'t_lamp2',rk:'r_lhouse'});
+ b.coins(8,7,6,'coin_circ',2).coins(48,7,8,'coin_tri',2).coins(118,7,8,'coin_sq',2);
+ b.e('enemy',20,10).e('enemy',90,10).e('enemy',160,10);
+ b.e('star',28,6).e('star',96,5).e('star',150,6).e('goal',186,10);return b};
 LV['7-2']=()=>{const b=new LB(170,'7-2');b.meta={name:'7-2 Мозаика-мост',intro:['l72'],forms:[]};
  b.g(0,40);b.g(47,85);b.g(92,130);b.g(137,170);
  b.e('mosaic',40,10,{bridge:[40,46],S:HEX,C:[['tri',0],['tri',60],['tri',0],['tri',180],['tri',60],['tri',0]],step:60,cy:230,sc:.85,name:'Шестиугольник!',k:'t_hex',rk:'r_hex'});
