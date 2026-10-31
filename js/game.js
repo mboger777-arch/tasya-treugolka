@@ -488,7 +488,7 @@ const TXTS={};
 const STATS={frames:0,ground:0,badFeet:0,minFps:999,levels:{}};G.stats=STATS;
 function botThink(dt){if(!G.bot||G.scene=='map'||G.scene=='title')return;BOT.l=0;BOT.r=1;BOT.f=0;const p=P;G.bt=(G.bt||0)+dt;
  // бот «слушает», как ребёнок: стоит на земле, пока ждёт новое задание (до 4 с)
- if(p.ground&&!L.meta.boss&&!G.won&&VQ.some(q=>q.p==3)){G.bw=(G.bw||0)+dt;if(G.bw<4){BOT.r=0;return}}else G.bw=0;
+ if(p.ground&&!L.meta.boss&&!G.won&&VQ.some(q=>q.p==3)&&!(()=>{const c=Math.floor(p.x/T);for(let k=0;k<7;k++)for(let y=0;y<11;y++){const v=tileAt(c+k,y);if(v==4||v==7)return 1}return 0})()){G.bw=(G.bw||0)+dt;if(G.bw<4){BOT.r=0;return}}else G.bw=0;
  const F=FORMS[p.form],[w,h]=dims(p);const fx=Math.floor((p.x+w/2+30)/T),fy=Math.floor((p.y-5)/T);
  // задания
  for(const o of ENTS){const x=EX[o.type];if(x&&x.bot&&!o.dead&&x.bot(o,dt))return}
