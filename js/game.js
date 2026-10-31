@@ -25,7 +25,7 @@ const clamp=(v,a,b)=>v<a?a:v>b?b:v,lerp=(a,b,t)=>a+(b-a)*t;
 // ---- картинки
 var EX=self.EX||{},WX=self.WX||{};const IMG={};const LIST='t_wv t_lk t_hrt t_lnd t_look t_wave f_wheel f_kite f_cube f_board f_shield f_hex f_bubble f_bubble2 t_idle t_blink t_jump t_fall t_hurt t_land t_r0 t_r1 t_r2 t_r3 t_r4 t_r5 t_jmp t_fal t_std t_run0 t_run1 t_run2 t_run3 fm0 fm1 fm2 fm3 ground e_wheel stone plank sign bush block kuv heart coin_tri coin_sq coin_circ star btn_jump btn_form btn_arrow tile_top tile_dirt oskolok_0 oskolok_3 oskolok_1 oskolok_2 lineup_1 lineup_2 crab_0 owl_0 e_w2 e_w3 e_w4 e_w5 e_w6 e_wheel_0 e_wheel_1 e_w2_0 e_w2_1 e_w3_0 e_w3_1 e_w4_0 e_w4_1 e_w5_0 e_w5_1 e_w6_0 e_w6_1 stk_ball stk_clock stk_egg stk_plate stk_sign stk_pizza stk_hanger stk_sail stk_window stk_grid stk_door stk_phone stk_shell stk_psign stk_box stk_honey stk_bfly stk_snow stk_leaf stk_hmir mill ostone fly'.split(' ');
 let loaded=0;for(const n of LIST){const i=new Image();i.onload=()=>loaded++;i.onerror=()=>{if(!i.fb){i.fb=1;i.src='assets/img/'+n+'.png?v='+V}};i.src='assets/img/'+n+'.webp?v='+V;IMG[n]=i}
-for(const n of ['bg_w1','map','bg_w2','bg_w3','bg_w4','bg_w5','bg_w6','ending','kidnap']){const i=new Image();i.onload=()=>loaded++;i.src='assets/img/'+n+'.jpg?v='+V;IMG[n]=i}
+for(const n of ['bg_w1','map','bg_w2','bg_w3','bg_w4','bg_w5','bg_w6','bg_w7','ending','kidnap']){const i=new Image();i.onload=()=>loaded++;i.src='assets/img/'+n+'.jpg?v='+V;IMG[n]=i}
 const TOTAL=LIST.length+9;
 // ---- звук
 let AC=null,MG=null;function ac(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)();MG=AC.createGain();MG.gain.value=.5;MG.connect(AC.destination)}catch(e){}}if(AC&&AC.state=='suspended')AC.resume();return AC}
@@ -518,7 +518,7 @@ function checkFeet(){const p=P;STATS.frames++;if(!p.ground)return;STATS.ground++
  if(p.surf)ok=true;if(!ok){STATS.badFeet++;if(STATS.badFeet<5)G.log.push('feet '+G.level+' '+p.x.toFixed(0)+','+p.y.toFixed(0))}}
 // ---- сцены
 const MAPN=[{id:'1-1',x:.16,y:.78},{id:'1-2',x:.25,y:.70},{id:'1-3',x:.33,y:.78},{id:'1-4',x:.41,y:.68},{id:'1-B',x:.49,y:.76}];
-function unlocked(id){const i=ORDER.indexOf(id);return i==0||SAVE.done[ORDER[i-1]]||Q.has('all')}
+function unlocked(id){const i=ORDER.indexOf(id);return i==0||!!SAVE.done[ORDER[i-1]]||!!SAVE.done[id]||Q.has('all')}
 function drawMap(){const m=IMG.map;if(m.width){const s=Math.max(W/m.width,H/m.height);X.drawImage(m,(W-m.width*s)/2,(H-m.height*s)/2,m.width*s,m.height*s)}
  X.fillStyle='rgba(20,10,40,.25)';X.fillRect(0,0,W,H);txt('Долина Колёс',W/2,60,64,'#fff3a0');
  X.strokeStyle='rgba(255,243,160,.8)';X.lineWidth=10;X.setLineDash([4,22]);X.lineCap='round';X.beginPath();MAPN.forEach((n,i)=>i?X.lineTo(n.x*W,n.y*H):X.moveTo(n.x*W,n.y*H));X.stroke();X.setLineDash([]);

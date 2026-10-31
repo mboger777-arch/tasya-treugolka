@@ -2,7 +2,8 @@
 var EX={},WX={};
 (function(){
 const INITS=[];WX.add=f=>INITS.push(f);
-const wn=WX.wn=()=>L?+L.id[0]:1;
+const wn=WX.wn=()=>{const n=L?+L.id[0]:1;return n==7?5:n};// мир 7 (Храм Мозаики) выглядит как небесный храм
+const WSEQ=WX.WSEQ=[1,2,3,4,5,7,6],wnext=(w,d)=>WSEQ[WSEQ.indexOf(w)+d];
 WX.bt=(x,y)=>taps.push({x:(x-CAM.x)*Z,y:(y-CAM.y)*Z});
 WX.hexA=(c,a)=>{const n=parseInt(c.slice(1),16);return `rgba(${n>>16},${n>>8&255},${n&255},${a})`};
 WX.once=(o,k,line)=>{if(!o['_'+k]){o['_'+k]=1;say(line)}};
@@ -45,8 +46,8 @@ const SURF=72;WX.splash=function(o,x,y,s){SFX.land&&SFX.land();(o.rg=o.rg||[]).p
  for(let i=0;i<n;i++){const a=-Math.PI/2+(Math.random()-.5)*1.6,v=(260+Math.random()*260)*s;PART.push({x:x+(Math.random()-.5)*40,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:.55+Math.random()*.3,l0:.85,col:i%3?'rgba(220,248,255,.95)':'rgba(255,255,255,.95)',g:1500,sz:4+Math.random()*5})}};
 // ---- фон
 WX.init=function(){for(const f of INITS)f();
- MAPN.length=0;ORDER.length=0;for(let w=1;w<=6;w++){const ids=w==6?['6-1','6-2','6-B']:[w+'-1',w+'-2',w+'-3',w+'-4',w+'-B'];const ps=w==6?[[.2,.76],[.48,.64],[.78,.74]]:POS;ids.forEach((id,i)=>{ORDER.push(id);MAPN.push({id,w,x:ps[i][0],y:ps[i][1]})})}
- drawBG=function(){const n=wn();let bg=IMG['bg_w'+n]&&IMG['bg_w'+n].width?IMG['bg_w'+n]:IMG.bg_w1;if(bg.width&&self.FX&&FX.gbg)bg=FX.gbg(n,bg)||bg;const dy=(CAM.y-600+HV*L.gf);
+ MAPN.length=0;ORDER.length=0;for(const w of WSEQ){const ids=w==6?['6-1','6-2','6-B']:[w+'-1',w+'-2',w+'-3',w+'-4',w+'-B'];const ps=w==6?[[.2,.76],[.48,.64],[.78,.74]]:POS;ids.forEach((id,i)=>{ORDER.push(id);MAPN.push({id,w,x:ps[i][0],y:ps[i][1]})})}
+ drawBG=function(){const n=wn();const bk=L&&L.id[0]=='7'&&IMG.bg_w7&&IMG.bg_w7.width?'bg_w7':'bg_w'+n;let bg=IMG[bk]&&IMG[bk].width?IMG[bk]:IMG.bg_w1;if(bg.width&&self.FX&&FX.gbg)bg=FX.gbg(n,bg)||bg;const dy=(CAM.y-600+HV*L.gf);
   if(bg.width){const h=H*1.05,w=bg.width*h/bg.height;const off=CAM.x*.12,k0=Math.floor(off/w);for(let k=k0;k<k0+3;k++){const x=k*w-off;X.save();X.translate(x+(k%2?w:0),-dy*.05-20);if(k%2)X.scale(-1,1);X.drawImage(bg,0,0,w,h);X.restore()}}
   const th=TH[n]||TH[1];
   if(n==4){X.fillStyle='rgba(20,110,190,.32)';X.fillRect(0,0,W,H);X.save();X.globalAlpha=.16;X.fillStyle='#e8fbff';for(let i=0;i<5;i++){const x=((i*311-CAM.x*.2)%(W+300)+W+300)%(W+300)-150;X.beginPath();X.moveTo(x,0);X.lineTo(x+70,0);X.lineTo(x+220,H);X.lineTo(x+120,H);X.fill()}X.restore()}
@@ -72,27 +73,27 @@ WX.drawTile=function(v,tx,ty){const x=tx*T,y=ty*T;
   for(const [hx,hy] of [[18,18],[44,34],[18,50]]){X.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3;X.lineTo(x+hx+Math.cos(a)*12,y+hy+Math.sin(a)*12)}X.closePath();X.stroke()}
   if(tileAt(tx,ty-1)!=19){X.fillStyle='#ffe08a';X.beginPath();X.roundRect(x-2,y-6,T+4,14,6);X.fill();X.fillStyle='#f0a21a';X.beginPath();X.ellipse(x+20,y+12+Math.sin(G.t*2+tx)*3,5,9,0,0,7);X.fill()}X.restore();return}};
 // ---- карта по мирам
-const WNAME=['','Долина Колёс','Треугольные горы','Квадратный город','Подводный риф','Небесный храм','Замок Осколка'];
-const WCOL=['','#ff8a1f','#5ec8ff','#35c46a','#2fc6b5','#c58cff','#e0448a'];
+const WNAME=['','Долина Колёс','Треугольные горы','Квадратный город','Подводный риф','Небесный храм','Замок Осколка','Храм Мозаики'];
+const WCOL=['','#ff8a1f','#5ec8ff','#35c46a','#2fc6b5','#c58cff','#e0448a','#3fb8e0'];
 const POS=[[.14,.78],[.3,.66],[.46,.78],[.62,.66],[.8,.74]];
-function curW(){const n=MAPN.find(n=>unlocked(n.id)&&!SAVE.done[n.id]&&LV[n.id]);let m=1;for(let w=1;w<=6;w++)if(LV[w+'-1'])m=w;return n?n.w:m}
+function curW(){const n=MAPN.find(n=>unlocked(n.id)&&!SAVE.done[n.id]&&LV[n.id]);let m=1;for(const w of WSEQ)if(LV[w+'-1'])m=w;return n?n.w:m}
 function pageW(){if(!G.mapW)G.mapW=curW();return G.mapW}
-function canW(w){return w>=1&&w<=6&&unlocked(w+'-1')&&!!LV[w+'-1']}
+function canW(w){return WSEQ.includes(w)&&unlocked(w+'-1')&&!!LV[w+'-1']}
 WX.drawMap=function(){const w=pageW();const m=w==1?IMG.map:IMG['bg_w'+w];if(m&&m.width){const s=Math.max(W/m.width,H/m.height);X.drawImage(m,(W-m.width*s)/2,(H-m.height*s)/2,m.width*s,m.height*s)}
- X.fillStyle=w==1?'rgba(20,10,40,.25)':'rgba(20,10,40,.38)';X.fillRect(0,0,W,H);txt('Мир '+w,W/2,40,40,'#fff');txt(WNAME[w],W/2,98,64,'#fff3a0');
+ X.fillStyle=w==1?'rgba(20,10,40,.25)':'rgba(20,10,40,.38)';X.fillRect(0,0,W,H);txt('Мир '+(WSEQ.indexOf(w)+1),W/2,40,40,'#fff');txt(WNAME[w],W/2,98,64,'#fff3a0');
  const ns=MAPN.filter(n=>n.w==w);X.strokeStyle='rgba(255,243,160,.8)';X.lineWidth=10;X.setLineDash([4,22]);X.lineCap='round';X.beginPath();ns.forEach((n,i)=>i?X.lineTo(n.x*W,n.y*H):X.moveTo(n.x*W,n.y*H));X.stroke();X.setLineDash([]);
  ns.forEach(n=>{const u=unlocked(n.id),d=SAVE.done[n.id],B=n.id.endsWith('B');const r=B?62:52;X.save();X.globalAlpha=u?1:.5;paintShape('circle',n.x*W,n.y*H,r+(u&&!d?Math.sin(G.t*4)*4:0),d?'#ffcc33':u?WCOL[w]:'#888888',0,false,u?20:0);
   txt(B?'Босс':n.id,n.x*W,n.y*H,B?34:40,'#fff');for(let s=0;s<3;s++)img('star',n.x*W-36+s*36,n.y*H+r+26,30,0,s<(SAVE.stars[n.id]||0)?1:.25,.5,.5);X.restore()});
  const cur=ns.find(n=>unlocked(n.id)&&!SAVE.done[n.id])||ns[ns.length-1];{const cx=cur.x*W,cy=cur.y*H,pr=.5+.5*Math.sin(G.t*3);X.save();X.strokeStyle='rgba(255,243,160,'+(.75-pr*.5)+')';X.lineWidth=5;X.beginPath();X.arc(cx,cy,62+pr*22,0,7);X.stroke();for(let i=0;i<5;i++){const a=G.t*1.4+i*1.2566;X.fillStyle='rgba(255,250,210,.85)';X.beginPath();X.arc(cx+Math.cos(a)*80,cy+Math.sin(a)*36-10,3.5,0,7);X.fill()}X.restore()}img('t_idle',cur.x*W,cur.y*H-50,150*(1+Math.sin(G.t*2.6)*.012));
- for(const [d,ax] of [[-1,70],[1,W-70]]){if(!canW(w+d))continue;X.save();const pr=1+Math.sin(G.t*4)*.06;X.translate(ax,H/2);X.scale(pr*d,pr);X.fillStyle='rgba(255,138,31,.95)';X.strokeStyle='#fff';X.lineWidth=6;X.beginPath();X.arc(0,0,52,0,7);X.fill();X.stroke();X.fillStyle='#fff';X.beginPath();X.moveTo(-14,-24);X.lineTo(22,0);X.lineTo(-14,24);X.closePath();X.fill();X.restore()}
+ for(const [d,ax] of [[-1,70],[1,W-70]]){if(!canW(wnext(w,d)))continue;X.save();const pr=1+Math.sin(G.t*4)*.06;X.translate(ax,H/2);X.scale(pr*d,pr);X.fillStyle='rgba(255,138,31,.95)';X.strokeStyle='#fff';X.lineWidth=6;X.beginPath();X.arc(0,0,52,0,7);X.fill();X.stroke();X.fillStyle='#fff';X.beginPath();X.moveTo(-14,-24);X.lineTo(22,0);X.lineTo(-14,24);X.closePath();X.fill();X.restore()}
  img('coin_circ',W-230,H-40,44,0,1,.5,.5);txt('× '+SAVE.shards,W-200,H-40,38,'#fff','left');
- if(IDLE>6){const nx=canW(w+1)&&cur==ns[ns.length-1]&&SAVE.done[cur.id];if(nx)hand(W-60,H/2+30,G.t,(G.t%1)>.6?(G.t%1-.6)/.4:0);else hand(cur.x*W+20,cur.y*H+30,G.t,(G.t%1)>.6?(G.t%1-.6)/.4:0)}};
-WX.mapTap=function(p){IDLE=0;const w=pageW();for(const [d,ax] of [[-1,70],[1,W-70]])if(canW(w+d)&&Math.hypot(p.x-ax,p.y-H/2)<80){G.mapW=w+d;SFX.coin();return}
+ if(IDLE>6){const nx=canW(wnext(w,1))&&cur==ns[ns.length-1]&&SAVE.done[cur.id];if(nx)hand(W-60,H/2+30,G.t,(G.t%1)>.6?(G.t%1-.6)/.4:0);else hand(cur.x*W+20,cur.y*H+30,G.t,(G.t%1)>.6?(G.t%1-.6)/.4:0)}};
+WX.mapTap=function(p){IDLE=0;const w=pageW();for(const [d,ax] of [[-1,70],[1,W-70]])if(canW(wnext(w,d))&&Math.hypot(p.x-ax,p.y-H/2)<80){G.mapW=wnext(w,d);SFX.coin();return}
  for(const n of MAPN){if(n.w==w&&Math.hypot(p.x-n.x*W,p.y-n.y*H)<80&&unlocked(n.id)&&LV[n.id]){SFX.coin();loadLevel(n.id);return}}};
 // ---- сцены-картинки
 WX.cut=null;
 WX.startCut=function(im,lines,next,fin){WX.cut={im,lines,next,fin,t:0};G.scene='cut';for(const k of lines)say(k)};
-WX.afterWin=function(id){const w=+id[0];G.mapW=id.endsWith('B')&&w<6?w+1:w;if(id=='3-B')WX.startCut('kidnap',['tw1','tw2','tw3'],4);if(id=='6-B')WX.startCut('ending',['f4','end1','cr1'],6,1)};
+WX.afterWin=function(id){const w=+id[0];G.mapW=id.endsWith('B')&&w!=6?wnext(w,1):w;if(id=='3-B')WX.startCut('kidnap',['tw1','tw2','tw3'],4);if(id=='6-B')WX.startCut('ending',['f4','end1','cr1'],6,1)};
 WX.drawCut=function(){const c=WX.cut;if(!c)return;const m=IMG[c.im];if(m&&m.width){const s=Math.max(W/m.width,H/m.height),k=1+c.t*.006;X.save();X.translate(W/2,H/2);X.scale(k,k);X.drawImage(m,-m.width*s/2,-m.height*s/2,m.width*s,m.height*s);X.restore()}
  if(c.fin&&WX.drawFin)WX.drawFin(c);else if(c.fin&&c.t>3){X.save();X.globalAlpha=Math.min(1,(c.t-3)/1.5);txt('Конец',W/2,H*.2,120,'#fff3a0','center','#5b2a8a');X.restore()}
  if(WX.cutReady())txt(c.fin?'Нажми, чтобы вернуться на карту':'Нажми, чтобы продолжить',W/2,H*.08+10,36,'#fff')};
