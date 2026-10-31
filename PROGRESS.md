@@ -189,3 +189,4 @@
 - 6-B graf6: throw×5 (ловушка «с дыркой») → щит (4 угла, прямоугольник) → сердце (счёт углов 3/4/5) → Формик → принц → маяк → rule6 → win → ending.
 - Книга правил на карте (кнопка «Правила»).
 - RESUME: дождаться /tmp/vg6.log, затем lines.py + voicegen для t_cl_rect6; проверить WER; commit voice.js+mp3; test.py 6-1..6-B, sheets, phone, rotate, voicetest 6; V=23 push; финальная регрессия 1-7.
+- 31.10 06:10 UTC+1: V=23 pushed (ec17343), live verified V=23. Map/HUD labels now show world order (WX.dn). Final regression running via /tmp/reg.sh → /tmp/reg_*.log (test per world, phone, voicetest). Then sheets/v3/final_overview.png.
