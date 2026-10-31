@@ -240,7 +240,7 @@ function loadLevel(id){hush(1);vlog({ev:'load',lv:id,t:G.t});G.level=id;G.lastTa
  P=newPlayer(b.start.x*T,b.start.y*T+T);P.y=10*T;if(b.meta.startForm&&b.meta.startForm!='girl'){P.form=b.meta.startForm}if(Q.get('form'))P.form=Q.get('form');
  FM={x:P.x-80,y:P.y-200,vx:0,vy:0,catch:0};L.zoom=b.zoom||1.5;L.gf=b.gf||(b.zoom?.75:.72);Z=L.zoom;WV=W/Z;HV=H/Z;CAM.x=clamp(P.x-WV*.35,0,L.w*T-WV);CAM.y=600-HV*L.gf;G.auto=null;
  if(b.meta.chase)G.boulder={x:-400,v:b.meta.chaseV||330,max:b.meta.chaseMax||560,kind:b.meta.chase};else G.boulder=null;G.fly=null;G.race=null;FORMS.wheel.max=720;if(WX.onLoad)WX.onLoad(b);
- G.level=id;G.scene=b.meta.boss?'boss':'play';G.lt=0;G.inputLock=0;G.won=0;for(const k of b.meta.intro)say(k);BANNER={t:3,txt:b.meta.name}}
+ G.level=id;G.scene=b.meta.boss?'boss':'play';G.lt=0;G.inputLock=0;G.won=0;for(const k of b.meta.intro)say(k);if(typeof WX!='undefined'&&WX.dn)b.meta.name=WX.dn(b.meta.name);BANNER={t:3,txt:b.meta.name}}
 // ---- задания
 function setupStone(o){const n=FORMS[o.give].corners||0;o.n=n;o.lit=0;o.done=0;o.r=95;o.cy=o.y-330;}
 function stonePts(o){if(o.shape=='circle'||o.shape=='oval')return [];return shapePts(o.shape,o.x,o.cy,o.r)}

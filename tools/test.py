@@ -34,5 +34,5 @@ async def main():
     async with async_playwright() as pw:
         for i,(w,h) in enumerate(SIZES):
             st,errs,t=await run(pw,w,h,True)
-            print(w,h,'time',t,'done',st['done'],'levels',json.dumps(st['st']['levels']),'badFeet',st['st']['badFeet'],'ground',st['st']['ground'],'minFps',st['st']['minFps'],'errs',errs[:3]+st['err'][:3],'log',st['log'],flush=True)
+            print(w,h,'time',t,'done',st['done'],'levels',json.dumps(st['st']['levels']),'badFeet',st['st']['badFeet'],'ground',st['st']['ground'],'minFps',st['st']['minFps'],'errs',errs[:3]+st['err'][:3],'log',st['log'],flush=True);print('ALBUM',await pg.evaluate('Object.keys(SAVE.album||{}).join(",")'),flush=True)
 asyncio.run(main())

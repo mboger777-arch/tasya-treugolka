@@ -162,7 +162,7 @@ LV['6-4']=()=>{const b=new LB(184,'6-4');b.meta={name:'6-4 Мастерская 
  // 1) точки → отрезок (мир 1)
  b.g(0,20).e('dots',20,10,{pts:[[20],[27]]}).g(27,58);
  // 2) половинка-зеркало (мир 5)
- b.e('half',34,10,{shape:'hex',other:'sq',ord:[1,2,0]});
+ b.e('half',44,10,{shape:'hex',other:'sq',ord:[1,2,0]});
  // 3) лампа: яйцо — овал, а не круг (мир 1, ловушка «почти круг»)
  b.g(58,184).e('lamp',66,10,{th:'egg',B:['circ','oval','tri'],name:'Яйцо — овал!',k:'t_lamp6',rk:'r_egg'});
  // 4) мельница: найди центр круга (мир 1)
@@ -170,7 +170,7 @@ LV['6-4']=()=>{const b=new LB(184,'6-4');b.meta={name:'6-4 Мастерская 
  // 5) финал: мозаика-домик (мир 7) — квадрат и треугольник
  b.e('mosaic',140,10,{S:WX.mos.house,C:[['rect',0],['sq',0],['tri',0]],name:'Домик!',k:'t_mos',rk:'r_house'});
  b.pl(88,7,3).e('stk',89,6,{id:'lens',k:'s_lens'});
- b.coins(6,7,6,'coin_circ',2).coins(44,7,6,'coin_tri',2).coins(78,7,8,'coin_circ',2).coins(120,7,8,'coin_sq',2).coins(160,7,8,'coin_tri',2);
+ b.coins(6,7,6,'coin_circ',2).coins(36,7,6,'coin_tri',2).coins(78,7,8,'coin_circ',2).coins(120,7,8,'coin_sq',2).coins(160,7,8,'coin_tri',2);
  b.e('enemy',12,10).e('enemy',50,10).e('enemy',96,10).e('enemy',160,10);
  b.e('star',24,6).e('star',96,6).e('star',152,6).e('goal',178,10);deco(b,[4,30,56,84,118,150,172]);return b};
 LV['6-B']=()=>{const n=Math.max(14,Math.ceil(W/1.6/T)+1);const b=new LB(n,'6-B');b.zoom=1.6;b.gf=.8;b.meta={name:'Финал: Граф Осколок',intro:['b6'],forms:[],boss:'graf6'};b.g(0,n).col(0,0,9,1).col(n-1,0,9,1);b.start={x:1,y:9};b.e('graf6',n-3,10);b.e('castle',0,10,{xs:[[2,10]]});return b};

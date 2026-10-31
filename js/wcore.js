@@ -3,7 +3,7 @@ var EX={},WX={};
 (function(){
 const INITS=[];WX.add=f=>INITS.push(f);
 const wn=WX.wn=()=>{const n=L?+L.id[0]:1;return n==7?5:n};// мир 7 (Храм Мозаики) выглядит как небесный храм
-const WSEQ=WX.WSEQ=[1,2,3,4,5,7,6],wnext=(w,d)=>WSEQ[WSEQ.indexOf(w)+d];
+const WSEQ=WX.WSEQ=[1,2,3,4,5,7,6],wnext=(w,d)=>WSEQ[WSEQ.indexOf(w)+d];WX.dn=s=>String(s).replace(/^([1-7])-/,(m,d)=>(WSEQ.indexOf(+d)+1)+'-');
 WX.bt=(x,y)=>taps.push({x:(x-CAM.x)*Z,y:(y-CAM.y)*Z});
 WX.hexA=(c,a)=>{const n=parseInt(c.slice(1),16);return `rgba(${n>>16},${n>>8&255},${n&255},${a})`};
 WX.once=(o,k,line)=>{if(!o['_'+k]){o['_'+k]=1;say(line)}};
@@ -83,7 +83,7 @@ WX.drawMap=function(){const w=pageW();const m=w==1?IMG.map:IMG['bg_w'+w];if(m&&m
  X.fillStyle=w==1?'rgba(20,10,40,.25)':'rgba(20,10,40,.38)';X.fillRect(0,0,W,H);txt('Мир '+(WSEQ.indexOf(w)+1),W/2,40,40,'#fff');txt(WNAME[w],W/2,98,64,'#fff3a0');
  const ns=MAPN.filter(n=>n.w==w);X.strokeStyle='rgba(255,243,160,.8)';X.lineWidth=10;X.setLineDash([4,22]);X.lineCap='round';X.beginPath();ns.forEach((n,i)=>i?X.lineTo(n.x*W,n.y*H):X.moveTo(n.x*W,n.y*H));X.stroke();X.setLineDash([]);
  ns.forEach(n=>{const u=unlocked(n.id),d=SAVE.done[n.id],B=n.id.endsWith('B');const r=B?62:52;X.save();X.globalAlpha=u?1:.5;paintShape('circle',n.x*W,n.y*H,r+(u&&!d?Math.sin(G.t*4)*4:0),d?'#ffcc33':u?WCOL[w]:'#888888',0,false,u?20:0);
-  txt(B?'Босс':n.id,n.x*W,n.y*H,B?34:40,'#fff');for(let s=0;s<3;s++)img('star',n.x*W-36+s*36,n.y*H+r+26,30,0,s<(SAVE.stars[n.id]||0)?1:.25,.5,.5);X.restore()});
+  txt(B?'Босс':WX.dn(n.id),n.x*W,n.y*H,B?34:40,'#fff');for(let s=0;s<3;s++)img('star',n.x*W-36+s*36,n.y*H+r+26,30,0,s<(SAVE.stars[n.id]||0)?1:.25,.5,.5);X.restore()});
  const cur=ns.find(n=>unlocked(n.id)&&!SAVE.done[n.id])||ns[ns.length-1];{const cx=cur.x*W,cy=cur.y*H,pr=.5+.5*Math.sin(G.t*3);X.save();X.strokeStyle='rgba(255,243,160,'+(.75-pr*.5)+')';X.lineWidth=5;X.beginPath();X.arc(cx,cy,62+pr*22,0,7);X.stroke();for(let i=0;i<5;i++){const a=G.t*1.4+i*1.2566;X.fillStyle='rgba(255,250,210,.85)';X.beginPath();X.arc(cx+Math.cos(a)*80,cy+Math.sin(a)*36-10,3.5,0,7);X.fill()}X.restore()}img('t_idle',cur.x*W,cur.y*H-50,150*(1+Math.sin(G.t*2.6)*.012));
  for(const [d,ax] of [[-1,70],[1,W-70]]){if(!canW(wnext(w,d)))continue;X.save();const pr=1+Math.sin(G.t*4)*.06;X.translate(ax,H/2);X.scale(pr*d,pr);X.fillStyle='rgba(255,138,31,.95)';X.strokeStyle='#fff';X.lineWidth=6;X.beginPath();X.arc(0,0,52,0,7);X.fill();X.stroke();X.fillStyle='#fff';X.beginPath();X.moveTo(-14,-24);X.lineTo(22,0);X.lineTo(-14,24);X.closePath();X.fill();X.restore()}
  img('coin_circ',W-230,H-40,44,0,1,.5,.5);txt('× '+SAVE.shards,W-200,H-40,38,'#fff','left');
