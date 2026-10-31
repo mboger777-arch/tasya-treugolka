@@ -126,7 +126,7 @@ const FALL=[['house',[['tri',0,-55,0],['sq',0,40,0]],'квадрат + треу�
  ['hexf',null,'шесть треугольников'],['rocket',[['tri',0,-95,0],['rect',0,10,0]],'прямоугольник + треугольник']];
 const GPH=[{S:[['tri',0,-55,0],['sq',0,40,0]],C:[['rect',0],['sq',0],['tri',180]],name:'Туловище — домик!',k:'b7b',rk:'r_body'},
  {S:[['rect',0,20,0],['circ',0,-84,0]],C:[['oval',0],['circ',0],['rect',90]],name:'Рука!',k:'b7a',rk:'r_arm'},
- {S:[['ssq',-30,0,0],['ssq',30,0,0],['ssq',-30,60,0],['ssq',30,60,0],['tri',0,-65,0]],C:[['ssq',0],['stri',0],['tri',0],['ssq',0],['ssq',0],['ssq',0]],name:'Витраж!',k:'b7w',rk:'r_win7',lines:0}];
+ {S:[['ssq',-30,0,0],['ssq',30,0,0],['ssq',-30,60,0],['ssq',30,60,0],['tri',0,-65,0]],C:[['ssq',0],['stri',0],['tri',0],['ssq',0],['ssq',0],['ssq',0]],name:'Витраж!',k:'b7w',rk:'b7c',lines:0}];
 EX.golem={top(o){return 600-o.h-30},setup(o){o.boss=1;o.h=330;o.st='intro';o.t=0;o.br=0;o.fs=[];o.cd=1;o.nf=0;o.ph=0;o.F=null;o.glow=0;o.sh=0},
  upd(o,dt){const p=P;o.t+=dt;if(o.sh>0)o.sh-=dt;if(p.x>o.x-200){p.x=o.x-200;p.vx=Math.min(0,p.vx)}
   {const m=CAM.x+WV-o.h*.45;if(o.x>m)o.x=o.st=='intro'?m:Math.max(m,o.x-160*dt)}
