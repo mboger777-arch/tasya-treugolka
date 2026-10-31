@@ -77,13 +77,13 @@ EX.fsort={setup(o){o.cx=o.x;o.gx=Math.floor((o.cx+290)/T);wall(o.gx,15);o.i=0;o.
    X.fillStyle=f.n==5?'#7fd3ff':'#ffcc33';X.strokeStyle='#3a1d55';X.lineWidth=5;X.beginPath();X.moveTo(-50,0);X.lineTo(-92,-30+fl*20);X.lineTo(-92,30-fl*20);X.closePath();X.fill();X.stroke();
    const v=ngon(f.n,0,0,62,-Math.PI/2+(f.n==6?Math.PI/6:0),f.fs);path(v);X.fill();X.stroke();X.fillStyle='rgba(255,255,255,.3)';path(ngon(f.n,-6,-6,40,-Math.PI/2+(f.n==6?Math.PI/6:0)));X.fill();
    X.fillStyle='#fff';X.beginPath();X.arc(22,-10,12,0,7);X.fill();X.fillStyle='#2a1a3a';X.beginPath();X.arc(25,-9,6,0,7);X.fill();
-   if(f.weed){X.lineCap='round';for(let j=0;j<4;j++){X.strokeStyle=j%2?'#2f9a5a':'#5fd08a';X.lineWidth=16;X.beginPath();X.moveTo(-30+j*14,90);X.quadraticCurveTo(-60+j*20+Math.sin(G.t*2+j)*10,10,-40+j*18,-80);X.stroke()}}
+   if(f.weed){X.lineCap='round';for(let j=0;j<4;j++){X.strokeStyle=j%2?'#2f9a5a':'#5fd08a';X.lineWidth=14;X.beginPath();X.moveTo(-58+j*13,100);X.quadraticCurveTo(-80+j*14+Math.sin(G.t*2+j)*8,60,-52+j*12,22);X.stroke()}}
    X.restore()}
   if(!o.done)panelHide(o.cx-300,200,600);
   X.restore()}};
 // ===== 4-3: Звёздный Щит на подставке — тап поворачивает, золотая сторона отбивает осколок в кнопку =====
 EX.mir={setup(o){o.cx=o.x;o.cy=470;o.r=78;o.th=(o.th??-30)*Math.PI/180;o.k=0;o.ra=0;o.need=o.need||1;o.a0=o.th-Math.PI/5-o.need*2*Math.PI/5;o.done=0;o.sh=null;o.cd=1.5;o.D=250;
-  o.bx=o.cx+Math.cos(o.th)*o.D;o.by=o.cy+Math.sin(o.th)*o.D;o.gx=Math.floor(o.bx/T)+1;for(let y=0;y<=9;y++)setT(o.gx,y,15)},
+  o.bx=o.cx+Math.cos(o.th)*o.D;o.by=o.cy-o.r*.85+Math.sin(o.th)*o.D;o.gx=Math.floor(o.bx/T)+1;for(let y=0;y<=9;y++)setT(o.gx,y,15)},
  rot(o){return o.a0+o.ra*2*Math.PI/5},
  nrm(o){return EX.mir.rot(o)+Math.PI/5},
  ok(o){return Math.abs(Math.atan2(Math.sin(EX.mir.nrm(o)-o.th),Math.cos(EX.mir.nrm(o)-o.th)))<.08},
@@ -167,7 +167,7 @@ LV['4-1']=()=>{const b=new LB(156,'4-1');b.meta={name:'4-1 Сломанные з
  b.e('pstk',124,10,{n:6,r:118});
  b.pl(70,6,3).e('stk',71,5,{id:'shell',k:'s_shell'});
  b.coins(8,7,6,'coin_circ',2).coins(36,6,6,'coin_circ',1).coins(70,4,6,'coin_circ',0).coins(100,6,8,'coin_circ',2).coins(136,7,8,'coin_circ',2);
- b.e('enemy',14,9).e('enemy',80,8).e('enemy',140,9);
+ b.e('enemy',40,9).e('enemy',140,9);
  b.e('star',46,6).e('star',96,3).e('star',132,3).e('goal',150,10);
  reef(b,[3,12,18,36,47,52,66,78,84,100,108,116,134,144]);return b};
 LV['4-2']=()=>{const b=new LB(166,'4-2');b.meta={name:'4-2 Пять или шесть?',intro:['l42v'],forms:[],water:true,noFM:1};
@@ -197,7 +197,7 @@ LV['4-3']=()=>{const b=new LB(172,'4-3');b.meta={name:'4-3 Звёздный Щи
  b.e('shards',0,0,{x0:120,x1:150}).g(132,136,8);
  b.pl(88,6,3).e('stk',89,5,{id:'box',k:'s_box'});
  b.coins(30,7,10,'coin_circ',2).coins(54,7,6,'coin_circ',2).coins(90,4,6,'coin_circ',1).coins(122,7,10,'coin_circ',2).coins(156,7,8,'coin_circ',2);
- b.e('enemy',22,9).e('enemy',160,9);
+ b.e('enemy',22,9);
  b.e('star',40,7).e('star',112,3).e('star',134,6).e('goal',166,10);
  reef(b,[4,20,24,56,60,84,96,118,152,160]);return b};
 LV['4-4']=()=>{const b=new LB(176,'4-4');b.meta={name:'4-4 Спасение Формика',intro:['l44v'],forms:['shield'],water:62,noFM:1};
