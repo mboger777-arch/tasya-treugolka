@@ -98,6 +98,27 @@ EX.lamp={setup(o){o.gx=Math.floor(o.x/T)+4;wall(o.gx,15);o.cx=o.gx*T-170;o.cy=o.
     X.save();shp(c.k,x,c.y,0,.55,COL[c.k]||'#7fd3ff');X.strokeStyle='#3a1d55';X.lineWidth=4;X.stroke();X.restore()});
    panelHide(o.cx-360,o.cy-150,720)}
   X.restore()}};
+// ===== облака-фигуры: Сова называет фигуру; верное облако ложится мостом, другие лопаются =====
+function cloud(x,y,w,a){X.save();X.globalAlpha=a;X.fillStyle='#fff';X.shadowColor='rgba(120,90,200,.35)';X.shadowBlur=14;for(const q of [[-.32,.1,.32],[0,-.1,.4],[.32,.1,.32]]){X.beginPath();X.arc(x+q[0]*w,y+q[1]*w,q[2]*w,0,7);X.fill()}X.restore()}
+EX.scloud={setup(o){o.gx=o.br[0];wall(o.gx,15);o.cx=(o.br[0]+o.br[1]+1)*T/2;o.cy=o.cy||200;o.pop=o.O.map(()=>0);o.done=0;o.ft=0;o.sh=0;o.shi=-1;o.fl=0},
+ pos(o){const n=o.O.length,w=Math.min(200,820/n);return o.O.map((c,i)=>({k:c[0],r:c[1],s:c[2],x:o.cx-(n-1)*w/2+i*w,y:o.cy+(i%2?60:0)+Math.sin(G.t*1.3+i)*8,i}))},
+ top(o){return o.done?null:o.cy-110},
+ upd(o,dt){if(o.sh>0)o.sh-=dt;o.pop=o.pop.map(v=>v>0&&v<1?Math.min(1,v+dt*3):v);
+  if(o.fl>0&&o.fl<1){o.fl=Math.min(1,o.fl+dt*1.6);if(o.fl>=1){for(let x=o.br[0];x<=o.br[1];x++){setT(x,10,15);setT(x,11,15)}wall(o.gx,0);o.done=1;o.ft=0;SFX.win();hush();say(o.rk||'r_cloud');HUD.got=(HUD.got||0)+1}}
+  if(o.done){o.ft+=dt;return}
+  if(!o.said&&near(o.cx,820)&&P.x<o.gx*T){o.said=1;say(o.k)}
+  if(P.x>o.gx*T-40){P.x=o.gx*T-40;P.vx=Math.min(P.vx,0)}},
+ tap(o,wx,wy){if(o.done||o.fl>0||!near(o.cx,WV))return false;for(const c of EX.scloud.pos(o)){if(o.pop[c.i]||Math.hypot(wx-c.x,wy-c.y)>85)continue;HAND=null;
+   if(c.i==o.want){o.fl=.01;SFX.light(3)}else{o.pop[c.i]=.01;SFX.no();part(c.x,c.y,16,'#ffffff',300,.6,0,8);hush();say('r_cloudno')}return true}return false},
+ hint(o){if(o.done||o.fl>0||!near(o.cx,820)||P.x>o.gx*T)return;const c=EX.scloud.pos(o)[o.want];showHand([[c.x,c.y],[o.cx,600]],o.k,1);return true},
+ bot(o,dt){if(o.done)return;const d=o.cx-P.x;if(d>700||P.x>o.gx*T+20)return;WX.go(o.gx*T-200,30);G.bt=(G.bt||0)+dt;
+  if(G.bt>1.2&&!speaking()&&o.fl==0&&Math.abs(P.x-(o.gx*T-200))<90){G.bt=0;const c=EX.scloud.pos(o)[o.want];tapAt(c.x,c.y)}return true},
+ draw(o){if(o.cx<CAM.x-700||o.cx>CAM.x+WV+700)return;X.save();X.lineJoin='round';
+  EX.scloud.pos(o).forEach(c=>{let x=c.x,y=c.y,a=1-o.pop[c.i],sc=c.s;if(o.done){if(c.i==o.want)return;a*=Math.max(0,1-o.ft*1.5)}if(a<=0)return;if(c.i==o.want&&o.fl>0){const k=sm(o.fl);x+=(o.cx-x)*k;y+=(615-y)*k;sc=c.s+(1.6-c.s)*k}
+   const w=150*sc*(1+o.pop[c.i]*.6);cloud(x,y,w,a);X.globalAlpha=a;shp(c.k,x,y,c.r,.55*sc,COL[c.k]||'#7fd3ff');X.strokeStyle='#3a1d55';X.lineWidth=4;X.stroke();X.globalAlpha=1});
+  if(o.done)cloud(o.cx,615,(o.br[1]-o.br[0]+1)*T*.75,1);
+  if(o.done&&o.ft<2.5&&o.name)txt(o.name,o.cx,o.cy-120,big()*.75,'#fff3a0');
+  if(!o.done)panelHide(o.cx-420,o.cy-110,840);X.restore()}};
 const HEX=[0,1,2,3,4,5].map(k=>{const a=(-90+60*k)*Math.PI/180;return['tri',Math.cos(a)*69.3,Math.sin(a)*69.3,k%2?0:180]});
 const M={house:[['tri',0,-55,0],['sq',0,40,0]],rocket:[['tri',0,-95,0],['rect',0,10,0],['stri',-62,60,0],['stri',62,60,0]],
  tree:[['tri',0,-125,0],['tri',0,-60,0],['tri',0,5,0],['ssq',0,70,0]],sq2:[['rt',0,0,0],['rt',0,0,180]],sq4:[['ssq',-30,-30,0],['ssq',30,-30,0],['ssq',-30,30,0],['ssq',30,30,0]]};
@@ -110,6 +131,14 @@ LV['7-1']=()=>{const b=new LB(160,'7-1');b.meta={name:'7-1 Домик из фи�
  b.coins(8,7,6,'coin_tri',2).coins(52,7,8,'coin_sq',2).coins(96,7,8,'coin_tri',2).coins(142,7,6,'coin_sq',2);
  b.e('enemy',20,10).e('enemy',62,10).e('enemy',110,10);
  b.e('star',30,6).e('star',75,5).e('star',118,6).e('goal',154,10);return b};
+LV['7-3']=()=>{const b=new LB(176,'7-3');b.meta={name:'7-3 Облачный храм',intro:['l73'],forms:[]};
+ b.g(0,40);b.g(46,84);b.g(90,128);b.g(134,176);
+ b.e('scloud',40,10,{br:[40,45],O:[['sq',0,1],['tri',0,1],['circ',0,1]],want:1,k:'t_cl_tri',name:'Треугольник!'});
+ b.e('scloud',84,10,{br:[84,89],O:[['tri',180,.8],['sq',45,1.1],['rect',0,.9],['circ',0,1]],want:1,k:'t_cl_sq',name:'Квадрат!'});
+ b.e('scloud',128,10,{br:[128,133],O:[['circ',0,1],['oval',20,1],['hex',0,.9],['tri',90,1.2]],want:1,k:'t_cl_oval',name:'Овал!'});
+ b.coins(8,7,6,'coin_tri',2).coins(52,7,8,'coin_sq',2).coins(96,7,8,'coin_circ',2).coins(140,7,8,'coin_circ',2);
+ b.e('enemy',22,10).e('enemy',66,10).e('enemy',110,10).e('enemy',156,10);
+ b.e('star',30,6).e('star',72,5).e('star',118,6).e('goal',170,10);return b};
 LV['7-4']=()=>{const b=new LB(190,'7-4');b.meta={name:'7-4 Найди в вещах',intro:['l74'],forms:[]};b.g(0,190);
  b.e('lamp',36,10,{th:'clock',B:['sq','circ','tri'],name:'Часы — круг!',k:'t_lamp',rk:'r_clock'});
  b.e('lamp',72,10,{th:'pizza',B:['tri','sq','oval'],name:'Пицца — треугольник!',rk:'r_pizza'});
