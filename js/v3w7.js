@@ -124,8 +124,8 @@ EX.scloud={setup(o){o.gx=o.br[0];wall(o.gx,15);o.cx=(o.br[0]+o.br[1]+1)*T/2;o.cy
 const WING=[['tri',-70,-40,180],['rt',40,-30,90],['ssq',-30,50,0],['stri',60,60,0],['tri',0,-40,0]];
 {const OW=EX.owl;EX.owl7=Object.assign({},OW,{
  setup(o){OW.setup(o);o.F=null},
- upd(o,dt){if(o.st=='wing'){o.t+=dt;const F=o.F;F.cx=o.x-o.h*1.05;F.cy=600-o.h*.62;EX.mosaic.upd(F,dt);if(F.done&&F.ft>1.2&&!o.r7){o.r7=1;o.st='calm';o.t=0;say('rule7');SFX.win();shake(8);part(o.x,600-o.h*.6,60,'#fff3a0',600,1.2,0,12)}return}
-  if(o.st=='calm'&&!o.F){o.st='wing';o.t=0;say('b7w');o.F={x:0,boss:1,gx:-5,S:WING,C:[['tri',60],['ssq',0],['rt',0],['circ',0],['tri',0],['stri',0]],step:60,sc:.75,name:'Крыло!',rk:'r_wing',said:1};EX.mosaic.setup(o.F);o.F.cx=o.x-o.h;o.F.cy=600-o.h*.62}
+ upd(o,dt){if(o.st=='wing'){o.t+=dt;const F=o.F;F.cx=o.x-o.h*1.05;F.cy=250;EX.mosaic.upd(F,dt);if(F.done&&F.ft>1.2&&!o.r7){o.r7=1;o.st='calm';o.t=0;say('rule7');SFX.win();shake(8);part(o.x,600-o.h*.6,60,'#fff3a0',600,1.2,0,12)}return}
+  if(o.st=='calm'&&!o.F){o.st='wing';o.t=0;say('b7w');o.F={x:0,boss:1,gx:-5,S:WING,C:[['tri',60],['ssq',0],['rt',0],['circ',0],['tri',0],['stri',0]],step:60,sc:.75,name:'Крыло!',rk:'r_wing',said:1};EX.mosaic.setup(o.F);o.F.cx=o.x-o.h;o.F.cy=250}
   OW.upd(o,dt);
   if(o.st=='calm'&&o.r7&&o.t>3&&!speaking()&&!G.won)win()},
  tap(o,wx,wy){if(o.st=='wing')return EX.mosaic.tap(o.F,wx,wy);return OW.tap(o,wx,wy)},
