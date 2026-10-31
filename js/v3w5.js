@@ -17,6 +17,8 @@ const NAME={tri:'треугольник',sq:'квадрат',house:'домик',
 const full=h=>h.concat(h.slice(1,-1).reverse().map(q=>[-q[0],q[1]]));
 function drawHalf(h,cx,cy,s,sx,fill,glow){X.save();X.translate(cx,cy);X.scale(s*sx,s);path(h.map(q=>q));X.restore();
  X.save();if(glow){X.shadowColor=glow;X.shadowBlur=22}X.fillStyle=fill;X.strokeStyle='#3a1d55';X.lineWidth=6;X.lineJoin='round';X.fill();X.stroke();X.restore()}
+// стеклянная зеркальная преграда
+function glass(gx){const x=gx*T;X.save();const g=X.createLinearGradient(x,0,x+T,0);g.addColorStop(0,'rgba(190,225,255,.55)');g.addColorStop(.5,'rgba(255,255,255,.85)');g.addColorStop(1,'rgba(170,200,255,.55)');X.fillStyle=g;X.fillRect(x+6,0,T-12,600);X.strokeStyle='#8a6bc0';X.lineWidth=5;X.strokeRect(x+6,-10,T-12,610);X.globalAlpha=.6;X.strokeStyle='#fff';X.lineWidth=4;for(let y=60;y<600;y+=140){X.beginPath();X.moveTo(x+16,y+40);X.lineTo(x+T-16,y);X.stroke()}X.restore()}
 // ===== половинка: левая часть фигуры у зеркала, выбрать правую =====
 EX.half={setup(o){o.gx=Math.floor(o.x/T)+4;wall(o.gx,15);o.cx=o.gx*T-150;o.cy=330;o.done=0;o.t=0;o.sh=0;o.fly=-1;
   // варианты: ok — зеркальная; copy — та же половинка без отражения; other — половинка другой фигуры
@@ -30,10 +32,10 @@ EX.half={setup(o){o.gx=Math.floor(o.x/T)+4;wall(o.gx,15);o.cx=o.gx*T-150;o.cy=33
  tap(o,wx,wy){if(o.done||o.fly>=0||!near(o.cx,WV))return false;const C=EX.half.cards(o);for(let i=0;i<3;i++){const c=C[i];if(Math.abs(wx-c.x)<95&&Math.abs(wy-c.y)<95){
    if(c.k=='ok'){o.fly=i;o.ft=0;HAND=null;SFX.light(3)}else{o.sh=.6;o.shi=i;SFX.no();hush();say(c.k=='copy'?'r_halfno':'r_halfx')}return true}}return false},
  hint(o){if(o.done||o.fly>=0||!near(o.cx,760)||P.x>o.cx)return;const C=EX.half.cards(o),c=C.find(c=>c.k=='ok');showHand([[c.x,c.y],[o.cx+40,o.cy]],o.k||'t_half',1);return true},
- bot(o,dt){if(o.done)return;const d=o.cx-P.x;if(d>800||d<-60)return;WX.go(o.cx-330,30);BOT.j=0;G.bt=(G.bt||0)+dt;
+ bot(o,dt){if(o.done)return;const d=o.cx-P.x;if(d>560||d<-60)return;WX.go(o.cx-330,30);G.bt=(G.bt||0)+dt;
   if(G.bt>1&&o.fly<0&&Math.abs(P.x-(o.cx-330))<80){G.bt=0;const c=EX.half.cards(o).find(c=>c.k=='ok');tapAt(c.x,c.y)}return true},
  draw(o){if(o.cx<CAM.x-500||o.cx>CAM.x+WV+500)return;const h=HALF[o.shape];X.save();
-  X.fillStyle='#4a3a6a';X.fillRect(o.gx*T,0,T,600);
+  if(!o.done)glass(o.gx);
   // зеркало-ось
   X.save();X.globalAlpha=o.done?.3:.85;X.setLineDash([14,10]);X.strokeStyle='#bfe8ff';X.shadowColor='#bfe8ff';X.shadowBlur=14;X.lineWidth=6;X.beginPath();X.moveTo(o.cx,o.cy-140);X.lineTo(o.cx,o.cy+120);X.stroke();X.restore();
   const g=o.done?'#fff3a0':null;
@@ -57,7 +59,7 @@ EX.fold={setup(o){o.gx=Math.floor(o.x/T)+4;wall(o.gx,15);o.cx=o.gx*T-170;o.cy=o.
   if(!o.said&&near(o.cx,760)&&P.x<o.cx){o.said=1;say('t_fold')}
   if(o.sel>=0){o.ft+=dt*1.6;const l=o.L[o.sel];
    if(o.ft>=1&&!o.chk){o.chk=1;if(l.ok){o.lit=(o.lit||0)|(1<<o.sel);o.hits++;SFX.win();part(o.cx,o.cy,30,'#fff3a0',400,.8,0,8);hush();
-     if(o.hits>=(o.need||1)){say(o.need>1?'r_fold2':'r_fold');o.done=1;o.ft=0;if(!o.boss)wall(o.gx,0);shake(6);HUD.got=(HUD.got||0)+1;if(o.cb)o.cb()}else say('r_fold')}
+     if(o.hits>=(o.need||1)){say(o.need>1?'r_fold2':'r_fold');o.done=1;o.ft=0;o.sel=-1;if(!o.boss)wall(o.gx,0);shake(6);HUD.got=(HUD.got||0)+1;if(o.cb)o.cb()}else say('r_fold')}
     else{SFX.no();o.sh=.6;hush();say('r_foldno')}}
    if(o.ft>=2.2){o.sel=-1;o.ft=0;o.chk=0}}
   if(P.x>o.gx*T-40&&!o.done&&!o.boss){P.x=o.gx*T-40;P.vx=Math.min(P.vx,0)}},
@@ -66,10 +68,10 @@ EX.fold={setup(o){o.gx=Math.floor(o.x/T)+4;wall(o.gx,15);o.cx=o.gx*T-170;o.cy=o.
   if(b<0)return false;o.sel=b;o.ft=0;o.chk=0;HAND=null;SFX.light(2);return true},
  hint(o){if(o.done||o.sel>=0||!near(o.cx,760)||(!o.boss&&P.x>o.cx))return;const i=o.L.findIndex((l,i)=>l.ok&&!(o.lit&(1<<i))),l=o.L[i];
   showHand(l.v?[[o.cx+(l.at||0),o.cy-110],[o.cx+(l.at||0),o.cy+110]]:[[o.cx-150,o.cy+(l.at||0)],[o.cx+150,o.cy+(l.at||0)]],o.boss?'b5f':'t_fold');return true},
- bot(o,dt){if(o.done)return;const d=o.cx-P.x;if(d>800||d<-60)return;WX.go(o.cx-360,30);BOT.j=0;G.bt=(G.bt||0)+dt;
+ bot(o,dt){if(o.done)return;const d=o.cx-P.x;if(d>560||d<-60)return;WX.go(o.cx-360,30);G.bt=(G.bt||0)+dt;
   if(G.bt>1.1&&o.sel<0&&Math.abs(P.x-(o.cx-360))<80){G.bt=0;const i=o.L.findIndex((l,i)=>l.ok&&!(o.lit&(1<<i))),l=o.L[i];tapAt(o.cx+(l.v?(l.at||0):60),o.cy+(l.v?60:(l.at||0)))}return true},
  dshape(o,col){const F=FIG[o.shape].map(q=>[o.cx+q[0]*(o.s||1),o.cy+q[1]*(o.s||1)]);path(F);X.fillStyle=col;X.fill();X.strokeStyle='#3a1d55';X.lineWidth=6;X.lineJoin='round';X.stroke();return F},
- draw(o){if(o.cx<CAM.x-500||o.cx>CAM.x+WV+500)return;X.save();if(!o.boss){X.fillStyle='#4a3a6a';X.fillRect(o.gx*T,0,T,600)}
+ draw(o){if(o.cx<CAM.x-500||o.cx>CAM.x+WV+500)return;X.save();if(!o.boss&&!o.done)glass(o.gx);
   const sx=o.sh>0?Math.sin(o.sh*40)*6:0;X.translate(sx,0);
   const glow=o.done;X.save();if(glow){X.shadowColor='#fff3a0';X.shadowBlur=30}const F=EX.fold.dshape(o,glow?'#ffe08a':'#c9a6ff');X.restore();
   if(o.sel>=0){const l=o.L[o.sel],k=o.ft<1?sm(o.ft):o.ft<1.6?1:1-sm((o.ft-1.6)/.6),c=Math.cos(k*Math.PI),ax=o.cx+(l.v?(l.at||0):0),ay=o.cy+(l.v?0:(l.at||0));
@@ -79,7 +81,7 @@ EX.fold={setup(o){o.gx=Math.floor(o.x/T)+4;wall(o.gx,15);o.cx=o.gx*T-170;o.cy=o.
    X.beginPath();if(l.v)X.rect(ax,o.cy-400,400,800);else X.rect(o.cx-400,ay,800,400);X.clip();path(F);X.fillStyle=c<0?(l.ok?'rgba(255,224,138,.9)':'rgba(255,120,150,.75)'):'#b48cf0';X.fill();X.strokeStyle='#3a1d55';X.lineWidth=6;X.stroke();X.restore()}
   if(!o.done)o.L.forEach((l,i)=>{const on=o.lit&(1<<i);X.save();X.setLineDash([14,10]);X.lineWidth=7;X.strokeStyle=on?'#7ff0a2':'rgba(255,255,255,'+(.6+.35*pulse(4+i))+')';X.shadowColor='#fff';X.shadowBlur=10;X.beginPath();
    if(l.v){X.moveTo(o.cx+(l.at||0),o.cy-150);X.lineTo(o.cx+(l.at||0),o.cy+150)}else{X.moveTo(o.cx-200,o.cy+(l.at||0));X.lineTo(o.cx+200,o.cy+(l.at||0))}X.stroke();X.restore()});
-  if(o.done&&o.ft<1.5)txt('Линия симметрии!',o.cx,o.cy-160,big()*.7,'#fff3a0');
+  if(o.done&&o.ft<1.5)txt('Линия симметрии!',o.cx,o.cy+150,big()*.7,'#fff3a0');
   X.restore()}};
 // ===== босс: после 5 точек — окно Совы сложить пополам =====
 const OW=EX.owl;
@@ -103,7 +105,7 @@ LV['5-1']=()=>{const b=strip(O['5-1'](),[50,100]);b.meta.intro=['w5','l51v'];
  b.e('stk',112,9,{id:'bfly',k:'s_bfly'});return b};
 LV['5-2']=()=>{const b=strip(O['5-2'](),[44,124]);
  b.e('half',42,10,{shape:'heart',other:'circ',ord:[2,0,1]});
- b.e('fold',122,10,{shape:'tri',L:[{v:0,ok:0},{v:1,ok:1}]});
+ b.e('fold',124,10,{shape:'tri',L:[{v:0,ok:0},{v:1,ok:1}]});
  b.e('stk',101,7,{id:'snow',k:'s_snow'});return b};
 LV['5-3']=()=>{const b=strip(O['5-3'](),[138]);
  b.e('fold',130,10,{shape:'heart',L:[{v:1,ok:1},{v:0,ok:0}]});
