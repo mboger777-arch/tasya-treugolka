@@ -135,7 +135,7 @@ EX.rob3=Object.assign({},R,{
    throwBoom(q[0],q[1],()=>{if(i!=o.lit||o.stun<=0||o.st!='fight')return;o.lit++;SFX.light(o.lit);say('n'+o.lit);part(q[0],q[1],16,'#7ff0a2',300,.6,0);if(o.lit==4){o.st='head';o.t=0;o.bolts=[];SFX.win();say('t_b3s')}});return true}}return false},
  hint(o){if(o.st=='head'){if(!o.hs){const [cx,cy]=EX.rob3.head(o);showHand([[cx+100*o.hk,cy],[cx+110,cy]],'t_b3s')}return true}return R.hint(o)},
  bot(o,dt){if(o.st=='head'){BOT.r=0;BOT.l=0;BOT.j=0;G.bt=(G.bt||0)+dt;if(G.bt>1&&!o.hs){G.bt=0;const [cx,cy]=EX.rob3.head(o);tapAt(cx,cy)}return true}return R.bot(o,dt)},
- draw(o){R.draw(o);if(o.st!='head'&&!(o.st=='calm'&&o.t<2.5))return;const [cx,cy]=EX.rob3.head(o),S=150;X.save();
+ draw(o){o.noC=o.st=='head'||o.st=='calm';R.draw(o);if(o.st!='head'&&!(o.st=='calm'&&o.t<2.5))return;const [cx,cy]=EX.rob3.head(o),S=150;X.save();
   // табличка-образец: прямоугольник 2:1
   {const sx=o.x+40,sy=300;panel(sx,sy,180,120,24);X.strokeStyle='#5d97d6';X.lineWidth=8;X.strokeRect(sx+30,sy+30,120,60);}
   // голова-рамка: ширина растёт до образца
