@@ -90,7 +90,7 @@ EX.lamp={setup(o){o.gx=Math.floor(o.x/T)+4;wall(o.gx,15);o.cx=o.gx*T-170;o.cy=o.
  bot(o,dt){if(o.done)return;const d=o.cx-P.x;if(d>560||P.x>o.gx*T+20)return;WX.go(o.cx-330,30);G.bt=(G.bt||0)+dt;
   if(G.bt>1&&!speaking()&&Math.abs(P.x-(o.cx-330))<90){G.bt=0;const c=EX.lamp.cards(o).find(c=>o.need.includes(c.k)&&!o.got.includes(c.k));if(c)tapAt(c.x,c.y)}return true},
  draw(o){if(o.cx<CAM.x-900||o.cx>CAM.x+WV+600)return;X.save();
-  if(!o.done){X.fillStyle='rgba(20,10,40,.5)';X.fillRect(o.gx*T-1100,0,1100+T,600);const x=o.gx*T;X.fillStyle='rgba(60,40,90,.8)';X.fillRect(x+8,0,T-16,600)}
+  if(!o.done){{const x0=o.gx*T-1100,g=X.createLinearGradient(x0,0,x0+260,0);g.addColorStop(0,'rgba(20,10,40,0)');g.addColorStop(1,'rgba(20,10,40,.5)');X.fillStyle=g;X.fillRect(x0,0,1100+T,600)}const x=o.gx*T;X.fillStyle='rgba(60,40,90,.8)';X.fillRect(x+8,0,T-16,600)}
   thing(o.th,o.cx,o.cy,o.done);
   if(o.done&&o.ft<2.5&&o.name)txt(o.name,o.cx,o.cy-130,big()*.75,'#fff3a0');
   if(!o.done){EX.lamp.cards(o).forEach(c=>{let x=c.x;if(o.sh>0&&o.shi==c.i)x+=Math.sin(o.sh*40)*8;const g=o.got.includes(c.k);
