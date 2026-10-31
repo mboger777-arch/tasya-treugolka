@@ -190,3 +190,4 @@
 - Книга правил на карте (кнопка «Правила»).
 - RESUME: дождаться /tmp/vg6.log, затем lines.py + voicegen для t_cl_rect6; проверить WER; commit voice.js+mp3; test.py 6-1..6-B, sheets, phone, rotate, voicetest 6; V=23 push; финальная регрессия 1-7.
 - 31.10 06:10 UTC+1: V=23 pushed (ec17343), live verified V=23. Map/HUD labels now show world order (WX.dn). Final regression running via /tmp/reg.sh → /tmp/reg_*.log (test per world, phone, voicetest). Then sheets/v3/final_overview.png.
+- RESUME (06:31 UTC+1): /tmp/reg.sh running (test W1 ok, W2 ok; then 3,4,5,7,6 → phone → voicetest 1..6). Check /tmp/reg.log + /tmp/reg_*.log. After tests: python3 /tmp/ov.py → sheets/v3/final_overview.png (uses /tmp/regsh). test.py now prints ALBUM line.

@@ -28,11 +28,11 @@ async def run(pw,w,h,shots):
         if st['s']=='cut' and st['ct']>9 and ('cut2'+st['ci']) not in wins:
             wins.add('cut2'+st['ci']);await pg.screenshot(path=f'shots/win_{w}_cut2_{st["ci"]}.png')
         if st['done']:break
-    await b.close();return st,errs,t
+    st['album']=await pg.evaluate('Object.keys(SAVE.album||{}).join(",")');await b.close();return st,errs,t
 async def main():
     os.makedirs('shots',exist_ok=True)
     async with async_playwright() as pw:
         for i,(w,h) in enumerate(SIZES):
             st,errs,t=await run(pw,w,h,True)
-            print(w,h,'time',t,'done',st['done'],'levels',json.dumps(st['st']['levels']),'badFeet',st['st']['badFeet'],'ground',st['st']['ground'],'minFps',st['st']['minFps'],'errs',errs[:3]+st['err'][:3],'log',st['log'],flush=True);print('ALBUM',await pg.evaluate('Object.keys(SAVE.album||{}).join(",")'),flush=True)
+            print(w,h,'time',t,'done',st['done'],'levels',json.dumps(st['st']['levels']),'badFeet',st['st']['badFeet'],'ground',st['st']['ground'],'minFps',st['st']['minFps'],'errs',errs[:3]+st['err'][:3],'log',st['log'],flush=True);print('ALBUM',st.get('album'),flush=True)
 asyncio.run(main())
