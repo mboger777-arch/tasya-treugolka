@@ -27,7 +27,7 @@ const rmatch=(k,a,b)=>{const s=PC[k].sym;return s==1||((a-b)%s+s*9)%s==0};
 // o.S=[[k,dx,dy,r]...] слоты; o.C=[[k,r0]...] карточки; o.name; o.bridge=[x0,x1] — тайлы моста ряда 10 по мере сборки
 EX.mosaic={setup(o){o.gx=o.bridge?o.bridge[0]:Math.floor(o.x/T)+(o.open||4);if(!o.boss)wall(o.gx,15);o.cx=o.cx||o.gx*T-170-(o.dx||0);o.cy=o.cy||250;o.fill=o.S.map(()=>-1);o.cr=o.C.map(c=>c[1]);o.used=o.C.map(()=>0);
   o.done=0;o.fly=[];o.sh=0;o.shi=-1;o.ft=0;o.rt=o.C.map(()=>0)},
- cards(o){const n=o.C.length,w=Math.min(190,760/n);return o.C.map((c,i)=>({k:c[0],x:o.cx-(n-1)*w/2+i*w,y:o.cy+250,i}))},
+ cards(o){const n=o.C.length,w=Math.min(190,760/n);return o.C.map((c,i)=>({k:c[0],x:(o.ccx||o.cx)-(n-1)*w/2+i*w,y:o.cy+(o.cg||250),i}))},
  top(o){return o.done?null:o.cy-150},
  free(o,k,r){return o.S.findIndex((s,j)=>o.fill[j]<0&&!o.fly.some(f=>f.j==j)&&s[0]==k&&(r==null||rmatch(k,s[3],r)))},
  upd(o,dt){if(o.sh>0)o.sh-=dt;o.rt=o.rt.map(v=>Math.max(0,v-dt*4));
@@ -120,30 +120,57 @@ EX.scloud={setup(o){o.gx=o.br[0];wall(o.gx,15);o.cx=(o.br[0]+o.br[1]+1)*T/2;o.cy
   if(o.done)cloud(o.cx,615,(o.br[1]-o.br[0]+1)*T*.75,1);
   if(o.done&&o.ft<2.5&&o.name)txt(o.name,o.cx,o.cy-120,big()*.75,'#fff3a0');
   if(!o.done)panelHide(o.cx-420,o.cy-110,840);X.restore()}};
-// ===== босс: Сова Зеркалица — собрать её крыло из кусочков =====
-const WING=[['tri',-70,-40,180],['rt',40,-30,90],['ssq',-30,50,0],['stri',60,60,0],['tri',0,-40,0]];
-{const OW=EX.owl;EX.owl7=Object.assign({},OW,{
- setup(o){OW.setup(o);o.F=null},
- upd(o,dt){if(o.st=='wing'){o.t+=dt;const F=o.F;F.cx=o.x-o.h*1.05;F.cy=250;EX.mosaic.upd(F,dt);if(F.done&&F.ft>1.2&&!o.r7){o.r7=1;o.st='calm';o.t=0;say('rule7');SFX.win();shake(8);part(o.x,600-o.h*.6,60,'#fff3a0',600,1.2,0,12)}return}
-  if(o.st=='calm'&&!o.F){o.st='wing';o.t=0;say('b7w');o.F={x:0,boss:1,gx:-5,S:WING,C:[['tri',60],['ssq',0],['rt',0],['circ',0],['tri',0],['stri',0]],step:60,sc:.75,name:'Крыло!',rk:'r_wing',said:1};EX.mosaic.setup(o.F);o.F.cx=o.x-o.h;o.F.cy=250}
-  OW.upd(o,dt);
-  if(o.st=='calm'&&o.r7&&o.t>3&&!speaking()&&!G.won)win()},
- tap(o,wx,wy){if(o.st=='wing')return EX.mosaic.tap(o.F,wx,wy);return OW.tap(o,wx,wy)},
- hint(o){if(o.st=='wing'){EX.mosaic.hint(o.F);return true}return OW.hint(o)},
- bot(o,dt){if(o.st=='wing'){BOT.r=0;BOT.l=0;BOT.j=0;EX.mosaic.bot(o.F,dt);return true}return OW.bot(o,dt)},
- draw(o){OW.draw(o);if(o.F&&(o.st=='wing'||o.st=='calm'&&o.t<2))EX.mosaic.draw(o.F)}})}
+// ===== босс: Мозаичный Голем из осколков Графа =====
+// 1) rain: падают сложные фигуры — тап разбивает их на простые; 2) build: собрать туловище и руку; 3) window: собрать витраж — голем добреет
+const FALL=[['house',[['tri',0,-55,0],['sq',0,40,0]],'квадрат + треугольник'],['sq2',[['rt',0,0,0],['rt',0,0,180]],'два треугольника'],
+ ['hexf',null,'шесть треугольников'],['rocket',[['tri',0,-95,0],['rect',0,10,0]],'прямоугольник + треугольник']];
+const GPH=[{S:[['tri',0,-55,0],['sq',0,40,0]],C:[['rect',0],['sq',0],['tri',180]],name:'Туловище — домик!',k:'b7b',rk:'r_body'},
+ {S:[['rect',0,20,0],['circ',0,-84,0]],C:[['oval',0],['circ',0],['rect',90]],name:'Рука!',k:'b7a',rk:'r_arm'},
+ {S:[['ssq',-30,0,0],['ssq',30,0,0],['ssq',-30,60,0],['ssq',30,60,0],['tri',0,-65,0]],C:[['ssq',0],['stri',0],['tri',0],['ssq',0],['ssq',0],['ssq',0]],name:'Витраж!',k:'b7w',rk:'r_win7',lines:0}];
+EX.golem={top(o){return 600-o.h-30},setup(o){o.boss=1;o.h=330;o.st='intro';o.t=0;o.br=0;o.fs=[];o.cd=1;o.nf=0;o.ph=0;o.F=null;o.glow=0;o.sh=0},
+ upd(o,dt){const p=P;o.t+=dt;if(o.sh>0)o.sh-=dt;if(p.x>o.x-200){p.x=o.x-200;p.vx=Math.min(0,p.vx)}
+  {const m=CAM.x+WV-o.h*.45;if(o.x>m)o.x=o.st=='intro'?m:Math.max(m,o.x-160*dt)}
+  o.glow+=((o.st=='calm'?1:o.ph/3)-o.glow)*Math.min(1,dt*2);
+  if(o.st=='intro'){if(o.t>3.5&&!speaking()){o.st='rain';o.t=0;o.cd=.6;say('b7t')}return}
+  if(o.st=='calm'){if(o.t>3&&!speaking()&&!G.won){if(!o.e7){o.e7=1;say('b7e');o.t=0}else win()}return}
+  if(o.st=='rain'){o.cd-=dt;if(o.cd<=0&&o.fs.filter(f=>!f.b).length<1&&o.br<4){o.cd=1.4;const k=FALL[o.nf%FALL.length];o.nf++;o.fs.push({k:k[0],S:k[1]||HEX,lab:k[2],x:clamp(p.x+(o.nf%2?60:-40),CAM.x+120,o.x-260),y:-60,vy:120,b:0,t:0})}
+   for(const f of o.fs){f.t+=dt;if(!f.b){f.y+=f.vy*dt;f.vy=Math.min(f.vy+40*dt,190);if(f.y>560){f.b=2;f.t=0;part(f.x,590,16,'#ff6fae',300,.6,0,8);shake(4);if(Math.abs(f.x-p.x)<110)hurt(p,f.x)}}}
+   o.fs=o.fs.filter(f=>!f.b||f.t<1.4);
+   if(o.br>=4&&!o.fs.length){o.st='build';o.t=0;o.ph=0;EX.golem.mk(o)}}
+  if(o.st=='build'){const F=o.F;F.cx=CAM.x+WV*.4;F.ccx=CAM.x+WV*.47;F.cy=CAM.y+HV*.3;F.cg=HV*.46;EX.mosaic.upd(F,dt);
+   if(F.done&&F.ft>1.4){o.ph++;shake(5);if(o.ph>=3){o.st='calm';o.t=0;SFX.win();shake(8);hush();say('rule7');part(o.x,600-o.h*.6,70,'#fff3a0',650,1.3,0,12);o.F=null}else EX.golem.mk(o)}}},
+ mk(o){const g=GPH[o.ph];o.F=Object.assign({x:0,boss:1,gx:-5,sc:.85,said:0},JSON.parse(JSON.stringify(g)));EX.mosaic.setup(o.F);o.F.cx=CAM.x+WV*.4;F.ccx=CAM.x+WV*.47;o.F.cy=CAM.y+HV*.3;o.F.cg=HV*.46;o.F.said=1;hush();say(g.k)},
+ tap(o,wx,wy){if(o.st=='build')return EX.mosaic.tap(o.F,wx,wy);if(o.st!='rain')return false;
+  const f=o.fs.find(f=>!f.b&&Math.hypot(wx-f.x,wy-f.y)<110);if(!f){if(Math.abs(wx-o.x)<o.h*.5&&wy>600-o.h){o.sh=.4;return true}return false}
+  HAND=null;f.b=1;f.t=0;o.br++;SFX.light(o.br);hush();say(o.br<4?'r_brk':'r_brk4');part(f.x,f.y,20,'#fff3a0',320,.7,0,8);return true},
+ hint(o){if(o.st=='build'){EX.mosaic.hint(o.F);return true}if(o.st=='rain'){const f=o.fs.find(f=>!f.b);if(f){HAND={x:f.x,y:f.y,t:0,k:'tap'};say('b7h')}}return true},
+ bot(o,dt){const p=P;BOT.j=0;if(o.st!='rain'&&o.st!='build'){BOT.r=0;BOT.l=0;return true}
+  if(o.st=='build'){BOT.r=0;BOT.l=0;EX.mosaic.bot(o.F,dt);return true}
+  const tx=Math.max(o.x-520,CAM.x+200);BOT.r=p.x<tx-30;BOT.l=p.x>tx+60;
+  const f=o.fs.find(f=>!f.b&&f.y>120);G.bt=(G.bt||0)+dt;if(f&&G.bt>.5){G.bt=0;WX.bt(f.x,f.y)}return true},
+ dpiece(f,a){X.save();X.globalAlpha=a;X.lineJoin='round';for(const s of f.S){let dx=s[1],dy=s[2];if(f.b==1){const k=sm(f.t/1.2);dx*=1+k*2.2;dy=dy*(1+k*2.2)-k*40}shp(s[0],f.x+dx*.7,f.y+dy*.7,s[3]+(f.b==1?f.t*90*(dx>0?1:-1):0),.7,COL[s[0]]);X.strokeStyle='#3a1d55';X.lineWidth=4;X.stroke()}X.restore()},
+ draw(o){const a=IMG.golem_0,b=IMG.golem_1;X.save();const sx=o.sh>0?Math.sin(o.sh*50)*6:0,bob=o.st=='calm'?Math.sin(G.t*2)*4:Math.sin(G.t*3)*2;
+  if(a&&a.width){const h=o.h,w=a.width*h/a.height,x=o.x-w/2+sx,y=600-h+bob;X.fillStyle='rgba(60,30,80,.22)';X.beginPath();X.ellipse(o.x,600,w*.4,12,0,0,7);X.fill();
+   if(o.glow<.99)X.drawImage(a,x,y,w,h);if(b&&b.width&&o.glow>.01){X.save();X.globalAlpha=Math.min(1,o.glow);const w2=b.width*h/b.height;if(o.glow>.5){X.shadowColor='#fff3a0';X.shadowBlur=30*o.glow}X.drawImage(b,o.x-w2/2+sx,y,w2,h);X.restore()}}
+  for(const f of o.fs){if(f.b==2)continue;const al=f.b==1?Math.max(0,1-f.t/1.2):1;
+   if(!f.b){X.save();X.strokeStyle='rgba(255,111,174,.5)';X.setLineDash([8,10]);X.lineWidth=3;X.beginPath();X.moveTo(f.x,f.y+70);X.lineTo(f.x,600);X.stroke();X.restore();X.save();X.globalAlpha=.25;X.fillStyle='#ff6fae';X.beginPath();X.ellipse(f.x,600,50+f.y*.06,10,0,0,7);X.fill();X.restore()}
+   EX.golem.dpiece(f,al);if(f.b==1&&f.t<1.3)txt(f.lab,f.x,f.y-90,big()*.6,'#fff3a0')}
+  if(o.F&&(o.st=='build'||o.st=='calm'))EX.mosaic.draw(o.F);
+  if(o.st=='rain'){txt(o.br+' из 4',o.x,600-o.h-40,big()*.7,'#fff')}
+  X.restore()}};
 const HEX=[0,1,2,3,4,5].map(k=>{const a=(-90+60*k)*Math.PI/180;return['tri',Math.cos(a)*69.3,Math.sin(a)*69.3,k%2?0:180]});
 const M={house:[['tri',0,-55,0],['sq',0,40,0]],rocket:[['tri',0,-95,0],['rect',0,10,0],['stri',-62,60,0],['stri',62,60,0]],
  tree:[['tri',0,-125,0],['tri',0,-60,0],['tri',0,5,0],['ssq',0,70,0]],sq2:[['rt',0,0,0],['rt',0,0,180]],sq4:[['ssq',-30,-30,0],['ssq',30,-30,0],['ssq',-30,30,0],['ssq',30,30,0]]};
 WX.mos=M;
 WX.add(()=>{
+WX.STK.push(['chouse','stk_chouse','7-1'],['gstar','stk_gstar','7-2'],['oball','stk_oball','7-3'],['rose','stk_rose','7-4']);
 LV['7-1']=()=>{const b=new LB(160,'7-1');b.meta={name:'7-1 Домик из фигур',intro:['w7','l71'],forms:[]};b.g(0,160);
  b.e('mosaic',40,10,{S:M.house,C:[['rect',0],['sq',0],['tri',0]],name:'Домик!',k:'t_mos',rk:'r_house'});
  b.e('mosaic',85,10,{S:M.rocket,C:[['stri',0],['tri',0],['sq',0],['rect',0],['stri',0]],name:'Ракета!',k:'t_mos2',rk:'r_rocket'});
  b.e('mosaic',130,10,{S:M.tree,C:[['tri',0],['ssq',0],['tri',180],['tri',0]],step:60,name:'Ёлка!',k:'t_mosrot',rk:'r_tree'});
  b.coins(8,7,6,'coin_tri',2).coins(52,7,8,'coin_sq',2).coins(96,7,8,'coin_tri',2).coins(142,7,6,'coin_sq',2);
  b.e('enemy',20,10).e('enemy',62,10).e('enemy',110,10);
- b.e('star',30,6).e('star',75,5).e('star',118,6).e('goal',154,10);return b};
+ b.e('star',30,6).e('star',75,5).e('star',118,6).e('goal',154,10);b.pl(100,7,3).e('stk',101,6,{id:'chouse',k:'s_chouse'});return b};
 LV['7-3']=()=>{const b=new LB(176,'7-3');b.meta={name:'7-3 Облачный храм',intro:['l73'],forms:[]};
  b.g(0,40);b.g(46,84);b.g(90,128);b.g(134,176);
  b.e('scloud',40,10,{br:[40,45],O:[['sq',0,1],['tri',0,1],['circ',0,1]],want:1,k:'t_cl_tri',name:'Треугольник!'});
@@ -151,7 +178,7 @@ LV['7-3']=()=>{const b=new LB(176,'7-3');b.meta={name:'7-3 Облачный хр
  b.e('scloud',128,10,{br:[128,133],O:[['circ',0,1],['oval',20,1],['hex',0,.9],['tri',90,1.2]],want:1,k:'t_cl_oval',name:'Овал!'});
  b.coins(8,7,6,'coin_tri',2).coins(52,7,8,'coin_sq',2).coins(96,7,8,'coin_circ',2).coins(140,7,8,'coin_circ',2);
  b.e('enemy',22,10).e('enemy',66,10).e('enemy',110,10).e('enemy',156,10);
- b.e('star',30,6).e('star',72,5).e('star',118,6).e('goal',170,10);return b};
+ b.e('star',30,6).e('star',72,5).e('star',118,6).e('goal',170,10);b.pl(60,7,3).e('stk',61,6,{id:'oball',k:'s_oball'});return b};
 LV['7-4']=()=>{const b=new LB(190,'7-4');b.meta={name:'7-4 Найди в вещах',intro:['l74'],forms:[]};b.g(0,190);
  b.e('lamp',36,10,{th:'clock',B:['sq','circ','tri'],name:'Часы — круг!',k:'t_lamp',rk:'r_clock'});
  b.e('lamp',72,10,{th:'pizza',B:['tri','sq','oval'],name:'Пицца — треугольник!',rk:'r_pizza'});
@@ -160,8 +187,8 @@ LV['7-4']=()=>{const b=new LB(190,'7-4');b.meta={name:'7-4 Найди в вещ�
  b.e('lamp',176,10,{th:'house',B:['circ','sq','tri'],name:'Домик — квадрат и треугольник!',k:'t_lamp2',rk:'r_lhouse'});
  b.coins(8,7,6,'coin_circ',2).coins(48,7,8,'coin_tri',2).coins(118,7,8,'coin_sq',2);
  b.e('enemy',20,10).e('enemy',90,10).e('enemy',160,10);
- b.e('star',28,6).e('star',96,5).e('star',150,6).e('goal',186,10);return b};
-LV['7-B']=()=>{const b=LV['5-B']();b.id='7-B';b.meta=Object.assign({},b.meta,{name:'7-B Сова Мозаики',intro:['b7'],boss:'owl7'});b.ents.forEach(e=>{if(e.type=='owl'||e.type=='owl5')e.type='owl7'});return b};
+ b.e('star',28,6).e('star',96,5).e('star',150,6).e('goal',186,10);b.pl(122,7,3).e('stk',123,6,{id:'rose',k:'s_rose'});return b};
+LV['7-B']=()=>{const n=Math.max(13,Math.ceil(W/1.85/T)+1);const b=new LB(n,'7-B');b.zoom=1.85;b.gf=.8;b.meta={name:'Босс: Мозаичный Голем',intro:['b7'],forms:[],boss:'golem'};b.g(0,n).col(0,0,9,1).col(n-1,0,9,1);b.start={x:1,y:9};b.e('golem',n-3,10);return b};
 LV['7-2']=()=>{const b=new LB(170,'7-2');b.meta={name:'7-2 Мозаика-мост',intro:['l72'],forms:[]};
  b.g(0,40);b.g(47,85);b.g(92,130);b.g(137,170);
  b.e('mosaic',40,10,{bridge:[40,46],S:HEX,C:[['tri',0],['tri',60],['tri',0],['tri',180],['tri',60],['tri',0]],step:60,cy:230,sc:.85,name:'Шестиугольник!',k:'t_hex',rk:'r_hex'});
@@ -169,6 +196,6 @@ LV['7-2']=()=>{const b=new LB(170,'7-2');b.meta={name:'7-2 Мозаика-мос
  b.e('mosaic',130,10,{bridge:[130,136],S:M.sq4,C:[['ssq',0],['ssq',0],['stri',0],['ssq',0],['ssq',0]],lines:0,cy:260,name:'Тоже квадрат!',k:'t_sq4',rk:'r_sq4'});
  b.coins(8,7,6,'coin_tri',2).coins(55,7,8,'coin_sq',2).coins(100,7,8,'coin_tri',2).coins(145,7,8,'coin_sq',2);
  b.e('enemy',22,10).e('enemy',68,10).e('enemy',112,10).e('enemy',150,10);
- b.e('star',30,6).e('star',75,5).e('star',120,6).e('goal',164,10);return b};
+ b.e('star',30,6).e('star',75,5).e('star',120,6).e('goal',164,10);b.pl(150,7,3).e('stk',151,6,{id:'gstar',k:'s_gstar'});return b};
 });
 })();
