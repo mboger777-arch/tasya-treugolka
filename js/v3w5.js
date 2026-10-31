@@ -93,7 +93,7 @@ EX.owl5=Object.assign({},OW,{
   if(o.st=='calm'&&o.r5&&o.t>3&&!speaking()&&!G.won)win()},
  tap(o,wx,wy){if(o.st=='fold')return EX.fold.tap(o.F,wx,wy);return OW.tap(o,wx,wy)},
  hint(o){if(o.st=='fold'){EX.fold.hint(o.F);return true}return OW.hint(o)},
- bot(o,dt){if(o.st=='fold'){BOT.r=0;BOT.l=0;BOT.j=0;const F=o.F;G.bt=(G.bt||0)+dt;if(G.bt>1.3&&F.sel<0&&!F.done){G.bt=0;const i=F.L.findIndex((l,i)=>l.ok&&!(F.lit&(1<<i))),l=F.L[i];tapAt(F.cx+(l.at||0),F.cy+60)}return true}return OW.bot(o,dt)},
+ bot(o,dt){if(o.st=='fold'){BOT.r=0;BOT.l=0;BOT.j=0;const F=o.F;G.bt=(G.bt||0)+dt;if(G.bt>1.3&&F.sel<0&&!F.done&&!speaking()){G.bt=0;const i=F.L.findIndex((l,i)=>l.ok&&!(F.lit&(1<<i))),l=F.L[i];tapAt(F.cx+(l.at||0),F.cy+60)}return true}return OW.bot(o,dt)},
  draw(o){OW.draw(o);if(o.st=='fold'||(o.F&&o.st=='calm'&&o.t<2)){EX.fold.draw(o.F);if(o.st=='fold')panelHide(o.F.cx-220,o.F.cy-170,440)}}});
 {const sb=EX.skybot;if(sb&&sb.bot){const ob=sb.bot;sb.bot=function(o,dt){if(ENTS.some(f=>f.type=='fold'&&!f.done&&P.x>f.gx*T-700&&P.x<f.gx*T+20))return false;return ob.call(this,o,dt)}}}
 WX.STK.push(['bfly','stk_bfly','5-1'],['snow','stk_snow','5-2'],['leaf','stk_leaf','5-3'],['hmir','stk_hmir','5-4']);
