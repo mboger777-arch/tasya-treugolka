@@ -18,12 +18,12 @@ EX.mirror={setup(o){o.nc=1;o.ax=o.A*T;o.lit=0;o.mask=0;o.grow=o.steps.map(()=>0)
  o.steps.forEach(([i,row,len])=>{for(let k=0;k<len;k++)setT(o.A-i-len+k,row,1)})},
  lx(o,s){return (o.A-s[0]-s[2])*T},rx(o,s){return (o.A+s[0])*T},
  upd(o,dt){const p=P;o.x=clamp(CAM.x+WV/2,o.ax-900,o.ax+o.gap*T);o.grow=o.grow.map((g,k)=>o.mask&(1<<k)?Math.min(1,g+dt*2.5):0);
-  if(o.say&&!o.said&&near(o.ax-600,700)){o.said=1;say('t_mir')}
+  if(o.say&&!o.said&&near(o.ax-600,700)){o.said=1;say('t_mir5')}
   if(!p.ground)return;const row=Math.round(p.y/T);
   o.steps.forEach((s,k)=>{if(o.mask&(1<<k)||s[1]!=row)return;const a=EX.mirror.lx(o,s),b=a+s[2]*T;if(p.x<a-8||p.x>b+8)return;
    o.mask|=1<<k;o.lit++;for(let j=0;j<s[2];j++)setT(o.A+s[0]+j,s[1],1);SFX.light(o.lit);const rx=EX.mirror.rx(o,s);part(a+s[2]*T/2,row*T,14,'#fff3a0',260,.6,0);part(rx+s[2]*T/2,row*T,20,'#e8dcff',320,.8,0);
    if(o.lit==o.steps.length){SFX.win&&tone(1319,.3,'triangle',.12);hush();say('r_pat')}})},
- hint(o){if(o.lit==o.steps.length||P.x<o.ax-1100||P.x>o.ax+o.gap*T)return;const k=o.steps.findIndex((s,k)=>!(o.mask&(1<<k)));const s=o.steps[k];HAND={x:EX.mirror.lx(o,s)+s[2]*T/2,y:s[1]*T-30,t:0,k:'tap'};say('t_mir');return true},
+ hint(o){if(o.lit==o.steps.length||P.x<o.ax-1100||P.x>o.ax+o.gap*T)return;const k=o.steps.findIndex((s,k)=>!(o.mask&(1<<k)));const s=o.steps[k];HAND={x:EX.mirror.lx(o,s)+s[2]*T/2,y:s[1]*T-30,t:0,k:'tap'};say('t_mir5');return true},
  draw(o){X.save();const ax=o.ax,y0=CAM.y-20;
   // облака в пропасти
   for(let x=ax+20;x<ax+o.gap*T;x+=90)puff(x+((x*7)%30),668+((x*13)%20),46,.9);
@@ -167,7 +167,7 @@ EX.owl={top(o){return 600-o.h-30},setup(o){o.boss=1;o.h=270;o.s=o.h/400;o.st='in
 WX.add(()=>{
 const pw=WX.wantF;WX.wantF=function(want,fx,fy){if(pw){const r=pw(want,fx,fy);if(r&&r!=want)return r}if(WX.wn()!=5)return want;if(L.id=='5-3'&&L.forms.includes('bubble'))return 'bubble';return want};
 const deco=(b,xs)=>b.e('temple',0,10,{xs});
-LV['5-1']=()=>{const b=new LB(172,'5-1');b.meta={name:'5-1 Зеркальный мост',intro:['w5','t_mir'],forms:[]};
+LV['5-1']=()=>{const b=new LB(172,'5-1');b.meta={name:'5-1 Зеркальный мост',intro:['w5','t_mir5'],forms:[]};
  const M1=[[5,8,2],[1,8,2]],M2=[[9,9,2],[5,8,2],[1,7,2]],M3=[[13,9,2],[9,8,2],[5,7,2],[1,6,2]];
  b.g(0,172);b.e('mirror',30,10,{A:30,steps:M1,gap:9,say:1}).e('mirror',75,10,{A:75,steps:M2,gap:13});
  b.e('mirror',128,10,{A:128,steps:M3,gap:17});
